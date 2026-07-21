@@ -9,7 +9,9 @@
 
 .content-editor {
   display: grid;
+  width: min(100%, 1180px);
   gap: 28px;
+  margin: 0 auto;
 }
 
 .content-editor-heading,
@@ -17,7 +19,6 @@
 .content-editor-actions,
 .content-editor-status,
 .content-editor-color-control,
-.content-editor-toggle-field,
 .content-editor-section-item,
 .content-editor-section-visibility {
   display: flex;
@@ -33,8 +34,7 @@
 .content-editor-panel-heading > span,
 .content-editor-subsection header span,
 .content-editor-field > span,
-.content-editor-toolbar span,
-.content-editor-toggle-field span {
+.content-editor-toolbar span {
   color: var(--admin-color-muted);
   font-family: var(--admin-font-mono);
   font-size: 10px;
@@ -81,6 +81,31 @@
   min-width: 0;
   border: 1px solid var(--admin-color-border);
   background: var(--admin-color-surface);
+}
+
+.content-editor-guide {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--admin-color-border);
+  background: var(--admin-color-paper);
+}
+
+.content-editor-guide strong {
+  flex: 0 0 auto;
+  font-size: 13px;
+}
+
+.content-editor-guide ol {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 28px;
+  margin: 0;
+  padding-left: 22px;
+  color: var(--admin-color-muted);
+  font-size: 12px;
 }
 
 .content-editor-toolbar {
@@ -142,7 +167,6 @@
 }
 
 .content-editor-field label,
-.content-editor-toggle-field label,
 .content-editor-section-visibility label {
   font-size: 12px;
   font-weight: 700;
@@ -178,23 +202,57 @@
   border-top: 1px solid var(--admin-color-border);
 }
 
-.content-editor-motion {
+.content-editor-choice-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.content-editor-toggle-field {
-  justify-content: space-between;
-  gap: 20px;
-  min-height: 70px;
-  padding: 14px 16px;
+.content-editor-toolbar > div:first-child {
+  display: grid;
+  gap: 5px;
+}
+
+.content-editor-advanced {
+  padding: 16px;
   border: 1px solid var(--admin-color-border);
 }
 
-.content-editor-toggle-field > div {
+.content-editor-advanced > summary {
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.content-editor-advanced[open] > summary {
+  margin-bottom: 22px;
+}
+
+.content-editor-choice-grid button {
   display: grid;
-  gap: 6px;
+  gap: 8px;
+  min-height: 110px;
+  padding: 18px;
+  border: 1px solid var(--admin-color-border);
+  color: var(--admin-color-ink);
+  text-align: left;
+  background: var(--admin-color-surface);
+  cursor: pointer;
+}
+
+.content-editor-choice-grid button.active {
+  border-color: var(--admin-color-coral);
+  box-shadow: inset 0 0 0 1px var(--admin-color-coral);
+}
+
+.content-editor-choice-grid strong {
+  font-size: 15px;
+}
+
+.content-editor-choice-grid span {
+  color: var(--admin-color-muted);
+  font-size: 12px;
+  line-height: 1.45;
 }
 
 .content-editor-loading,
@@ -231,8 +289,7 @@
 @media (width <= 1000px) {
   .content-editor-fields--three-columns,
   .content-editor-fields--four-columns,
-  .content-editor-color-grid,
-  .content-editor-motion {
+  .content-editor-color-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -251,12 +308,20 @@
   .content-editor-fields--three-columns,
   .content-editor-fields--four-columns,
   .content-editor-color-grid,
-  .content-editor-motion {
+  .content-editor-choice-grid {
     grid-template-columns: 1fr;
   }
 
   .content-editor-actions {
     flex-wrap: wrap;
+  }
+
+  .content-editor-guide {
+    display: grid;
+  }
+
+  .content-editor-guide ol {
+    display: grid;
   }
 
   .content-editor-section-visibility {

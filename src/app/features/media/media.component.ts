@@ -1,8 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MediaAsset } from '@shared/models/media-asset.model';
-import { FileUpload } from 'primeng/fileupload';
-import { FileUploadHandlerEvent } from 'primeng/types/fileupload';
 
 import { ContentDraftService } from '../content/services/content-draft.service';
 import { SessionService } from '../../core/session/services/session.service';
@@ -35,14 +33,15 @@ export class MediaComponent implements OnInit {
     this.draftService.load();
   }
 
-  protected upload(event: FileUploadHandlerEvent, uploader: FileUpload): void {
-    const [file] = event.files;
+  protected upload(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
 
     if (!file)
       return;
 
     this.mediaService.upload(file, this.provenanceControl.value, (asset) => {
-      uploader.clear();
+      input.value = '';
       this.registerAssetInDraft(asset);
     });
   }

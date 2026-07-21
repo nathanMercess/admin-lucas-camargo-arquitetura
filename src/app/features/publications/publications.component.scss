@@ -96,6 +96,25 @@ code {
   font-size: 10px;
 }
 
+.preview-viewports {
+  display: flex;
+  gap: 4px;
+}
+
+.preview-viewports button {
+  min-height: 40px;
+  padding: 8px 14px;
+  border: 1px solid var(--admin-color-border);
+  color: var(--admin-color-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.preview-viewports button.active {
+  border-color: var(--admin-color-coral);
+  color: var(--admin-color-ink);
+}
+
 @media (width <= 760px) {
   .publications-heading,
   .preview-panel > header {

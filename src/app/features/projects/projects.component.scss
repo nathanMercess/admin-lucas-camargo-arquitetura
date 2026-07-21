@@ -20,6 +20,17 @@
   gap: 20px;
 }
 
+.form-section--advanced {
+  padding: 18px;
+  border: 1px solid var(--admin-color-border);
+}
+
+.form-section--advanced summary {
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .projects-heading > div {
   max-width: 780px;
 }

@@ -19,6 +19,26 @@ legend {
   gap: 14px;
 }
 
+.link-advanced {
+  padding-top: 12px;
+  border-top: 1px solid var(--admin-color-border);
+}
+
+.link-advanced summary {
+  width: fit-content;
+  color: var(--admin-color-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.link-advanced > p {
+  max-width: 680px;
+  margin: 10px 0 14px;
+  color: var(--admin-color-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
 label,
 .field {
   display: grid;

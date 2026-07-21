@@ -1,24 +1,19 @@
 @let currentSection = section();
-<article class="section-editor" [formGroup]="sectionForm">
-  <header>
+<details class="section-editor" [formGroup]="sectionForm">
+  <summary>
     <div>
-      <span>{{ currentSection.order.toString().padStart(2, '0') }} · {{ currentSection.type }}</span>
       <h3>{{ sectionLabel(currentSection) }}</h3>
-      <p>/{{ currentSection.anchor }} · {{ currentSection.visible ? 'visível' : 'oculta' }}</p>
+      <p i18n>Clique para editar</p>
     </div>
     <p-tag [value]="currentSection.visible ? 'Visível' : 'Oculta'"
       [severity]="currentSection.visible ? 'success' : 'secondary'"></p-tag>
-  </header>
+  </summary>
 
-  <div class="section-grid section-grid--common">
-    <label><span i18n>Âncora</span><input pInputText formControlName="anchor" /></label>
-    @if ('overline' in currentSection) {
-      <label><span i18n>Sobretítulo</span><input pInputText formControlName="overline" /></label>
-    }
-    @if ('indexLabel' in currentSection) {
-      <label><span i18n>Índice editorial</span><input pInputText formControlName="indexLabel" /></label>
-    }
-  </div>
+  @if ('overline' in currentSection) {
+    <div class="section-grid">
+      <label class="full"><span i18n>Texto acima do título</span><input pInputText formControlName="overline" /></label>
+    </div>
+  }
 
   @switch (currentSection.type) {
     @case ('hero') {
@@ -51,8 +46,7 @@
         @for (area of sectionForm.controls.practiceAreas.controls; track $index) {
           <div class="list-card" [formGroupName]="$index">
             <div class="section-grid section-grid--list">
-              <label><span>ID</span><input pInputText formControlName="id" /></label>
-              <label><span i18n>Índice</span><input pInputText formControlName="index" /></label>
+              <label><span i18n>Número</span><input pInputText formControlName="index" /></label>
               <label><span i18n>Título</span><input pInputText formControlName="title" /></label>
               <label class="full"><span i18n>Descrição</span><textarea pTextarea formControlName="description"
                 rows="3"></textarea></label>
@@ -77,22 +71,21 @@
         <div class="field toggle"><span i18n>Rotação automática</span>
           <p-toggleswitch formControlName="autoRotationEnabled" ariaLabel="Rotação automática"
             i18n-ariaLabel></p-toggleswitch></div>
-        <div class="field"><span i18n>Intervalo</span><p-inputnumber formControlName="autoRotationIntervalMs"
-          suffix=" ms" [min]="3000" [max]="30000" [step]="500" ariaLabel="Intervalo da rotação"
-          i18n-ariaLabel></p-inputnumber></div>
+        <div class="field"><span i18n>Velocidade da troca</span><p-select [options]="rotationIntervalOptions"
+          optionLabel="label" optionValue="value" formControlName="autoRotationIntervalMs"
+          ariaLabel="Velocidade da troca automática" i18n-ariaLabel></p-select></div>
       </div>
     }
     @case ('metrics') {
-      <div class="section-grid">
-        <label class="full"><span i18n>Descrição acessível do bloco</span><input pInputText
-          formControlName="ariaLabel" /></label>
-      </div>
+      <details class="section-advanced"><summary i18n>Acessibilidade avançada</summary>
+        <div class="section-grid"><label class="full"><span i18n>Descrição do bloco para leitores de tela</span>
+          <input pInputText formControlName="ariaLabel" /></label></div>
+      </details>
       <fieldset class="list-editor" formArrayName="metrics">
         <legend i18n>Indicadores</legend>
         @for (metric of sectionForm.controls.metrics.controls; track $index) {
           <div class="list-card" [formGroupName]="$index">
             <div class="section-grid section-grid--list">
-              <label><span>ID</span><input pInputText formControlName="id" /></label>
               <label><span i18n>Valor</span><input pInputText formControlName="value" /></label>
               <label><span i18n>Rótulo</span><input pInputText formControlName="label" /></label>
             </div>
@@ -114,10 +107,12 @@
           <label><span i18n>Título profissional</span><input pInputText formControlName="profileTitle" /></label>
           <label class="full"><span i18n>Biografia</span><textarea pTextarea formControlName="profileBiography"
             rows="6"></textarea></label>
-          <label class="full"><span i18n>Descrição acessível do retrato</span><input pInputText
-            formControlName="portraitAriaLabel" /></label>
         </div>
       </fieldset>
+      <details class="section-advanced"><summary i18n>Acessibilidade avançada</summary>
+        <div class="section-grid"><label class="full"><span i18n>Descrição do retrato para leitores de tela</span>
+          <input pInputText formControlName="portraitAriaLabel" /></label></div>
+      </details>
       <app-media-reference-editor label="Retrato" [reference]="currentSection.portrait" [assets]="config().media"
         (referenceChange)="updateMedia($event)" i18n-label></app-media-reference-editor>
       <app-site-link-editor label="Link do perfil" [link]="currentSection.link"
@@ -131,8 +126,7 @@
         @for (step of sectionForm.controls.steps.controls; track $index) {
           <div class="list-card" [formGroupName]="$index">
             <div class="section-grid section-grid--list">
-              <label><span>ID</span><input pInputText formControlName="id" /></label>
-              <label><span i18n>Índice</span><input pInputText formControlName="index" /></label>
+              <label><span i18n>Número</span><input pInputText formControlName="index" /></label>
               <label><span i18n>Título</span><input pInputText formControlName="title" /></label>
               <label class="full"><span i18n>Descrição</span><textarea pTextarea formControlName="description"
                 rows="3"></textarea></label>
@@ -155,8 +149,7 @@
         @for (channel of sectionForm.controls.channels.controls; track $index) {
           <div class="list-card" [formGroupName]="$index">
             <div class="section-grid section-grid--list">
-              <label><span>ID</span><input pInputText formControlName="id" /></label>
-              <label><span i18n>Rótulo</span><input pInputText formControlName="label" /></label>
+              <label><span i18n>Tipo de contato</span><input pInputText formControlName="label" /></label>
               <label><span i18n>Valor exibido</span><input pInputText formControlName="value" /></label>
               <label class="full"><span i18n>Link opcional</span><input pInputText formControlName="href" /></label>
             </div>
@@ -173,4 +166,4 @@
   @if (sectionForm.invalid && sectionForm.touched) {
     <p-message severity="error" text="Revise os campos desta seção." i18n-text></p-message>
   }
-</article>
+</details>

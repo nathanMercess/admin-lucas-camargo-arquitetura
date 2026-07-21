@@ -189,7 +189,7 @@ export class SiteStructureEditorComponent {
 
   private createNavigationItemForm(item?: NavigationItem) {
     return this.formBuilder.nonNullable.group({
-      id: [item?.id ?? '', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
+      id: [item?.id ?? crypto.randomUUID(), [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
       label: [item?.label ?? '', [Validators.required, Validators.maxLength(80)]],
       href: [item?.href ?? '', [Validators.required, safeHrefValidator]],
     });
@@ -197,7 +197,7 @@ export class SiteStructureEditorComponent {
 
   private createFooterLinkForm(link?: FooterLink) {
     return this.formBuilder.nonNullable.group({
-      id: [link?.id ?? '', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
+      id: [link?.id ?? crypto.randomUUID(), [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
       label: [link?.label ?? '', [Validators.required, Validators.maxLength(100)]],
       href: [link?.href ?? '', [Validators.required, safeHrefValidator]],
     });
@@ -205,17 +205,17 @@ export class SiteStructureEditorComponent {
 
   private createSocialLinkForm(link?: SocialLink) {
     return this.formBuilder.nonNullable.group({
-      id: [link?.id ?? '', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
+      id: [link?.id ?? crypto.randomUUID(), [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
       network: [link?.network ?? '', [Validators.required, Validators.maxLength(40)]],
       label: [link?.label ?? '', [Validators.required, Validators.maxLength(100)]],
       href: [link?.href ?? '', [Validators.required, safeHrefValidator]],
-      icon: [link?.icon ?? '', [Validators.required, Validators.pattern(/^[a-z0-9_-]+$/i)]],
+      icon: [link?.icon ?? 'link', [Validators.required, Validators.pattern(/^[a-z0-9_-]+$/i)]],
     });
   }
 
   private createSiteLinkForm(link?: SiteLink) {
     return this.formBuilder.nonNullable.group({
-      id: [link?.id ?? '', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
+      id: [link?.id ?? crypto.randomUUID(), [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
       label: [link?.label ?? '', [Validators.required, Validators.maxLength(100)]],
       href: [link?.href ?? '', [Validators.required, safeHrefValidator]],
       ariaLabel: [link?.ariaLabel ?? '', Validators.maxLength(160)],

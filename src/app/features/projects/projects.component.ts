@@ -37,11 +37,11 @@ export class ProjectsComponent implements OnInit {
   protected readonly mediaOptions = computed(() => [...(this.draftService.draft()?.media ?? [])]);
   protected readonly approvedVisualClasses = [
     {
-      label: $localize`:@@admin.projects.visual.projects:Projetos — fundo editorial`,
+      label: $localize`:@@admin.projects.visual.projects:Claro`,
       value: 'portfolio-accordion-panel--projects',
     },
     {
-      label: $localize`:@@admin.projects.visual.construction:Obras — fundo técnico`,
+      label: $localize`:@@admin.projects.visual.construction:Contraste`,
       value: 'portfolio-accordion-panel--construction',
     },
   ];
@@ -208,6 +208,23 @@ export class ProjectsComponent implements OnInit {
     this.projectForm.controls.seo.controls.canonicalPath.setValue(canonicalPath);
   }
 
+  protected synchronizeProjectTitle(): void {
+    if (this.editingProjectId())
+      return;
+
+    const title = this.projectForm.controls.title.value.trim();
+    const slug = title
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .slice(0, 64);
+    this.projectForm.controls.slug.setValue(slug);
+    this.projectForm.controls.seo.controls.title.setValue(title.slice(0, 70));
+    this.synchronizeCanonicalPath();
+  }
+
   protected requestDeleteProject(project: PortfolioProject): void {
     this.confirmationService.confirm({
       header: $localize`:@@admin.projects.deleteTitle:Excluir projeto?`,
@@ -261,7 +278,7 @@ export class ProjectsComponent implements OnInit {
     this.editingCategoryId.set(null);
     this.categoryForm.controls.id.enable();
     this.categoryForm.reset({
-      id: '',
+      id: crypto.randomUUID(),
       index: String(this.categoryRows().length + 1).padStart(2, '0'),
       title: '',
       description: '',

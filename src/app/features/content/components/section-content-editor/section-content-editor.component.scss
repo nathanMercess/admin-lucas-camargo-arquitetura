@@ -15,16 +15,44 @@
   background: #fff;
 }
 
-.section-editor > header {
+.section-editor > summary {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--admin-color-border);
+  cursor: pointer;
+  list-style: none;
 }
 
-header span,
+.section-editor > summary::-webkit-details-marker {
+  display: none;
+}
+
+.section-editor:not([open]) > summary {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.section-advanced {
+  padding: 14px 0;
+  border-top: 1px solid var(--admin-color-border);
+  border-bottom: 1px solid var(--admin-color-border);
+}
+
+.section-advanced > summary {
+  width: fit-content;
+  color: var(--admin-color-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.section-advanced[open] > summary {
+  margin-bottom: 14px;
+}
+
+.section-editor > summary span,
 legend {
   font-family: var(--admin-font-mono);
   font-size: 9px;
@@ -32,7 +60,7 @@ legend {
   text-transform: uppercase;
 }
 
-header span {
+.section-editor > summary span {
   color: var(--admin-color-coral);
 }
 
@@ -42,7 +70,7 @@ h3 {
   font-weight: 400;
 }
 
-header p {
+.section-editor > summary p {
   margin: 0;
   color: var(--admin-color-muted);
   font-size: 11px;

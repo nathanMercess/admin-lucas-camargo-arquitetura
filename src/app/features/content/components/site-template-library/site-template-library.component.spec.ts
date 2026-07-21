@@ -22,7 +22,7 @@ describe('SiteTemplateLibraryComponent', () => {
     const rootElement = fixture.nativeElement as HTMLElement;
 
     expect(rootElement.querySelectorAll('.site-template-card')).toHaveLength(4);
-    expect(rootElement.querySelector('[data-template-id="lucas-camargo-v1"]')?.textContent)
+    expect(rootElement.querySelector('.site-template-card[data-template-id="lucas-camargo-v1"]')?.textContent)
       .toContain('Em uso');
   });
 
@@ -32,13 +32,21 @@ describe('SiteTemplateLibraryComponent', () => {
 
     fixture.componentInstance.themeChange.subscribe((theme) => emittedThemes.push(theme));
 
-    const galleryButton = rootElement.querySelector<HTMLButtonElement>(
-      '[data-template-id="gallery-v1"] button',
+    const galleryPreviewButton = rootElement.querySelector<HTMLButtonElement>(
+      '.site-template-card[data-template-id="gallery-v1"] button',
     );
 
-    expect(galleryButton).not.toBeNull();
+    expect(galleryPreviewButton).not.toBeNull();
 
-    galleryButton!.click();
+    galleryPreviewButton!.click();
+    fixture.detectChanges();
+
+    const applyButton = [...rootElement.querySelectorAll<HTMLButtonElement>('.site-template-stage button')]
+      .find((button) => button.textContent?.includes('Usar este modelo'));
+
+    expect(applyButton).toBeDefined();
+
+    applyButton!.click();
     fixture.detectChanges();
 
     expect(emittedThemes).toHaveLength(1);
@@ -61,13 +69,33 @@ describe('SiteTemplateLibraryComponent', () => {
     fixture.componentInstance.themeChange.subscribe((theme) => emittedThemes.push(theme));
     fixture.detectChanges();
 
-    const editorialButton = (fixture.nativeElement as HTMLElement)
-      .querySelector<HTMLButtonElement>('[data-template-id="lucas-camargo-v1"] button');
+    const editorialButton = [...(fixture.nativeElement as HTMLElement)
+      .querySelectorAll<HTMLButtonElement>('.site-template-stage button')]
+      .find((button) => button.textContent?.includes('Usar este modelo'));
 
+    expect(editorialButton).toBeDefined();
     expect(editorialButton?.disabled).toBe(false);
 
     editorialButton!.click();
 
     expect(emittedThemes[0].colors.accent).toBe('#e36571');
+  });
+
+  it('starts a safe custom template from the selected preview', () => {
+    const customizedThemes: ThemeConfig[] = [];
+    const rootElement = fixture.nativeElement as HTMLElement;
+
+    fixture.componentInstance.customize.subscribe((theme) => customizedThemes.push(theme));
+
+    const customizeButton = [...rootElement.querySelectorAll<HTMLButtonElement>('.site-template-stage button')]
+      .find((button) => button.textContent?.includes('Personalizar este modelo'));
+
+    expect(customizeButton).toBeDefined();
+
+    customizeButton!.click();
+
+    expect(customizedThemes).toHaveLength(1);
+    expect(customizedThemes[0]).not.toBe(DEFAULT_SITE_CONFIG.theme);
+    expect(customizedThemes[0]).toEqual(DEFAULT_SITE_CONFIG.theme);
   });
 });

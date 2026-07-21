@@ -63,6 +63,25 @@ p,
   height: 32px;
 }
 
+.media-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.media-file-button {
+  display: grid;
+  min-height: 44px;
+  padding: 10px 16px;
+  place-items: center;
+  border: 1px solid var(--admin-color-ink);
+  color: var(--admin-color-paper);
+  background: var(--admin-color-ink);
+  font-size: 14px;
+  cursor: pointer;
+}
+
 .media-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

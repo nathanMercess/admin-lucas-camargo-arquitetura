@@ -33,6 +33,9 @@ export class ContentEditorComponent implements OnInit {
   private hydratedDraft: SiteConfigV1 | null = null;
 
   protected readonly draftService = inject(ContentDraftService);
+  protected readonly activeTab = signal<string>('section-content');
+  protected readonly layoutChoice = signal<'gallery' | 'balanced' | 'spacious'>('balanced');
+  protected readonly motionChoice = signal<'off' | 'soft' | 'expressive'>('soft');
   protected readonly sectionItems = signal<ContentSectionEditorItem[]>([]);
   protected readonly contentForm = this.formBuilder.nonNullable.group({
     identity: this.formBuilder.nonNullable.group({
@@ -110,86 +113,55 @@ export class ContentEditorComponent implements OnInit {
       id: 'theme-accent',
       label: $localize`:@@admin.content.theme.accent:Destaque`,
       control: this.contentForm.controls.theme.controls.colors.controls.accent,
+      advanced: false,
     },
     {
       id: 'theme-accent-soft',
       label: $localize`:@@admin.content.theme.accentSoft:Destaque suave`,
       control: this.contentForm.controls.theme.controls.colors.controls.accentSoft,
+      advanced: true,
     },
     {
       id: 'theme-ink',
-      label: $localize`:@@admin.content.theme.ink:Tinta`,
+      label: $localize`:@@admin.content.theme.ink:Texto principal`,
       control: this.contentForm.controls.theme.controls.colors.controls.ink,
+      advanced: false,
     },
     {
       id: 'theme-ink-deep',
-      label: $localize`:@@admin.content.theme.inkDeep:Tinta profunda`,
+      label: $localize`:@@admin.content.theme.inkDeep:Texto de alto contraste`,
       control: this.contentForm.controls.theme.controls.colors.controls.inkDeep,
+      advanced: true,
     },
     {
       id: 'theme-surface-muted',
       label: $localize`:@@admin.content.theme.surfaceMuted:Fundo secundário`,
       control: this.contentForm.controls.theme.controls.colors.controls.surfaceMuted,
+      advanced: true,
     },
     {
       id: 'theme-surface',
       label: $localize`:@@admin.content.theme.surface:Fundo principal`,
       control: this.contentForm.controls.theme.controls.colors.controls.surface,
+      advanced: false,
     },
     {
       id: 'theme-text-muted',
       label: $localize`:@@admin.content.theme.textMuted:Texto secundário`,
       control: this.contentForm.controls.theme.controls.colors.controls.textMuted,
+      advanced: true,
     },
     {
       id: 'theme-border',
-      label: $localize`:@@admin.content.theme.border:Bordas`,
+      label: $localize`:@@admin.content.theme.border:Linhas e divisões`,
       control: this.contentForm.controls.theme.controls.colors.controls.border,
+      advanced: true,
     },
     {
       id: 'theme-focus',
-      label: $localize`:@@admin.content.theme.focus:Foco`,
+      label: $localize`:@@admin.content.theme.focus:Contorno ao navegar`,
       control: this.contentForm.controls.theme.controls.colors.controls.focus,
-    },
-  ];
-
-  protected readonly layoutFields = [
-    {
-      id: 'theme-content-width',
-      label: $localize`:@@admin.content.theme.contentWidth:Largura máxima`,
-      suffix: ' px',
-      control: this.contentForm.controls.theme.controls.layout.controls.contentMaxWidthPx,
-    },
-    {
-      id: 'theme-gutter-min',
-      label: $localize`:@@admin.content.theme.gutterMin:Margem mínima`,
-      suffix: ' px',
-      control: this.contentForm.controls.theme.controls.layout.controls.pageGutterMinPx,
-    },
-    {
-      id: 'theme-gutter-preferred',
-      label: $localize`:@@admin.content.theme.gutterPreferred:Margem fluida`,
-      suffix: ' vw',
-      control: this.contentForm.controls.theme.controls.layout.controls.pageGutterPreferredVw,
-    },
-    {
-      id: 'theme-gutter-max',
-      label: $localize`:@@admin.content.theme.gutterMax:Margem máxima`,
-      suffix: ' px',
-      control: this.contentForm.controls.theme.controls.layout.controls.pageGutterMaxPx,
-    },
-  ];
-
-  protected readonly motionFields = [
-    {
-      id: 'theme-reveal-duration',
-      label: $localize`:@@admin.content.theme.revealDuration:Duração da revelação`,
-      control: this.contentForm.controls.theme.controls.motion.controls.revealDurationMs,
-    },
-    {
-      id: 'theme-transform-duration',
-      label: $localize`:@@admin.content.theme.transformDuration:Duração do movimento`,
-      control: this.contentForm.controls.theme.controls.motion.controls.revealTransformDurationMs,
+      advanced: true,
     },
   ];
 
@@ -288,6 +260,7 @@ export class ContentEditorComponent implements OnInit {
   }
 
   protected handleTemplateChange(theme: ThemeConfig): void {
+    this.syncVisualChoices(theme);
     this.contentForm.controls.theme.setValue({
       presetId: theme.presetId,
       colors: { ...theme.colors },
@@ -295,6 +268,33 @@ export class ContentEditorComponent implements OnInit {
       layout: { ...theme.layout },
       motion: { ...theme.motion },
     });
+  }
+
+  protected customizeTemplate(theme: ThemeConfig): void {
+    this.handleTemplateChange(theme);
+    this.activeTab.set('theme');
+  }
+
+  protected applyLayoutChoice(choice: 'gallery' | 'balanced' | 'spacious'): void {
+    const layouts = {
+      gallery: { contentMaxWidthPx: 1760, pageGutterMinPx: 16, pageGutterPreferredVw: 3, pageGutterMaxPx: 52 },
+      balanced: { contentMaxWidthPx: 1440, pageGutterMinPx: 22, pageGutterPreferredVw: 4.5, pageGutterMaxPx: 76 },
+      spacious: { contentMaxWidthPx: 1160, pageGutterMinPx: 24, pageGutterPreferredVw: 6, pageGutterMaxPx: 104 },
+    } as const;
+
+    this.layoutChoice.set(choice);
+    this.contentForm.controls.theme.controls.layout.setValue(layouts[choice]);
+  }
+
+  protected applyMotionChoice(choice: 'off' | 'soft' | 'expressive'): void {
+    const motions = {
+      off: { revealEnabled: false, revealDurationMs: 0, revealTransformDurationMs: 0 },
+      soft: { revealEnabled: true, revealDurationMs: 550, revealTransformDurationMs: 800 },
+      expressive: { revealEnabled: true, revealDurationMs: 850, revealTransformDurationMs: 1100 },
+    } as const;
+
+    this.motionChoice.set(choice);
+    this.contentForm.controls.theme.controls.motion.setValue(motions[choice]);
   }
 
   private hydrateEditor(draft: SiteConfigV1): void {
@@ -341,6 +341,7 @@ export class ContentEditorComponent implements OnInit {
         motion: { ...draft.theme.motion },
       },
     });
+    this.syncVisualChoices(draft.theme);
 
     const sectionItems = [...draft.sections]
       .sort((firstSection, secondSection) => firstSection.order - secondSection.order)
@@ -349,6 +350,16 @@ export class ContentEditorComponent implements OnInit {
     this.sectionItems.set(sectionItems);
     this.contentForm.markAsPristine();
     this.isHydrating = false;
+  }
+
+  private syncVisualChoices(theme: ThemeConfig): void {
+    const width = theme.layout.contentMaxWidthPx;
+    this.layoutChoice.set(width >= 1600 ? 'gallery' : width <= 1250 ? 'spacious' : 'balanced');
+
+    if (!theme.motion.revealEnabled)
+      this.motionChoice.set('off');
+    else
+      this.motionChoice.set(theme.motion.revealDurationMs >= 800 ? 'expressive' : 'soft');
   }
 
   private syncDraftFromForm(): void {

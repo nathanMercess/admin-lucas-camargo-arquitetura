@@ -8,6 +8,12 @@
   gap: 24px;
 }
 
+.structure-advanced > summary {
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .structure-editor > header,
 .structure-card > header {
   display: flex;

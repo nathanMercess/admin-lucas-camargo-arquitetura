@@ -3,13 +3,20 @@
   <div class="media-grid">
     <div class="field full"><span i18n>Arquivo</span><p-select [options]="assetOptions()" optionLabel="id" optionValue="id"
       formControlName="assetId" [filter]="true" ariaLabel="Arquivo de mídia" i18n-ariaLabel></p-select></div>
-    <label class="full"><span i18n>Texto alternativo</span><input pInputText formControlName="alt" /></label>
-    <div class="field toggle"><span i18n>Imagem decorativa</span><p-toggleswitch formControlName="decorative"
-      ariaLabel="Imagem decorativa" i18n-ariaLabel></p-toggleswitch></div>
-    <div class="field"><span i18n>Foco horizontal</span><p-inputnumber formControlName="focalPointX" suffix=" %"
-      [min]="0" [max]="100" ariaLabel="Foco horizontal" i18n-ariaLabel></p-inputnumber></div>
-    <div class="field"><span i18n>Foco vertical</span><p-inputnumber formControlName="focalPointY" suffix=" %"
-      [min]="0" [max]="100" ariaLabel="Foco vertical" i18n-ariaLabel></p-inputnumber></div>
+    <label class="full"><span i18n>Descrição da imagem</span><input pInputText formControlName="alt" /></label>
     <label class="full"><span i18n>Legenda</span><input pInputText formControlName="caption" /></label>
+    <details class="advanced full">
+      <summary i18n>Ajustar enquadramento e acessibilidade</summary>
+      <div class="media-grid">
+        <div class="field toggle"><span i18n>Imagem apenas decorativa</span><p-toggleswitch
+          formControlName="decorative" ariaLabel="Imagem decorativa" i18n-ariaLabel></p-toggleswitch></div>
+        <div class="field"><span i18n>Posição horizontal</span><p-inputnumber formControlName="focalPointX"
+          suffix=" %" [min]="0" [max]="100" ariaLabel="Posição horizontal"
+          i18n-ariaLabel></p-inputnumber></div>
+        <div class="field"><span i18n>Posição vertical</span><p-inputnumber formControlName="focalPointY"
+          suffix=" %" [min]="0" [max]="100" ariaLabel="Posição vertical"
+          i18n-ariaLabel></p-inputnumber></div>
+      </div>
+    </details>
   </div>
 </fieldset>

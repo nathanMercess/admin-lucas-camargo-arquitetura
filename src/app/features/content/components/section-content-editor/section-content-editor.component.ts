@@ -28,6 +28,13 @@ export class SectionContentEditorComponent {
   public readonly config = input.required<SiteConfigV1>();
   public readonly sectionChange = output<SiteSection>();
   protected readonly categoryOptions = computed(() => [...this.config().portfolioCategories]);
+  protected readonly rotationIntervalOptions = [
+    { label: $localize`:@@admin.section.rotation.fiveSeconds:A cada 5 segundos`, value: 5000 },
+    { label: $localize`:@@admin.section.rotation.sevenSeconds:A cada 7 segundos`, value: 7000 },
+    { label: $localize`:@@admin.section.rotation.tenSeconds:A cada 10 segundos`, value: 10000 },
+    { label: $localize`:@@admin.section.rotation.fifteenSeconds:A cada 15 segundos`, value: 15000 },
+    { label: $localize`:@@admin.section.rotation.thirtySeconds:A cada 30 segundos`, value: 30000 },
+  ];
   protected readonly sectionForm = this.formBuilder.nonNullable.group({
     anchor: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
     overline: ['', Validators.maxLength(160)],

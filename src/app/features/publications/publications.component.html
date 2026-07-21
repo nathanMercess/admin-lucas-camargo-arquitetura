@@ -1,9 +1,9 @@
 <section class="publications-page" aria-labelledby="publications-title">
   <header class="publications-heading">
     <div>
-      <span i18n>Entrega contínua</span>
-      <h1 id="publications-title" i18n>Visualize, publique e reverta sem novo deploy.</h1>
-      <p i18n>A prévia usa o rascunho tipado no navegador; nenhum HTML arbitrário é executado.</p>
+      <span i18n>Publicação</span>
+      <h1 id="publications-title" i18n>Revise e publique o site.</h1>
+      <p i18n>Confira a prévia antes de colocar as alterações no ar.</p>
     </div>
     <p-button label="Publicar rascunho" icon="pi pi-upload" [loading]="publicationService.mutating()"
       [disabled]="!draftService.etag() || draftService.dirty()" (onClick)="publish()" i18n-label></p-button>
@@ -22,11 +22,15 @@
   <section class="preview-panel" aria-labelledby="preview-title">
     <header>
       <div>
-        <span i18n>Prévia segura</span>
-        <h2 id="preview-title" i18n>Rascunho responsivo</h2>
+        <span i18n>Prévia</span>
+        <h2 id="preview-title" i18n>Veja como o site ficará</h2>
       </div>
-      <p-selectbutton [options]="viewports" optionLabel="label" optionValue="value"
-        [formControl]="viewportControl" aria-label="Largura da prévia" i18n-aria-label></p-selectbutton>
+      <div class="preview-viewports" aria-label="Tamanho da prévia" i18n-aria-label>
+        @for (viewport of viewports; track viewport.value) {
+          <button type="button" [class.active]="viewportControl.value === viewport.value"
+            (click)="viewportControl.setValue(viewport.value)">{{ viewport.label }}</button>
+        }
+      </div>
     </header>
 
     @if (draftService.draft(); as draft) {

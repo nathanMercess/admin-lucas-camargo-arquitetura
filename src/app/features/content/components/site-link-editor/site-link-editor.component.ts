@@ -24,7 +24,6 @@ export class SiteLinkEditorComponent {
     { label: $localize`:@@admin.link.newTab:Nova aba`, value: '_blank' },
   ];
   protected readonly linkForm = this.formBuilder.nonNullable.group({
-    id: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
     label: ['', [Validators.required, Validators.maxLength(100)]],
     href: ['', [Validators.required, safeHrefValidator]],
     ariaLabel: ['', Validators.maxLength(160)],
@@ -45,7 +44,6 @@ export class SiteLinkEditorComponent {
       this.isHydrating = true;
       this.hydratedLink = link;
       this.linkForm.setValue({
-        id: link.id,
         label: link.label,
         href: link.href,
         ariaLabel: link.ariaLabel ?? '',
@@ -62,7 +60,7 @@ export class SiteLinkEditorComponent {
 
     const value = this.linkForm.getRawValue();
     const link: SiteLink = {
-      id: value.id.trim(),
+      id: this.hydratedLink?.id ?? this.link().id,
       label: value.label.trim(),
       href: value.href.trim(),
       ...(value.ariaLabel.trim() ? { ariaLabel: value.ariaLabel.trim() } : {}),

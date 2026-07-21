@@ -1,30 +1,73 @@
 <section class="site-template-library" aria-labelledby="site-template-library-title">
   <header class="site-template-library-heading">
-    <span i18n>Biblioteca visual</span>
-    <h2 id="site-template-library-title" i18n>Escolha uma direção sem perder o conteúdo.</h2>
+    <span i18n>Modelos visuais</span>
+    <h2 id="site-template-library-title" i18n>Veja o resultado antes de escolher.</h2>
     <p i18n>
-      O template altera somente tokens visuais e proporções seguras. Textos, projetos, mídias, ordem e visibilidade
-      permanecem intactos no rascunho.
+      Selecione um modelo para ampliar a prévia. Nada é alterado até você confirmar, e o conteúdo do site permanece
+      intacto.
     </p>
   </header>
 
-  <div class="site-template-library-grid" role="list" aria-label="Templates disponíveis" i18n-aria-label>
-    @for (preset of presets; track preset.id) {
-      <article class="site-template-card" role="listitem" [attr.data-template-id]="preset.id">
-        <p-card styleClass="site-template-prime-card">
-          <ng-template #header>
-            <div class="site-template-preview" aria-hidden="true"
-              [style.--template-accent]="preset.theme.colors.accent"
-              [style.--template-ink]="preset.theme.colors.ink"
-              [style.--template-muted]="preset.theme.colors.surfaceMuted"
-              [style.--template-surface]="preset.theme.colors.surface">
-              <span class="site-template-preview-logo"></span>
-              <span class="site-template-preview-title"></span>
-              <span class="site-template-preview-copy"></span>
-              <span class="site-template-preview-media"></span>
-            </div>
-          </ng-template>
+  @if (selectedPreset(); as selected) {
+    <section class="site-template-stage" aria-live="polite">
+      <div class="site-template-stage-preview" [attr.data-template-id]="selected.id"
+        [style.--template-accent]="selected.theme.colors.accent"
+        [style.--template-ink]="selected.theme.colors.ink"
+        [style.--template-muted]="selected.theme.colors.surfaceMuted"
+        [style.--template-surface]="selected.theme.colors.surface">
+        <header>
+          <span class="site-template-stage-logo">LUCAS CAMARGO</span>
+          <span i18n>Projetos</span>
+          <span i18n>Sobre</span>
+          <span i18n>Contato</span>
+        </header>
+        <div class="site-template-stage-hero">
+          <div>
+            <small i18n>Arquitetura + construção</small>
+            <strong i18n>Espaços que permanecem.</strong>
+            <p i18n>Do primeiro traço à construção.</p>
+          </div>
+          <span class="site-template-stage-media"></span>
+        </div>
+      </div>
 
+      <footer class="site-template-stage-footer">
+        <div>
+          <span>{{ selected.bestFor }}</span>
+          <h3>{{ selected.name }}</h3>
+          <p>{{ selected.description }}</p>
+        </div>
+        <div class="site-template-stage-actions">
+          <p-button type="button" label="Personalizar este modelo" severity="secondary" [outlined]="true"
+            (onClick)="customizeSelected()" i18n-label></p-button>
+          @if (isActive(selected)) {
+            <p-button type="button" label="Modelo em uso" severity="secondary" [disabled]="true"
+              i18n-label></p-button>
+          } @else {
+            <p-button type="button" label="Usar este modelo" [ariaLabel]="applyAriaLabel(selected)"
+              (onClick)="apply(selected)" i18n-label></p-button>
+          }
+        </div>
+      </footer>
+    </section>
+  }
+
+  <div class="site-template-library-grid" role="list" aria-label="Modelos disponíveis" i18n-aria-label>
+    @for (preset of presets; track preset.id) {
+      <article class="site-template-card" role="listitem" [class.site-template-card--selected]="isSelected(preset)"
+        [attr.data-template-id]="preset.id">
+        <div class="site-template-preview" aria-hidden="true"
+          [style.--template-accent]="preset.theme.colors.accent"
+          [style.--template-ink]="preset.theme.colors.ink"
+          [style.--template-muted]="preset.theme.colors.surfaceMuted"
+          [style.--template-surface]="preset.theme.colors.surface">
+          <span class="site-template-preview-logo"></span>
+          <span class="site-template-preview-title"></span>
+          <span class="site-template-preview-copy"></span>
+          <span class="site-template-preview-media"></span>
+        </div>
+
+        <div class="site-template-card-body">
           <div class="site-template-card-heading">
             <div>
               <span>{{ preset.bestFor }}</span>
@@ -34,20 +77,25 @@
               <p-tag value="Em uso" severity="success" i18n-value></p-tag>
             }
           </div>
-
           <p>{{ preset.description }}</p>
-
-          <ng-template #footer>
-            @if (isActive(preset)) {
-              <p-button label="Template atual" severity="secondary" [outlined]="true" [disabled]="true"
-                i18n-label></p-button>
-            } @else {
-              <p-button label="Aplicar template" [ariaLabel]="applyAriaLabel(preset)" (onClick)="apply(preset)"
-                i18n-label></p-button>
-            }
-          </ng-template>
-        </p-card>
+          <p-button type="button" [label]="isSelected(preset) ? 'Prévia selecionada' : 'Ver prévia'"
+            severity="secondary" [outlined]="true" [disabled]="isSelected(preset)" (onClick)="select(preset)"
+            i18n-label></p-button>
+        </div>
       </article>
     }
   </div>
+
+  <aside class="site-template-custom-note">
+    <div>
+      <span i18n>Modelo personalizado</span>
+      <h3 i18n>Você pode criar uma direção visual própria.</h3>
+      <p i18n>
+        Comece pelo modelo mais próximo e ajuste cores, tipografia, margens e movimento no modo avançado. A estrutura,
+        a ordem e o conteúdo das seções também continuam editáveis sem código.
+      </p>
+    </div>
+    <p-button type="button" label="Criar a partir da prévia" (onClick)="customizeSelected()"
+      i18n-label></p-button>
+  </aside>
 </section>

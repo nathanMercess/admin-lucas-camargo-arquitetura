@@ -5,7 +5,6 @@ import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageModule } from 'primeng/message';
-import { SelectButtonModule } from 'primeng/selectbutton';
 import { TableModule } from 'primeng/table';
 
 import { PublicationsRoutingModule } from './publications-routing.module';
@@ -20,7 +19,6 @@ import { PublicationService } from './services/publication.service';
     ButtonModule,
     ConfirmDialogModule,
     MessageModule,
-    SelectButtonModule,
     TableModule,
     PublicationsRoutingModule,
   ],

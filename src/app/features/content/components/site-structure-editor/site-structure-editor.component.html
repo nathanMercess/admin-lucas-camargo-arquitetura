@@ -1,9 +1,9 @@
 <form class="structure-editor" [formGroup]="structureForm" (ngSubmit)="apply()">
   <header>
     <div>
-      <span i18n>Estrutura global</span>
-      <h2 i18n>Cabeçalho, navegação, textos da interface e rodapé.</h2>
-      <p i18n>Links aceitam somente âncoras, caminhos internos, HTTPS, e-mail ou telefone.</p>
+      <span i18n>Menu e rodapé</span>
+      <h2 i18n>Organize os links e as informações fixas do site.</h2>
+      <p i18n>Altere os textos e escolha para onde cada botão leva.</p>
     </div>
     <p-button type="submit" label="Aplicar ao rascunho" [disabled]="structureForm.pristine"
       i18n-label></p-button>
@@ -17,24 +17,31 @@
         <div class="field full"><span i18n>Arquivo</span><p-select [options]="mediaOptions()" optionLabel="id"
           optionValue="id" formControlName="assetId" [filter]="true" ariaLabel="Logo do cabeçalho"
           i18n-ariaLabel></p-select></div>
-        <label class="full"><span i18n>Texto alternativo</span><input pInputText formControlName="alt" /></label>
-        <div class="field toggle"><span i18n>Decorativa</span><p-toggleswitch formControlName="decorative"
-          ariaLabel="Logo decorativo" i18n-ariaLabel></p-toggleswitch></div>
-        <div class="field"><span i18n>Foco X</span><p-inputnumber formControlName="focalPointX" suffix=" %"
-          [min]="0" [max]="100" ariaLabel="Foco horizontal do logo" i18n-ariaLabel></p-inputnumber></div>
-        <div class="field"><span i18n>Foco Y</span><p-inputnumber formControlName="focalPointY" suffix=" %"
-          [min]="0" [max]="100" ariaLabel="Foco vertical do logo" i18n-ariaLabel></p-inputnumber></div>
-        <label class="full"><span i18n>Legenda</span><input pInputText formControlName="caption" /></label>
+        <label class="full"><span i18n>Descrição do logo</span><input pInputText formControlName="alt" /></label>
+        <details class="structure-advanced full">
+          <summary i18n>Ajustar enquadramento e acessibilidade</summary>
+          <div class="field-grid">
+            <div class="field toggle"><span i18n>Logo apenas decorativo</span><p-toggleswitch
+              formControlName="decorative" ariaLabel="Logo decorativo" i18n-ariaLabel></p-toggleswitch></div>
+            <div class="field"><span i18n>Posição horizontal</span><p-inputnumber formControlName="focalPointX"
+              suffix=" %" [min]="0" [max]="100" ariaLabel="Posição horizontal"
+              i18n-ariaLabel></p-inputnumber></div>
+            <div class="field"><span i18n>Posição vertical</span><p-inputnumber formControlName="focalPointY"
+              suffix=" %" [min]="0" [max]="100" ariaLabel="Posição vertical"
+              i18n-ariaLabel></p-inputnumber></div>
+            <label class="full"><span i18n>Legenda</span><input pInputText formControlName="caption" /></label>
+          </div>
+        </details>
       </div>
     </fieldset>
 
     <fieldset formGroupName="homeLink">
       <legend i18n>Link da marca</legend>
       <div class="field-grid">
-        <label><span>ID</span><input pInputText formControlName="id" /></label>
-        <label><span i18n>Rótulo</span><input pInputText formControlName="label" /></label>
-        <label class="full"><span i18n>Destino</span><input pInputText formControlName="href" /></label>
-        <label><span i18n>Rótulo acessível</span><input pInputText formControlName="ariaLabel" /></label>
+        <input type="hidden" formControlName="id" />
+        <label><span i18n>Texto</span><input pInputText formControlName="label" /></label>
+        <label class="full"><span i18n>Para onde leva</span><input pInputText formControlName="href" /></label>
+        <label><span i18n>Descrição para leitores de tela</span><input pInputText formControlName="ariaLabel" /></label>
         <div class="field"><span i18n>Abertura</span><p-select [options]="targetOptions" optionLabel="label"
           optionValue="value" formControlName="target" ariaLabel="Abertura do link da marca"
           i18n-ariaLabel></p-select></div>
@@ -44,10 +51,10 @@
     <fieldset formGroupName="primaryCta">
       <legend i18n>Chamada principal</legend>
       <div class="field-grid">
-        <label><span>ID</span><input pInputText formControlName="id" /></label>
-        <label><span i18n>Rótulo</span><input pInputText formControlName="label" /></label>
-        <label class="full"><span i18n>Destino</span><input pInputText formControlName="href" /></label>
-        <label><span i18n>Rótulo acessível</span><input pInputText formControlName="ariaLabel" /></label>
+        <input type="hidden" formControlName="id" />
+        <label><span i18n>Texto do botão</span><input pInputText formControlName="label" /></label>
+        <label class="full"><span i18n>Para onde leva</span><input pInputText formControlName="href" /></label>
+        <label><span i18n>Descrição para leitores de tela</span><input pInputText formControlName="ariaLabel" /></label>
         <div class="field"><span i18n>Abertura</span><p-select [options]="targetOptions" optionLabel="label"
           optionValue="value" formControlName="target" ariaLabel="Abertura da chamada principal"
           i18n-ariaLabel></p-select></div>
@@ -65,9 +72,9 @@
       <fieldset [formGroupName]="$index">
         <legend i18n>Item {{ $index + 1 }}</legend>
         <div class="field-grid field-grid--navigation">
-          <label><span>ID</span><input pInputText formControlName="id" /></label>
-          <label><span i18n>Rótulo</span><input pInputText formControlName="label" /></label>
-          <label><span i18n>Destino</span><input pInputText formControlName="href" /></label>
+          <input type="hidden" formControlName="id" />
+          <label><span i18n>Texto</span><input pInputText formControlName="label" /></label>
+          <label><span i18n>Para onde leva</span><input pInputText formControlName="href" /></label>
           <div class="inline-actions">
             <p-button type="button" icon="pi pi-arrow-up" severity="secondary" [text]="true"
               [disabled]="$first" ariaLabel="Mover para cima" (onClick)="moveNavigationItem($index, -1)"
@@ -83,8 +90,8 @@
     }
   </section>
 
-  <section class="structure-card" formGroupName="uiLabels" aria-labelledby="labels-config-title">
-    <header><span i18n>Acessibilidade</span><h3 id="labels-config-title" i18n>Textos da interface</h3></header>
+  <details class="structure-card structure-advanced" formGroupName="uiLabels">
+    <summary i18n>Textos de acessibilidade</summary>
     <div class="field-grid field-grid--three">
       <label><span i18n>Pular para conteúdo</span><input pInputText formControlName="skipToContent" /></label>
       <label><span i18n>Navegação principal</span><input pInputText formControlName="mainNavigation" /></label>
@@ -96,7 +103,7 @@
       <label><span i18n>Imagem de referência</span><input pInputText formControlName="referenceImage" /></label>
       <label><span i18n>Explorar categoria</span><input pInputText formControlName="exploreCategory" /></label>
     </div>
-  </section>
+  </details>
 
   <section class="structure-card" aria-labelledby="footer-config-title">
     <header><span i18n>Rodapé</span><h3 id="footer-config-title" i18n>Encerramento e links</h3></header>
@@ -106,14 +113,21 @@
         <div class="field full"><span i18n>Arquivo</span><p-select [options]="mediaOptions()" optionLabel="id"
           optionValue="id" formControlName="assetId" [filter]="true" ariaLabel="Logo do rodapé"
           i18n-ariaLabel></p-select></div>
-        <label class="full"><span i18n>Texto alternativo</span><input pInputText formControlName="alt" /></label>
-        <div class="field toggle"><span i18n>Decorativa</span><p-toggleswitch formControlName="decorative"
-          ariaLabel="Logo decorativo" i18n-ariaLabel></p-toggleswitch></div>
-        <div class="field"><span i18n>Foco X</span><p-inputnumber formControlName="focalPointX" suffix=" %"
-          [min]="0" [max]="100" ariaLabel="Foco horizontal do logo" i18n-ariaLabel></p-inputnumber></div>
-        <div class="field"><span i18n>Foco Y</span><p-inputnumber formControlName="focalPointY" suffix=" %"
-          [min]="0" [max]="100" ariaLabel="Foco vertical do logo" i18n-ariaLabel></p-inputnumber></div>
-        <label class="full"><span i18n>Legenda</span><input pInputText formControlName="caption" /></label>
+        <label class="full"><span i18n>Descrição do logo</span><input pInputText formControlName="alt" /></label>
+        <details class="structure-advanced full">
+          <summary i18n>Ajustar enquadramento e acessibilidade</summary>
+          <div class="field-grid">
+            <div class="field toggle"><span i18n>Logo apenas decorativo</span><p-toggleswitch
+              formControlName="decorative" ariaLabel="Logo decorativo" i18n-ariaLabel></p-toggleswitch></div>
+            <div class="field"><span i18n>Posição horizontal</span><p-inputnumber formControlName="focalPointX"
+              suffix=" %" [min]="0" [max]="100" ariaLabel="Posição horizontal"
+              i18n-ariaLabel></p-inputnumber></div>
+            <div class="field"><span i18n>Posição vertical</span><p-inputnumber formControlName="focalPointY"
+              suffix=" %" [min]="0" [max]="100" ariaLabel="Posição vertical"
+              i18n-ariaLabel></p-inputnumber></div>
+            <label class="full"><span i18n>Legenda</span><input pInputText formControlName="caption" /></label>
+          </div>
+        </details>
       </div>
     </fieldset>
 
@@ -130,9 +144,9 @@
       <legend i18n>Links</legend>
       @for (link of structureForm.controls.footerLinks.controls; track $index) {
         <div class="field-grid field-grid--navigation" [formGroupName]="$index">
-          <label><span>ID</span><input pInputText formControlName="id" /></label>
-          <label><span i18n>Rótulo</span><input pInputText formControlName="label" /></label>
-          <label><span i18n>Destino</span><input pInputText formControlName="href" /></label>
+          <input type="hidden" formControlName="id" />
+          <label><span i18n>Texto</span><input pInputText formControlName="label" /></label>
+          <label><span i18n>Para onde leva</span><input pInputText formControlName="href" /></label>
           <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
             ariaLabel="Remover link" (onClick)="removeFooterLink($index)" i18n-ariaLabel></p-button>
         </div>
@@ -145,11 +159,11 @@
       <legend i18n>Redes sociais</legend>
       @for (link of structureForm.controls.socialLinks.controls; track $index) {
         <div class="field-grid field-grid--social" [formGroupName]="$index">
-          <label><span>ID</span><input pInputText formControlName="id" /></label>
+          <input type="hidden" formControlName="id" />
           <label><span i18n>Rede</span><input pInputText formControlName="network" /></label>
-          <label><span i18n>Rótulo</span><input pInputText formControlName="label" /></label>
-          <label><span i18n>Destino HTTPS</span><input pInputText formControlName="href" /></label>
-          <label><span i18n>Ícone</span><input pInputText formControlName="icon" /></label>
+          <label><span i18n>Nome exibido</span><input pInputText formControlName="label" /></label>
+          <label><span i18n>Link do perfil</span><input pInputText formControlName="href" /></label>
+          <input type="hidden" formControlName="icon" />
           <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
             ariaLabel="Remover rede" (onClick)="removeSocialLink($index)" i18n-ariaLabel></p-button>
         </div>
@@ -161,10 +175,10 @@
     <fieldset formGroupName="backToTopLink">
       <legend i18n>Voltar ao topo</legend>
       <div class="field-grid">
-        <label><span>ID</span><input pInputText formControlName="id" /></label>
-        <label><span i18n>Rótulo</span><input pInputText formControlName="label" /></label>
-        <label class="full"><span i18n>Destino</span><input pInputText formControlName="href" /></label>
-        <label><span i18n>Rótulo acessível</span><input pInputText formControlName="ariaLabel" /></label>
+        <input type="hidden" formControlName="id" />
+        <label><span i18n>Texto</span><input pInputText formControlName="label" /></label>
+        <label class="full"><span i18n>Para onde leva</span><input pInputText formControlName="href" /></label>
+        <label><span i18n>Descrição para leitores de tela</span><input pInputText formControlName="ariaLabel" /></label>
         <div class="field"><span i18n>Abertura</span><p-select [options]="targetOptions" optionLabel="label"
           optionValue="value" formControlName="target" ariaLabel="Abertura do link de retorno"
           i18n-ariaLabel></p-select></div>

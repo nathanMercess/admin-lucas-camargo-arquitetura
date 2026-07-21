@@ -1,6 +1,12 @@
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
-import { FormBuilder, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  ElementRef,
+  effect,
+  input,
+  output,
+  viewChild,
+} from '@angular/core';
 import { RichTextBlock } from '@shared/models/rich-text-block.model';
 import { RichTextLine } from '@shared/models/rich-text-line.model';
 import { RichTextSegment } from '@shared/models/rich-text-segment.model';
@@ -13,105 +19,139 @@ import { RichTextSegment } from '@shared/models/rich-text-segment.model';
   standalone: false,
 })
 export class RichTextBlockEditorComponent {
-  private readonly formBuilder = inject(FormBuilder);
-  private isHydrating = false;
+  private readonly editor = viewChild<ElementRef<HTMLDivElement>>('editor');
   private hydratedBlock: RichTextBlock | null = null;
+
   public readonly label = input.required<string>();
   public readonly block = input.required<RichTextBlock>();
   public readonly blockChange = output<RichTextBlock>();
-  protected readonly richTextForm = this.formBuilder.nonNullable.group({
-    lines: this.formBuilder.array([this.createLineForm()]),
-  });
 
   public constructor() {
-    this.richTextForm.valueChanges
-      .pipe(takeUntilDestroyed())
-      .subscribe(() => this.emitChange());
-
     effect(() => {
       const block = this.block();
+      const editor = this.editor()?.nativeElement;
 
-      if (block === this.hydratedBlock)
+      if (!editor || block === this.hydratedBlock)
         return;
 
-      this.hydrate(block);
+      this.hydratedBlock = block;
+      this.render(block, editor);
     });
   }
 
-  protected addLine(): void {
-    this.richTextForm.controls.lines.push(this.createLineForm());
-  }
+  protected toggleEmphasis(): void {
+    const editor = this.editor()?.nativeElement;
+    const selection = editor?.ownerDocument.getSelection();
 
-  protected removeLine(index: number): void {
-    if (this.richTextForm.controls.lines.length === 1)
+    if (!editor || !selection?.anchorNode || !editor.contains(selection.anchorNode))
       return;
 
-    this.richTextForm.controls.lines.removeAt(index);
+    editor.ownerDocument.execCommand('bold');
+    this.emitEditorValue(editor);
   }
 
-  protected addSegment(lineIndex: number): void {
-    this.richTextForm.controls.lines.at(lineIndex).controls.segments.push(this.createSegmentForm());
+  protected handleInput(event: Event): void {
+    this.emitEditorValue(event.currentTarget as HTMLDivElement);
   }
 
-  protected removeSegment(lineIndex: number, segmentIndex: number): void {
-    const segments = this.richTextForm.controls.lines.at(lineIndex).controls.segments;
+  private emitEditorValue(editor: HTMLDivElement): void {
+    const block = this.parse(editor);
 
-    if (segments.length === 1)
+    if (block.lines.length === 0)
       return;
 
-    segments.removeAt(segmentIndex);
-  }
-
-  private hydrate(block: RichTextBlock): void {
-    this.isHydrating = true;
-    this.hydratedBlock = block;
-    const lines = this.richTextForm.controls.lines;
-    lines.clear({ emitEvent: false });
-    block.lines.forEach((line) => lines.push(this.createLineForm(line), { emitEvent: false }));
-
-    if (lines.length === 0)
-      lines.push(this.createLineForm(), { emitEvent: false });
-
-    this.richTextForm.markAsPristine();
-    this.isHydrating = false;
-  }
-
-  private emitChange(): void {
-    if (this.isHydrating || this.richTextForm.invalid)
-      return;
-
-    const value = this.richTextForm.getRawValue();
-    const block: RichTextBlock = {
-      lines: value.lines.map((line): RichTextLine => ({
-        segments: line.segments.map((segment): RichTextSegment => ({
-          text: segment.text,
-          emphasis: segment.emphasis,
-        })),
-      })),
-    };
     this.hydratedBlock = block;
     this.blockChange.emit(block);
   }
 
-  private createLineForm(line?: RichTextLine) {
-    const firstSegment = line?.segments[0];
-    const group = this.formBuilder.nonNullable.group({
-      segments: this.formBuilder.array([this.createSegmentForm(firstSegment)]),
-    });
+  private render(block: RichTextBlock, editor: HTMLDivElement): void {
+    const document = editor.ownerDocument;
+    const fragment = document.createDocumentFragment();
 
-    if (line && line.segments.length > 1)
-      line.segments.slice(1).forEach((segment) => group.controls.segments.push(
-        this.createSegmentForm(segment),
-        { emitEvent: false },
-      ));
+    for (const line of block.lines) {
+      const lineElement = document.createElement('div');
 
-    return group;
+      for (const segment of line.segments) {
+        const segmentElement = document.createElement(segment.emphasis ? 'strong' : 'span');
+        segmentElement.textContent = segment.text;
+        lineElement.append(segmentElement);
+      }
+
+      fragment.append(lineElement);
+    }
+
+    editor.replaceChildren(fragment);
   }
 
-  private createSegmentForm(segment?: RichTextSegment) {
-    return this.formBuilder.nonNullable.group({
-      text: [segment?.text ?? '', [Validators.required, Validators.maxLength(240)]],
-      emphasis: [segment?.emphasis ?? false],
-    });
+  private parse(editor: HTMLDivElement): RichTextBlock {
+    const lines: RichTextLine[] = [];
+    let segments: RichTextSegment[] = [];
+
+    const append = (text: string, emphasis: boolean): void => {
+      if (!text)
+        return;
+
+      const previous = segments.at(-1);
+
+      if (previous?.emphasis === emphasis) {
+        segments[segments.length - 1] = { ...previous, text: previous.text + text };
+        return;
+      }
+
+      segments.push({ text, emphasis });
+    };
+    const flush = (): void => {
+      const normalized = segments.flatMap((segment) => this.splitSegment(segment));
+
+      if (normalized.some((segment) => segment.text.length > 0))
+        lines.push({ segments: normalized });
+
+      segments = [];
+    };
+    const visit = (node: Node, emphasis = false): void => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        const parts = (node.textContent ?? '').split('\n');
+        parts.forEach((part, index) => {
+          append(part, emphasis);
+
+          if (index < parts.length - 1)
+            flush();
+        });
+        return;
+      }
+
+      if (!(node instanceof HTMLElement))
+        return;
+
+      if (node.tagName === 'BR') {
+        flush();
+        return;
+      }
+
+      const isBlock = node.tagName === 'DIV' || node.tagName === 'P';
+      const nextEmphasis = emphasis || node.tagName === 'B' || node.tagName === 'STRONG';
+
+      if (isBlock && segments.length > 0)
+        flush();
+
+      node.childNodes.forEach((child) => visit(child, nextEmphasis));
+
+      if (isBlock)
+        flush();
+    };
+
+    editor.childNodes.forEach((node) => visit(node));
+    flush();
+
+    return { lines };
+  }
+
+  private splitSegment(segment: RichTextSegment): RichTextSegment[] {
+    const chunks: RichTextSegment[] = [];
+
+    for (let index = 0; index < segment.text.length; index += 240)
+      chunks.push({ text: segment.text.slice(index, index + 240), emphasis: segment.emphasis });
+
+    return chunks;
   }
 }

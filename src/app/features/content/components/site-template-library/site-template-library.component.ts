@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
+import { SiteTemplateId } from '@shared/models/site-template-id.type';
 import { ThemeConfig } from '@shared/models/theme-config.model';
 
 import { SiteTemplatePreset } from '../../models/site-template-preset.model';
@@ -16,8 +17,15 @@ export class SiteTemplateLibraryComponent {
 
   public readonly currentTheme = input.required<ThemeConfig>();
   public readonly themeChange = output<ThemeConfig>();
+  public readonly customize = output<ThemeConfig>();
 
   protected readonly presets = this.catalog.presets;
+  protected readonly selectedPresetId = signal<SiteTemplateId | null>(null);
+  protected readonly selectedPreset = computed(() => {
+    const selectedId = this.selectedPresetId() ?? this.currentTheme().presetId;
+
+    return this.presets.find((preset) => preset.id === selectedId) ?? this.presets[0];
+  });
 
   protected isActive(preset: SiteTemplatePreset): boolean {
     const currentTheme = this.currentTheme();
@@ -32,11 +40,23 @@ export class SiteTemplateLibraryComponent {
     );
   }
 
+  protected isSelected(preset: SiteTemplatePreset): boolean {
+    return this.selectedPreset().id === preset.id;
+  }
+
+  protected select(preset: SiteTemplatePreset): void {
+    this.selectedPresetId.set(preset.id);
+  }
+
   protected apply(preset: SiteTemplatePreset): void {
     if (this.isActive(preset))
       return;
 
     this.themeChange.emit(structuredClone(preset.theme));
+  }
+
+  protected customizeSelected(): void {
+    this.customize.emit(structuredClone(this.selectedPreset().theme));
   }
 
   protected applyAriaLabel(preset: SiteTemplatePreset): string {

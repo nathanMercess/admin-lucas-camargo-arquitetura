@@ -8,7 +8,9 @@
 }
 
 .site-template-library-heading > span,
-.site-template-card-heading span {
+.site-template-card-heading span,
+.site-template-stage-footer span,
+.site-template-custom-note span {
   color: var(--admin-color-muted);
   font-family: var(--admin-font-mono);
   font-size: 10px;
@@ -37,35 +39,134 @@
   gap: 20px;
 }
 
-.site-template-card,
-.site-template-card p-card {
-  min-width: 0;
-  height: 100%;
-}
-
-:host ::ng-deep .site-template-prime-card {
-  display: grid;
-  height: 100%;
+.site-template-stage {
   overflow: hidden;
   border: 1px solid var(--admin-color-border);
-  border-radius: 0;
   background: var(--admin-color-surface);
-  box-shadow: none;
 }
 
-:host ::ng-deep .site-template-prime-card .p-card-body {
+.site-template-stage-preview {
+  min-height: clamp(300px, 42vw, 560px);
+  padding: clamp(20px, 4vw, 56px);
+  color: var(--template-ink);
+  background: var(--template-surface);
+}
+
+.site-template-stage-preview header {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 3vw, 40px);
+  padding-bottom: 22px;
+  border-bottom: 1px solid color-mix(in srgb, var(--template-ink) 20%, transparent);
+  font-family: var(--admin-font-mono);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.site-template-stage-logo {
+  margin-right: auto;
+  font-weight: 700;
+}
+
+.site-template-stage-hero {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 0.72fr);
+  gap: clamp(24px, 5vw, 72px);
+  align-items: end;
+  min-height: clamp(220px, 32vw, 410px);
+  padding-top: clamp(36px, 7vw, 96px);
+}
+
+.site-template-stage-hero div {
+  display: grid;
+  gap: 18px;
+}
+
+.site-template-stage-hero small {
+  color: var(--template-accent);
+  font-family: var(--admin-font-mono);
+  text-transform: uppercase;
+}
+
+.site-template-stage-hero strong {
+  max-width: 720px;
+  font-size: clamp(40px, 7vw, 92px);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.06em;
+}
+
+.site-template-stage-hero p {
+  margin: 0;
+  color: color-mix(in srgb, var(--template-ink) 65%, transparent);
+}
+
+.site-template-stage-media {
+  min-height: 260px;
+  background:
+    linear-gradient(145deg, transparent 46%, var(--template-accent) 47% 54%, transparent 55%),
+    var(--template-muted);
+}
+
+.site-template-stage-footer,
+.site-template-stage-actions,
+.site-template-custom-note {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.site-template-stage-footer {
+  padding: 24px;
+  border-top: 1px solid var(--admin-color-border);
+}
+
+.site-template-stage-footer h3,
+.site-template-custom-note h3 {
+  margin: 6px 0 0;
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.site-template-stage-footer p,
+.site-template-custom-note p {
+  max-width: 720px;
+  margin: 10px 0 0;
+  color: var(--admin-color-muted);
+  line-height: 1.55;
+}
+
+.site-template-stage-actions {
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.site-template-card {
+  min-width: 0;
   height: 100%;
+  display: grid;
+  overflow: hidden;
+  border: 1px solid var(--admin-color-border);
+  background: var(--admin-color-surface);
+}
+
+.site-template-card--selected {
+  border-color: var(--admin-color-coral);
+  box-shadow: inset 0 0 0 1px var(--admin-color-coral);
+}
+
+.site-template-card-body {
+  display: grid;
+  align-content: start;
+  gap: 18px;
   padding: 22px;
 }
 
-:host ::ng-deep .site-template-prime-card .p-card-content {
-  padding: 0;
-}
-
-:host ::ng-deep .site-template-prime-card .p-card-footer {
+.site-template-card-body p-button {
   align-self: end;
-  padding-top: 22px;
 }
 
 .site-template-card-heading {
@@ -83,9 +184,15 @@
 }
 
 .site-template-card p {
-  margin: 14px 0 0;
+  margin: 0;
   color: var(--admin-color-muted);
   line-height: 1.6;
+}
+
+.site-template-custom-note {
+  padding: clamp(24px, 4vw, 42px);
+  border: 1px solid var(--admin-color-border);
+  background: var(--admin-color-paper);
 }
 
 .site-template-preview {
@@ -177,6 +284,30 @@
 
   .site-template-preview {
     min-height: 190px;
+  }
+
+  .site-template-stage-footer,
+  .site-template-custom-note {
+    display: grid;
+  }
+}
+
+@media (width <= 650px) {
+  .site-template-stage-preview header span:not(.site-template-stage-logo) {
+    display: none;
+  }
+
+  .site-template-stage-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .site-template-stage-media {
+    min-height: 180px;
+  }
+
+  .site-template-stage-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 }
 

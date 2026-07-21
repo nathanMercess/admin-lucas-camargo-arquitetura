@@ -120,7 +120,33 @@ body {
   }
 
   [data-pc-name='tablist'] > [data-pc-section='content'] {
+    flex: 1;
+    min-width: 0;
     overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  [data-pc-name='tablist'] > [data-pc-section='content']::-webkit-scrollbar {
+    display: none;
+  }
+
+  [data-pc-name='tablist'] {
+    display: flex;
+    align-items: stretch;
+  }
+
+  [data-pc-name='tablist'] > button[data-pc-group-section='navigator'] {
+    display: grid;
+    flex: 0 0 42px;
+    width: 42px;
+    min-height: 46px;
+    padding: 0;
+    place-items: center;
+    border: 0;
+    border-left: 1px solid var(--admin-color-border);
+    color: var(--admin-color-ink);
+    background: var(--admin-color-surface);
+    cursor: pointer;
   }
 
   [data-pc-name='tablist'] [role='tablist'] {
@@ -153,6 +179,10 @@ body {
 
   [data-pc-name='tabpanels'] {
     padding-top: 18px;
+  }
+
+  [data-pc-name='tabpanel'][hidden] {
+    display: none;
   }
 
   [data-pc-name='datatable'] {
@@ -354,8 +384,46 @@ body {
 }
 
 body {
-  min-width: 320px;
+  min-width: 0;
   background: var(--admin-color-paper);
+}
+
+body [data-pc-name='select'][data-pc-section='root'],
+body [data-pc-name='multiselect'][data-pc-section='root'] {
+  position: relative;
+}
+
+body [data-pc-name='select'] > p-overlay[data-pc-section='host'],
+body [data-pc-name='multiselect'] > p-overlay[data-pc-section='host'] {
+  position: absolute;
+  z-index: 1300;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+}
+
+body [data-pc-name='select'] > p-overlay > [data-pc-name='pcoverlay'][data-pc-section='root'],
+body [data-pc-name='multiselect'] > p-overlay > [data-pc-name='pcoverlay'][data-pc-section='root'] {
+  position: relative !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100%;
+}
+
+body [data-pc-section='overlay'][data-p~='overlay-self'] {
+  z-index: 1300;
+  width: 100%;
+  max-width: min(420px, calc(100vw - 24px));
+  max-height: min(420px, calc(100vh - 24px));
+  overflow: hidden;
+  border: 1px solid var(--admin-color-border);
+  color: var(--admin-color-ink);
+  background: var(--admin-color-surface);
+}
+
+body [data-pc-section='listcontainer'] {
+  max-height: 320px;
+  overflow: auto;
 }
 
 button,
