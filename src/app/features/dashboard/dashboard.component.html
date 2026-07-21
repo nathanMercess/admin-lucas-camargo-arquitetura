@@ -2,83 +2,65 @@
   <header class="dashboard-heading">
     <div>
       <span i18n>Visão geral</span>
-      <h1 id="dashboard-title" i18n>Um site vivo, sem depender de deploy.</h1>
+      <h1 id="dashboard-title" i18n>O que precisa da sua atenção.</h1>
     </div>
     <p i18n>
-      O painel é a fonte de verdade para conteúdo, projetos, mídia, identidade, SEO e publicações.
-      Mudanças entram como rascunho, passam por validação e só então chegam ao público.
+      Acompanhe o estado editorial do site e vá direto às tarefas mais frequentes do painel.
     </p>
   </header>
 
-  <div class="dashboard-status-grid">
-    <p-card styleClass="dashboard-status-card">
-      <span class="dashboard-status-label" i18n>Site público</span>
-      <strong i18n>No ar</strong>
-      <p-tag value="Cloud Run" i18n-value></p-tag>
-    </p-card>
+  @if (draftService.error(); as errorMessage) {
+    <p-message [severity]="draftService.developmentFallback() ? 'warn' : 'error'"
+      [text]="errorMessage"></p-message>
+  }
 
-    <p-card styleClass="dashboard-status-card">
-      <span class="dashboard-status-label" i18n>Acesso humano</span>
-      <strong>1</strong>
-      <p-tag value="Somente proprietário" i18n-value></p-tag>
-    </p-card>
-
-    <p-card styleClass="dashboard-status-card">
-      <span class="dashboard-status-label" i18n>Instâncias mínimas</span>
-      <strong>0</strong>
-      <p-tag value="Escala a zero" i18n-value></p-tag>
-    </p-card>
-
-    <p-card styleClass="dashboard-status-card dashboard-status-card--accent">
-      <span class="dashboard-status-label" i18n>Orçamento Google</span>
-      <strong>R$ 20</strong>
-      <p-tag value="Alertas ativos" i18n-value></p-tag>
-    </p-card>
+  <div class="dashboard-status-grid" aria-label="Resumo do conteúdo" i18n-aria-label>
+    <article class="dashboard-status-card">
+      <span i18n>Rascunho</span>
+      <strong>{{ draftStatus() }}</strong>
+      <small i18n>Estado atual das alterações editoriais</small>
+    </article>
+    <article class="dashboard-status-card">
+      <span i18n>Projetos</span>
+      <strong>{{ projectCount() }}</strong>
+      <a routerLink="/projects" i18n>Gerenciar portfólio <span aria-hidden="true">→</span></a>
+    </article>
+    <article class="dashboard-status-card">
+      <span i18n>Mídias</span>
+      <strong>{{ mediaCount() }}</strong>
+      <a routerLink="/media" i18n>Abrir biblioteca <span aria-hidden="true">→</span></a>
+    </article>
+    <article class="dashboard-status-card dashboard-status-card--accent">
+      <span i18n>Seções visíveis</span>
+      <strong>{{ visibleSectionCount() }} / {{ totalSectionCount() }}</strong>
+      <a routerLink="/content" i18n>Revisar estrutura <span aria-hidden="true">→</span></a>
+    </article>
   </div>
 
   <div class="dashboard-work-grid">
     <article class="dashboard-panel">
-      <div class="dashboard-panel-heading">
-        <div>
-          <span i18n>Fundação dinâmica</span>
-          <h2 i18n>Conexão de produção</h2>
-        </div>
-        <strong>{{ implementationProgress }}%</strong>
-      </div>
-      <p-progressbar [value]="implementationProgress" [showValue]="false"></p-progressbar>
-      <p i18n>
-        Editor, validação, preview, histórico, R2, Worker CDN e painel protegido por IAP estão conectados e operacionais.
-      </p>
+      <span i18n>Próxima ação</span>
+      @if (draftService.error() && !draftService.draft()) {
+        <h2 i18n>Restabeleça a conexão com o conteúdo.</h2>
+        <p i18n>O painel não conseguiu carregar o rascunho. Tente novamente antes de editar ou publicar.</p>
+        <button type="button" (click)="draftService.load()" i18n>Tentar novamente</button>
+      } @else if (draftService.dirty()) {
+        <h2 i18n>Há alterações que ainda não foram salvas.</h2>
+        <p i18n>Revise o conteúdo pendente e salve o rascunho antes de criar uma publicação.</p>
+        <a class="dashboard-primary-action" routerLink="/content" i18n>Revisar rascunho</a>
+      } @else {
+        <h2 i18n>O conteúdo está pronto para evoluir.</h2>
+        <p i18n>Edite textos e estrutura, organize projetos ou prepare uma nova publicação.</p>
+        <a class="dashboard-primary-action" routerLink="/content" i18n>Editar conteúdo</a>
+      }
     </article>
 
-    <article class="dashboard-panel dashboard-panel--dark">
-      <span i18n>Princípio de publicação</span>
-      <blockquote i18n>
-        Nenhuma alteração destrói a anterior. Cada publicação vira uma versão imutável, pronta para rollback.
-      </blockquote>
-    </article>
+    <nav class="dashboard-panel dashboard-shortcuts" aria-label="Atalhos do painel" i18n-aria-label>
+      <span i18n>Atalhos</span>
+      <a routerLink="/projects"><strong i18n>Projetos</strong><small i18n>Ordem, categorias e visibilidade</small></a>
+      <a routerLink="/media"><strong i18n>Mídia</strong><small i18n>Arquivos e créditos</small></a>
+      <a routerLink="/publications"><strong i18n>Publicações</strong><small i18n>Histórico e restauração</small></a>
+      <a routerLink="/audit"><strong i18n>Auditoria</strong><small i18n>Últimas alterações</small></a>
+    </nav>
   </div>
-
-  <article class="dashboard-timeline">
-    <header>
-      <span i18n>Pipeline</span>
-      <h2 i18n>Da configuração até o site</h2>
-    </header>
-
-    <p-timeline [value]="steps">
-      <ng-template #marker let-step>
-        <span class="dashboard-timeline-marker" [class.dashboard-timeline-marker--complete]="step.state === 'complete'"
-          [class.dashboard-timeline-marker--current]="step.state === 'current'"></span>
-      </ng-template>
-      <ng-template #content let-step>
-        <div class="dashboard-timeline-content">
-          <div>
-            <h3>{{ step.title }}</h3>
-            <p>{{ step.description }}</p>
-          </div>
-          <p-tag [value]="step.status"></p-tag>
-        </div>
-      </ng-template>
-    </p-timeline>
-  </article>
 </section>
