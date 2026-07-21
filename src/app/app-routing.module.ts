@@ -5,7 +5,7 @@ const routes: Routes = [
   {
     path: '',
     loadChildren: () =>
-      import('./features/public-site/public-site.module').then((module) => module.PublicSiteModule),
+      import('./layout/admin-shell/admin-shell.module').then((module) => module.AdminShellModule),
   },
   {
     path: '**',

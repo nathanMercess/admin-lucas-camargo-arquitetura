@@ -7,7 +7,7 @@ Este arquivo é a fonte de verdade para implementação, revisão e manutenção
 - Organizar o código por feature e por responsabilidade.
 - Manter componentes focados em apresentação e interação.
 - Manter estado compartilhado, comunicação HTTP e persistência em services.
-- Colocar em `src/app/shared/models` os models compartilhados entre features, inclusive os contratos usados pelo site público e pelo painel administrativo.
+- Colocar em `src/app/shared/models` os models compartilhados entre as features do painel e os contratos de conteúdo enviados à API.
 - Manter models exclusivos de uma única feature dentro da própria feature.
 - Manter somente uma interface, type, enum ou classe de model por arquivo.
 - Usar arquivos e pastas em `kebab-case`.
