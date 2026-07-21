@@ -15,6 +15,8 @@ import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
+import { SharedModule } from '@shared/shared.module';
+
 import { ProjectsRoutingModule } from './projects-routing.module';
 import { ProjectsComponent } from './projects.component';
 
@@ -35,6 +37,7 @@ import { ProjectsComponent } from './projects.component';
     TagModule,
     TextareaModule,
     ToggleSwitchModule,
+    SharedModule,
     ProjectsRoutingModule,
   ],
   providers: [ConfirmationService],

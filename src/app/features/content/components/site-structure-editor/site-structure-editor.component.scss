@@ -104,6 +104,16 @@ label,
 
 .inline-actions {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.structure-empty {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed var(--admin-color-border);
+  background: var(--admin-color-surface, #f7f6f4);
+  text-align: center;
 }
 
 @media (width <= 840px) {

@@ -24,7 +24,8 @@
         <section class="projects-panel" aria-labelledby="projects-list-title">
           <header>
             <div><span i18n>Acervo</span><h2 id="projects-list-title" i18n>Projetos</h2></div>
-            <p-button label="Novo projeto" icon="pi pi-plus" (onClick)="openNewProject()" i18n-label></p-button>
+            <p-button label="Novo projeto" icon="pi pi-plus" [disabled]="draftService.saving()"
+              (onClick)="openNewProject()" i18n-label></p-button>
           </header>
           <p-table [value]="projectRows()" [loading]="draftService.loading()" dataKey="id"
             [paginator]="true" [rows]="10" (onRowReorder)="handleProjectReorder()"
@@ -44,11 +45,12 @@
                   [severity]="project.visible ? 'success' : 'secondary'"></p-tag></td>
                 <td class="row-actions">
                   <p-button [label]="project.visible ? 'Ocultar' : 'Exibir'" severity="secondary" [text]="true"
-                    (onClick)="toggleProjectVisibility(project)"></p-button>
+                    [disabled]="draftService.saving()" (onClick)="toggleProjectVisibility(project)"></p-button>
                   <p-button label="Editar" severity="secondary" [outlined]="true"
-                    (onClick)="editProject(project)" i18n-label></p-button>
+                    [disabled]="draftService.saving()" (onClick)="editProject(project)" i18n-label></p-button>
                   <p-button label="Excluir" severity="danger" [text]="true"
-                    (onClick)="requestDeleteProject(project)" i18n-label></p-button>
+                    [disabled]="draftService.saving()" (onClick)="requestDeleteProject(project)"
+                    i18n-label></p-button>
                 </td>
               </tr>
             </ng-template>
@@ -61,7 +63,8 @@
         <section class="projects-panel" aria-labelledby="categories-title">
           <header>
             <div><span i18n>Navegação</span><h2 id="categories-title" i18n>Categorias</h2></div>
-            <p-button label="Nova categoria" icon="pi pi-plus" (onClick)="openNewCategory()" i18n-label></p-button>
+            <p-button label="Nova categoria" icon="pi pi-plus" [disabled]="draftService.saving()"
+              (onClick)="openNewCategory()" i18n-label></p-button>
           </header>
           <p-table [value]="categoryRows()" dataKey="id" (onRowReorder)="handleCategoryReorder()">
             <ng-template #header>
@@ -74,11 +77,13 @@
                 <td><strong>{{ category.title }}</strong><small>{{ category.description }}</small></td>
                 <td class="row-actions">
                   <p-button [label]="categoryVisible(category.id) ? 'Ocultar' : 'Exibir'" severity="secondary"
-                    [text]="true" (onClick)="toggleCategoryVisibility(category.id)"></p-button>
+                    [text]="true" [disabled]="draftService.saving()"
+                    (onClick)="toggleCategoryVisibility(category.id)"></p-button>
                   <p-button label="Editar" severity="secondary" [outlined]="true"
-                    (onClick)="editCategory(category)" i18n-label></p-button>
+                    [disabled]="draftService.saving()" (onClick)="editCategory(category)" i18n-label></p-button>
                   <p-button label="Excluir" severity="danger" [text]="true"
-                    (onClick)="requestDeleteCategory(category)" i18n-label></p-button>
+                    [disabled]="draftService.saving()" (onClick)="requestDeleteCategory(category)"
+                    i18n-label></p-button>
                 </td>
               </tr>
             </ng-template>
@@ -88,17 +93,30 @@
     </p-tabpanels>
   </p-tabs>
 
-  <p-drawer [visible]="projectDrawerVisible()" (visibleChange)="projectDrawerVisible.set($event)"
-    position="right" [modal]="true" [style]="{ width: 'min(760px, 96vw)' }" header="Editar projeto"
-    i18n-header>
-    <form class="drawer-form" [formGroup]="projectForm" (ngSubmit)="saveProject()">
+  <p-drawer [visible]="projectDrawerVisible()" (visibleChange)="handleProjectDrawerVisibleChange($event)"
+    (onShow)="focusProjectTitle()" position="right" [modal]="true" [blockScroll]="true"
+    [dismissible]="!projectSubmissionPending()" [closeOnEscape]="!projectSubmissionPending()"
+    [showCloseIcon]="!projectSubmissionPending()" [style]="{ width: 'min(760px, 100vw)' }"
+    [header]="projectDrawerTitle()" ariaCloseLabel="Cancelar edição do projeto" i18n-ariaCloseLabel>
+    <form class="drawer-form" [formGroup]="projectForm" [attr.aria-busy]="projectSubmissionPending()"
+      (ngSubmit)="saveProject()">
+      <p class="drawer-intro">{{ projectDrawerDescription() }}</p>
+      @if (draftService.error(); as errorMessage) {
+        <p-message [severity]="draftService.developmentFallback() ? 'warn' : 'error'"
+          [text]="errorMessage"></p-message>
+      }
       <section class="form-section">
         <h3 i18n>Informações principais</h3>
         <div class="form-grid">
           <input type="hidden" formControlName="id" />
           <input type="hidden" formControlName="slug" />
-          <label class="full"><span i18n>Título</span><input pInputText formControlName="title"
-            (input)="synchronizeProjectTitle()" /></label>
+          <label class="full"><span i18n>Título</span><input #projectTitleInput pInputText formControlName="title"
+            [attr.aria-invalid]="projectForm.controls.title.invalid && projectForm.controls.title.touched"
+            (input)="synchronizeProjectTitle()" />
+            @if (projectForm.controls.title.invalid && projectForm.controls.title.touched) {
+              <small class="field-error" i18n>Informe um título com até 120 caracteres.</small>
+            }
+          </label>
           <label class="full"><span i18n>Resumo</span><textarea pTextarea formControlName="summary" rows="3"></textarea></label>
           <label class="full"><span i18n>Sobre o projeto</span>
             <textarea pTextarea formControlName="description" rows="6"></textarea></label>
@@ -125,9 +143,10 @@
       <section class="form-section" formGroupName="cover">
         <h3 i18n>Imagem de capa</h3>
         <div class="form-grid">
-          <div class="field full"><span i18n>Imagem</span><p-select [options]="mediaOptions()"
-            optionLabel="id" optionValue="id" formControlName="assetId" [filter]="true"
-            ariaLabel="Imagem de capa" i18n-ariaLabel></p-select></div>
+          <app-media-asset-picker class="full" label="Imagem" [assets]="mediaOptions()"
+            [value]="projectForm.controls.cover.controls.assetId.value" provenance="project"
+            (valueChange)="projectForm.controls.cover.controls.assetId.setValue($event)"
+            (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
           <label class="full"><span i18n>Descrição da imagem</span><input pInputText formControlName="alt" /></label>
           <label class="full"><span i18n>Legenda</span><input pInputText formControlName="caption" /></label>
           <details class="form-section--advanced full">
@@ -153,9 +172,10 @@
           <fieldset [formGroupName]="$index">
             <legend i18n>Imagem {{ $index + 1 }}</legend>
             <div class="form-grid">
-              <div class="field full"><span i18n>Imagem</span><p-select [options]="mediaOptions()"
-                optionLabel="id" optionValue="id" formControlName="assetId" [filter]="true"
-                ariaLabel="Imagem da galeria" i18n-ariaLabel></p-select></div>
+              <app-media-asset-picker class="full" label="Imagem" [assets]="mediaOptions()"
+                [value]="reference.controls.assetId.value" provenance="project"
+                (valueChange)="reference.controls.assetId.setValue($event)"
+                (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
               <label class="full"><span i18n>Descrição da imagem</span><input pInputText formControlName="alt" /></label>
               <label class="full"><span i18n>Legenda</span><input pInputText formControlName="caption" /></label>
               <details class="form-section--advanced full">
@@ -186,9 +206,10 @@
           <label class="full"><span i18n>Descrição</span><textarea pTextarea formControlName="description"
             rows="3" maxlength="170"></textarea></label>
           <input type="hidden" formControlName="canonicalPath" />
-          <div class="field full"><span i18n>Imagem social</span><p-select [options]="mediaOptions()"
-            optionLabel="id" optionValue="id" formControlName="imageMediaId" [filter]="true"
-            ariaLabel="Imagem social" i18n-ariaLabel></p-select></div>
+          <app-media-asset-picker class="full" label="Imagem social" [assets]="mediaOptions()"
+            [value]="projectForm.controls.seo.controls.imageMediaId.value" provenance="project"
+            (valueChange)="projectForm.controls.seo.controls.imageMediaId.setValue($event)"
+            (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
           <div class="field toggle"><span i18n>Não indexar</span><p-toggleswitch formControlName="noIndex"
             ariaLabel="Não indexar projeto" i18n-ariaLabel></p-toggleswitch></div>
         </div>
@@ -199,37 +220,58 @@
       }
       <footer class="drawer-actions">
         <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true"
-          (onClick)="projectDrawerVisible.set(false)" i18n-label></p-button>
-        <p-button type="submit" label="Salvar projeto" [loading]="draftService.saving()" i18n-label></p-button>
+          [disabled]="projectSubmissionPending()" (onClick)="handleProjectDrawerVisibleChange(false)"
+          i18n-label></p-button>
+        <p-button type="submit" [label]="projectSubmitLabel()" [loading]="projectSubmissionPending()"
+          [disabled]="projectSubmissionPending()" i18n-label></p-button>
       </footer>
     </form>
   </p-drawer>
 
-  <p-drawer [visible]="categoryDrawerVisible()" (visibleChange)="categoryDrawerVisible.set($event)"
-    position="right" [modal]="true" [style]="{ width: 'min(560px, 96vw)' }" header="Editar categoria"
-    i18n-header>
-    <form class="drawer-form" [formGroup]="categoryForm" (ngSubmit)="saveCategory()">
+  <p-drawer [visible]="categoryDrawerVisible()" (visibleChange)="handleCategoryDrawerVisibleChange($event)"
+    (onShow)="focusCategoryTitle()" position="right" [modal]="true" [blockScroll]="true"
+    [dismissible]="!categorySubmissionPending()" [closeOnEscape]="!categorySubmissionPending()"
+    [showCloseIcon]="!categorySubmissionPending()" [style]="{ width: 'min(560px, 100vw)' }"
+    [header]="categoryDrawerTitle()" ariaCloseLabel="Cancelar edição da categoria" i18n-ariaCloseLabel>
+    <form class="drawer-form" [formGroup]="categoryForm" [attr.aria-busy]="categorySubmissionPending()"
+      (ngSubmit)="saveCategory()">
+      <p class="drawer-intro">{{ categoryDrawerDescription() }}</p>
+      @if (draftService.error(); as errorMessage) {
+        <p-message [severity]="draftService.developmentFallback() ? 'warn' : 'error'"
+          [text]="errorMessage"></p-message>
+      }
       <div class="form-grid">
         <input type="hidden" formControlName="id" />
         <input type="hidden" formControlName="index" />
-        <label class="full"><span i18n>Título</span><input pInputText formControlName="title" /></label>
+        <label class="full"><span i18n>Título</span><input #categoryTitleInput pInputText
+          formControlName="title"
+          [attr.aria-invalid]="categoryForm.controls.title.invalid && categoryForm.controls.title.touched" />
+          @if (categoryForm.controls.title.invalid && categoryForm.controls.title.touched) {
+            <small class="field-error" i18n>Informe um título com até 80 caracteres.</small>
+          }
+        </label>
         <label class="full"><span i18n>Descrição</span><textarea pTextarea formControlName="description"
           rows="4"></textarea></label>
         <div class="field full"><span i18n>Estilo da categoria</span><p-select
           [options]="approvedVisualClasses" optionLabel="label" optionValue="value" formControlName="visualClass"
           ariaLabel="Estilo da categoria" i18n-ariaLabel></p-select></div>
-        <div class="field full"><span i18n>Imagem de capa (opcional)</span><p-select
-          [options]="mediaOptions()" optionLabel="id" optionValue="id"
-          formControlName="coverMediaId" [showClear]="true" [filter]="true" ariaLabel="Capa da categoria"
-          i18n-ariaLabel></p-select></div>
+        <app-media-asset-picker class="full" label="Imagem de capa (opcional)" [assets]="mediaOptions()"
+          [value]="categoryForm.controls.coverMediaId.value" provenance="project" [optional]="true"
+          (valueChange)="categoryForm.controls.coverMediaId.setValue($event)"
+          (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
       </div>
       <footer class="drawer-actions">
         <p-button type="button" label="Cancelar" severity="secondary" [outlined]="true"
-          (onClick)="categoryDrawerVisible.set(false)" i18n-label></p-button>
-        <p-button type="submit" label="Salvar categoria" [loading]="draftService.saving()" i18n-label></p-button>
+          [disabled]="categorySubmissionPending()" (onClick)="handleCategoryDrawerVisibleChange(false)"
+          i18n-label></p-button>
+        <p-button type="submit" [label]="categorySubmitLabel()" [loading]="categorySubmissionPending()"
+          [disabled]="categorySubmissionPending()" i18n-label></p-button>
       </footer>
     </form>
   </p-drawer>
 
-  <p-confirmdialog></p-confirmdialog>
+  <p-confirmdialog key="project-actions" [blockScroll]="true" [closeOnEscape]="true"
+    [dismissableMask]="true" [focusTrap]="true" defaultFocus="reject"
+    [style]="{ width: 'min(32rem, calc(100vw - 32px))' }"
+    [breakpoints]="{ '430px': 'calc(100vw - 24px)' }"></p-confirmdialog>
 </section>

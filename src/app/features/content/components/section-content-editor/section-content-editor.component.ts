@@ -2,6 +2,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ContactChannel } from '@shared/models/contact-channel.model';
+import { MediaAsset } from '@shared/models/media-asset.model';
 import { MediaReference } from '@shared/models/media-reference.model';
 import { Metric } from '@shared/models/metric.model';
 import { PracticeArea } from '@shared/models/practice-area.model';
@@ -10,8 +11,13 @@ import { RichTextBlock } from '@shared/models/rich-text-block.model';
 import { SiteConfigV1 } from '@shared/models/site-config-v1.model';
 import { SiteLink } from '@shared/models/site-link.model';
 import { SiteSection } from '@shared/models/site-section.model';
+import { ConfirmationService } from 'primeng/api';
 
+import { FormArrayEditorService } from '../../services/form-array-editor.service';
+import { SiteSectionRegistryService } from '../../services/site-section-registry.service';
 import { safeOptionalHrefValidator } from '../../validators/safe-href.validator';
+
+type SectionCollection = 'practiceAreas' | 'metrics' | 'steps' | 'channels';
 
 @Component({
   selector: 'app-section-content-editor',
@@ -21,13 +27,17 @@ import { safeOptionalHrefValidator } from '../../validators/safe-href.validator'
   standalone: false,
 })
 export class SectionContentEditorComponent {
+  private readonly arrayEditor = inject(FormArrayEditorService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly formBuilder = inject(FormBuilder);
+  private readonly sectionRegistry = inject(SiteSectionRegistryService);
   private isHydrating = false;
   private hydratedSection: SiteSection | null = null;
   public readonly section = input.required<SiteSection>();
   public readonly config = input.required<SiteConfigV1>();
   public readonly expanded = input(false);
   public readonly sectionChange = output<SiteSection>();
+  public readonly assetUploaded = output<MediaAsset>();
   protected readonly categoryOptions = computed(() => [...this.config().portfolioCategories]);
   protected readonly rotationIntervalOptions = [
     { label: $localize`:@@admin.section.rotation.fiveSeconds:A cada 5 segundos`, value: 5000 },
@@ -72,18 +82,7 @@ export class SectionContentEditorComponent {
   }
 
   protected sectionLabel(section: SiteSection): string {
-    const labels: Record<SiteSection['type'], string> = {
-      hero: $localize`:@@admin.section.hero:Abertura`,
-      manifesto: $localize`:@@admin.section.manifesto:Manifesto`,
-      practice: $localize`:@@admin.section.practice:Atuação`,
-      portfolio: $localize`:@@admin.section.portfolio:Portfólio`,
-      metrics: $localize`:@@admin.section.metrics:Indicadores`,
-      about: $localize`:@@admin.section.about:Sobre`,
-      process: $localize`:@@admin.section.process:Processo`,
-      contact: $localize`:@@admin.section.contact:Contato`,
-    };
-
-    return labels[section.type];
+    return this.sectionRegistry.label(section.type);
   }
 
   protected updateTitle(title: RichTextBlock): void {
@@ -164,7 +163,7 @@ export class SectionContentEditorComponent {
   }
 
   protected removePracticeArea(index: number): void {
-    this.sectionForm.controls.practiceAreas.removeAt(index);
+    this.requestCollectionRemoval('practiceAreas', index, $localize`:@@admin.section.areaItem:área de atuação`);
   }
 
   protected addMetric(): void {
@@ -172,7 +171,7 @@ export class SectionContentEditorComponent {
   }
 
   protected removeMetric(index: number): void {
-    this.sectionForm.controls.metrics.removeAt(index);
+    this.requestCollectionRemoval('metrics', index, $localize`:@@admin.section.metricItem:indicador`);
   }
 
   protected addStep(): void {
@@ -180,7 +179,7 @@ export class SectionContentEditorComponent {
   }
 
   protected removeStep(index: number): void {
-    this.sectionForm.controls.steps.removeAt(index);
+    this.requestCollectionRemoval('steps', index, $localize`:@@admin.section.stepItem:etapa`);
   }
 
   protected addChannel(): void {
@@ -188,7 +187,53 @@ export class SectionContentEditorComponent {
   }
 
   protected removeChannel(index: number): void {
-    this.sectionForm.controls.channels.removeAt(index);
+    this.requestCollectionRemoval('channels', index, $localize`:@@admin.section.channelItem:canal de contato`);
+  }
+
+  protected moveCollectionItem(collection: SectionCollection, index: number, offset: -1 | 1): void {
+    switch (collection) {
+      case 'practiceAreas':
+        this.arrayEditor.move(this.sectionForm.controls.practiceAreas, index, offset);
+        return;
+      case 'metrics':
+        this.arrayEditor.move(this.sectionForm.controls.metrics, index, offset);
+        return;
+      case 'steps':
+        this.arrayEditor.move(this.sectionForm.controls.steps, index, offset);
+        return;
+      case 'channels':
+        this.arrayEditor.move(this.sectionForm.controls.channels, index, offset);
+        return;
+    }
+  }
+
+  protected duplicateCollectionItem(collection: SectionCollection, index: number): void {
+    switch (collection) {
+      case 'practiceAreas': {
+        const item = this.sectionForm.controls.practiceAreas.at(index)?.getRawValue();
+        if (item)
+          this.sectionForm.controls.practiceAreas.insert(index + 1, this.createPracticeAreaForm({ ...item, id: this.copyId(item.id) }));
+        return;
+      }
+      case 'metrics': {
+        const item = this.sectionForm.controls.metrics.at(index)?.getRawValue();
+        if (item)
+          this.sectionForm.controls.metrics.insert(index + 1, this.createMetricForm({ ...item, id: this.copyId(item.id) }));
+        return;
+      }
+      case 'steps': {
+        const item = this.sectionForm.controls.steps.at(index)?.getRawValue();
+        if (item)
+          this.sectionForm.controls.steps.insert(index + 1, this.createStepForm({ ...item, id: this.copyId(item.id) }));
+        return;
+      }
+      case 'channels': {
+        const item = this.sectionForm.controls.channels.at(index)?.getRawValue();
+        if (item)
+          this.sectionForm.controls.channels.insert(index + 1, this.createChannelForm({ ...item, id: this.copyId(item.id) }));
+        return;
+      }
+    }
   }
 
   private hydrate(section: SiteSection): void {
@@ -305,6 +350,37 @@ export class SectionContentEditorComponent {
   private emit(section: SiteSection): void {
     this.hydratedSection = section;
     this.sectionChange.emit(section);
+  }
+
+  private requestCollectionRemoval(collection: SectionCollection, index: number, label: string): void {
+    this.confirmationService.confirm({
+      header: $localize`:@@admin.section.removeItemTitle:Excluir ${label}:itemLabel:?`,
+      message: $localize`:@@admin.section.removeItemMessage:O item será removido desta seção do rascunho.`,
+      acceptLabel: $localize`:@@admin.section.removeItemAccept:Excluir item`,
+      rejectLabel: $localize`:@@admin.section.removeItemReject:Cancelar`,
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        switch (collection) {
+          case 'practiceAreas':
+            this.arrayEditor.remove(this.sectionForm.controls.practiceAreas, index);
+            return;
+          case 'metrics':
+            this.arrayEditor.remove(this.sectionForm.controls.metrics, index);
+            return;
+          case 'steps':
+            this.arrayEditor.remove(this.sectionForm.controls.steps, index);
+            return;
+          case 'channels':
+            this.arrayEditor.remove(this.sectionForm.controls.channels, index);
+            return;
+        }
+      },
+    });
+  }
+
+  private copyId(id: string): string {
+    const base = id.trim().replace(/-copy-[a-f0-9]{6}$/i, '') || 'item';
+    return `${base}-copy-${crypto.randomUUID().slice(0, 6)}`;
   }
 
   private replacePracticeAreas(items: readonly PracticeArea[]): void {

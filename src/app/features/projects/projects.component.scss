@@ -160,6 +160,26 @@ legend {
   background: #fff;
 }
 
+.drawer-form {
+  max-height: calc(100dvh - 82px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 2px max(8px, env(safe-area-inset-bottom));
+}
+
+.drawer-intro {
+  margin: 0;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--admin-color-border);
+  line-height: 1.5;
+}
+
+.field-error {
+  color: var(--admin-color-danger, #a62535);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 @media (width <= 680px) {
   .projects-heading,
   .projects-panel > header {
@@ -173,5 +193,16 @@ legend {
 
   .form-grid .full {
     grid-column: auto;
+  }
+
+  .drawer-form {
+    gap: 18px;
+    max-height: calc(100dvh - 72px);
+  }
+
+  .drawer-actions {
+    align-items: stretch;
+    flex-direction: column-reverse;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
   }
 }

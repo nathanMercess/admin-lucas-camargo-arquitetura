@@ -1,6 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { DEFAULT_SITE_CONFIG } from '@shared/config/default-site-config';
 import { ThemeConfig } from '@shared/models/theme-config.model';
 
@@ -142,5 +143,73 @@ describe('ContentEditorComponent', () => {
     expect(updatedDraft.projects).toEqual(originalDraft.projects);
     expect(updatedDraft.media).toEqual(originalDraft.media);
     expect(draftService.dirty()).toBe(true);
+  });
+
+  it('lists every real page route with its status and responsible admin area', () => {
+    const rootElement = fixture.nativeElement as HTMLElement;
+    const cards = rootElement.querySelectorAll<HTMLElement>('.content-editor-page-card');
+
+    expect([...cards].map((card) => card.dataset['pageId'])).toEqual([
+      'site-home-page',
+      'portfolio-index-page',
+      'portfolio-category-template',
+      'portfolio-project-template',
+      'portfolio-category-data:projects',
+      'portfolio-category-data:construction-work',
+      'not-found-page',
+    ]);
+    expect(rootElement.textContent).toContain('/portfolio/categoria/projects');
+    expect(rootElement.textContent).toContain('Conteúdo e editor visual');
+    expect(rootElement.textContent).toContain('Projetos e categorias');
+    expect(rootElement.textContent).toContain('Aguardando conteúdo');
+    expect(rootElement.textContent).toContain('Template compartilhado');
+    expect(rootElement.textContent).toContain('Fallback 404');
+    expect(rootElement.textContent).toContain('Não há páginas legais publicadas');
+    expect(rootElement.querySelector<HTMLAnchorElement>(
+      '[data-page-id="portfolio-category-data:projects"] a',
+    )?.href).toBe('https://lucascamargo.com/portfolio/categoria/projects');
+  });
+
+  it('prioritizes the visual editor and texts while distinguishing ready styles', () => {
+    const rootElement = fixture.nativeElement as HTMLElement;
+    const tabs = [...rootElement.querySelectorAll<HTMLElement>('[role="tab"]')]
+      .map((tab) => tab.textContent?.trim());
+
+    expect(tabs).toEqual([
+      'Editor visual',
+      'Textos e seções',
+      'Marca e logos',
+      'Menu e rodapé',
+      'Estilos prontos',
+      'Aparência avançada',
+      'Google e compartilhamento',
+    ]);
+    expect(tabs).not.toContain('Modelos visuais');
+  });
+
+  it('opens the visual editor only for the page managed by the content document', () => {
+    const rootElement = fixture.nativeElement as HTMLElement;
+    const homeCard = rootElement.querySelector<HTMLElement>(
+      '[data-page-id="site-home-page"]',
+    );
+
+    homeCard?.querySelector<HTMLButtonElement>('button')?.click();
+    fixture.detectChanges();
+
+    expect(rootElement.querySelector('.content-editor--visual-mode')).not.toBeNull();
+    expect(rootElement.querySelector('app-visual-page-builder')).not.toBeNull();
+  });
+
+  it('takes portfolio-derived pages to their real administration area', () => {
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const rootElement = fixture.nativeElement as HTMLElement;
+    const categoryCard = rootElement.querySelector<HTMLElement>(
+      '[data-page-id="portfolio-category-data:projects"]',
+    );
+
+    categoryCard?.querySelector<HTMLButtonElement>('button')?.click();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/projects']);
   });
 });

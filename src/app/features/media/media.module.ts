@@ -7,7 +7,6 @@ import { TagModule } from 'primeng/tag';
 
 import { MediaRoutingModule } from './media-routing.module';
 import { MediaComponent } from './media.component';
-import { MediaLibraryService } from './services/media-library.service';
 
 @NgModule({
   declarations: [MediaComponent],
@@ -19,6 +18,5 @@ import { MediaLibraryService } from './services/media-library.service';
     TagModule,
     MediaRoutingModule,
   ],
-  providers: [MediaLibraryService],
 })
 export class MediaModule {}

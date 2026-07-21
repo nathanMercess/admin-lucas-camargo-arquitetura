@@ -14,9 +14,10 @@
     <fieldset formGroupName="headerLogo">
       <legend i18n>Logo</legend>
       <div class="field-grid">
-        <div class="field full"><span i18n>Arquivo</span><p-select [options]="mediaOptions()" optionLabel="id"
-          optionValue="id" formControlName="assetId" [filter]="true" ariaLabel="Logo do cabeçalho"
-          i18n-ariaLabel></p-select></div>
+        <app-media-asset-picker class="full" label="Imagem do logo" [assets]="config().media"
+          [value]="structureForm.controls.headerLogo.controls.assetId.value" provenance="brand"
+          (valueChange)="structureForm.controls.headerLogo.controls.assetId.setValue($event)"
+          (assetUploaded)="assetUploaded.emit($event)" i18n-label></app-media-asset-picker>
         <label class="full"><span i18n>Descrição do logo</span><input pInputText formControlName="alt" /></label>
         <details class="structure-advanced full">
           <summary i18n>Ajustar enquadramento e acessibilidade</summary>
@@ -82,11 +83,16 @@
             <p-button type="button" icon="pi pi-arrow-down" severity="secondary" [text]="true"
               [disabled]="$last" ariaLabel="Mover para baixo" (onClick)="moveNavigationItem($index, 1)"
               i18n-ariaLabel></p-button>
+            <p-button type="button" icon="pi pi-copy" severity="secondary" [text]="true"
+              ariaLabel="Duplicar item" (onClick)="duplicateNavigationItem($index)"
+              i18n-ariaLabel></p-button>
             <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
               ariaLabel="Remover item" (onClick)="removeNavigationItem($index)" i18n-ariaLabel></p-button>
           </div>
         </div>
       </fieldset>
+    } @empty {
+      <p class="structure-empty" i18n>Nenhum item no menu. Adicione o primeiro item de navegação.</p>
     }
   </section>
 
@@ -110,9 +116,10 @@
     <fieldset formGroupName="footerLogo">
       <legend i18n>Logo</legend>
       <div class="field-grid">
-        <div class="field full"><span i18n>Arquivo</span><p-select [options]="mediaOptions()" optionLabel="id"
-          optionValue="id" formControlName="assetId" [filter]="true" ariaLabel="Logo do rodapé"
-          i18n-ariaLabel></p-select></div>
+        <app-media-asset-picker class="full" label="Imagem do logo" [assets]="config().media"
+          [value]="structureForm.controls.footerLogo.controls.assetId.value" provenance="brand"
+          (valueChange)="structureForm.controls.footerLogo.controls.assetId.setValue($event)"
+          (assetUploaded)="assetUploaded.emit($event)" i18n-label></app-media-asset-picker>
         <label class="full"><span i18n>Descrição do logo</span><input pInputText formControlName="alt" /></label>
         <details class="structure-advanced full">
           <summary i18n>Ajustar enquadramento e acessibilidade</summary>
@@ -147,9 +154,21 @@
           <input type="hidden" formControlName="id" />
           <label><span i18n>Texto</span><input pInputText formControlName="label" /></label>
           <label><span i18n>Para onde leva</span><input pInputText formControlName="href" /></label>
-          <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
-            ariaLabel="Remover link" (onClick)="removeFooterLink($index)" i18n-ariaLabel></p-button>
+          <div class="inline-actions">
+            <p-button type="button" icon="pi pi-arrow-up" severity="secondary" [text]="true"
+              [disabled]="$first" ariaLabel="Mover link para cima" (onClick)="moveFooterLink($index, -1)"
+              i18n-ariaLabel></p-button>
+            <p-button type="button" icon="pi pi-arrow-down" severity="secondary" [text]="true"
+              [disabled]="$last" ariaLabel="Mover link para baixo" (onClick)="moveFooterLink($index, 1)"
+              i18n-ariaLabel></p-button>
+            <p-button type="button" icon="pi pi-copy" severity="secondary" [text]="true"
+              ariaLabel="Duplicar link" (onClick)="duplicateFooterLink($index)" i18n-ariaLabel></p-button>
+            <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
+              ariaLabel="Remover link" (onClick)="removeFooterLink($index)" i18n-ariaLabel></p-button>
+          </div>
         </div>
+      } @empty {
+        <p class="structure-empty" i18n>Nenhum link no rodapé. Adicione o primeiro link.</p>
       }
       <p-button type="button" label="Adicionar link" severity="secondary" [outlined]="true"
         (onClick)="addFooterLink()" i18n-label></p-button>
@@ -164,9 +183,21 @@
           <label><span i18n>Nome exibido</span><input pInputText formControlName="label" /></label>
           <label><span i18n>Link do perfil</span><input pInputText formControlName="href" /></label>
           <input type="hidden" formControlName="icon" />
-          <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
-            ariaLabel="Remover rede" (onClick)="removeSocialLink($index)" i18n-ariaLabel></p-button>
+          <div class="inline-actions">
+            <p-button type="button" icon="pi pi-arrow-up" severity="secondary" [text]="true"
+              [disabled]="$first" ariaLabel="Mover rede para cima" (onClick)="moveSocialLink($index, -1)"
+              i18n-ariaLabel></p-button>
+            <p-button type="button" icon="pi pi-arrow-down" severity="secondary" [text]="true"
+              [disabled]="$last" ariaLabel="Mover rede para baixo" (onClick)="moveSocialLink($index, 1)"
+              i18n-ariaLabel></p-button>
+            <p-button type="button" icon="pi pi-copy" severity="secondary" [text]="true"
+              ariaLabel="Duplicar rede" (onClick)="duplicateSocialLink($index)" i18n-ariaLabel></p-button>
+            <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
+              ariaLabel="Remover rede" (onClick)="removeSocialLink($index)" i18n-ariaLabel></p-button>
+          </div>
         </div>
+      } @empty {
+        <p class="structure-empty" i18n>Nenhuma rede social configurada.</p>
       }
       <p-button type="button" label="Adicionar rede" severity="secondary" [outlined]="true"
         (onClick)="addSocialLink()" i18n-label></p-button>

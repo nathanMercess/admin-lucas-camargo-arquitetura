@@ -6,6 +6,7 @@ import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
@@ -16,6 +17,9 @@ import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { TooltipModule } from 'primeng/tooltip';
+
+import { SharedModule } from '@shared/shared.module';
 
 import { ContentRoutingModule } from './content-routing.module';
 import { MediaReferenceEditorComponent } from './components/media-reference-editor/media-reference-editor.component';
@@ -25,6 +29,10 @@ import { SiteLinkEditorComponent } from './components/site-link-editor/site-link
 import { SiteStructureEditorComponent } from './components/site-structure-editor/site-structure-editor.component';
 import { SiteTemplateLibraryComponent } from './components/site-template-library/site-template-library.component';
 import { StringListEditorComponent } from './components/string-list-editor/string-list-editor.component';
+import { VisualBuilderLibraryComponent } from './components/visual-builder-library/visual-builder-library.component';
+import { VisualBuilderPropertiesComponent } from './components/visual-builder-properties/visual-builder-properties.component';
+import { VisualBuilderTemplateLibraryComponent } from './components/visual-builder-template-library/visual-builder-template-library.component';
+import { VisualBuilderToolbarComponent } from './components/visual-builder-toolbar/visual-builder-toolbar.component';
 import { VisualPageBuilderComponent } from './components/visual-page-builder/visual-page-builder.component';
 import { ContentEditorComponent } from './content-editor.component';
 
@@ -38,6 +46,10 @@ import { ContentEditorComponent } from './content-editor.component';
     SiteStructureEditorComponent,
     SiteTemplateLibraryComponent,
     StringListEditorComponent,
+    VisualBuilderLibraryComponent,
+    VisualBuilderPropertiesComponent,
+    VisualBuilderTemplateLibraryComponent,
+    VisualBuilderToolbarComponent,
     VisualPageBuilderComponent,
   ],
   imports: [
@@ -48,6 +60,7 @@ import { ContentEditorComponent } from './content-editor.component';
     CardModule,
     ColorPickerModule,
     ConfirmDialogModule,
+    DialogModule,
     InputNumberModule,
     InputTextModule,
     MessageModule,
@@ -58,6 +71,8 @@ import { ContentEditorComponent } from './content-editor.component';
     TagModule,
     TextareaModule,
     ToggleSwitchModule,
+    TooltipModule,
+    SharedModule,
     ContentRoutingModule,
   ],
   providers: [ConfirmationService],

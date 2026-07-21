@@ -1,23 +1,35 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, Signal, inject, signal } from '@angular/core';
+import { Injectable, InjectionToken, Signal, inject, isDevMode, signal } from '@angular/core';
 import { finalize, take } from 'rxjs';
 
 import { AdminSession } from '../models/admin-session.model';
 
 const SESSION_ENDPOINT = '/api/v1/session';
 
+export const SESSION_DEVELOPMENT_FALLBACK = new InjectionToken<boolean>(
+  'SESSION_DEVELOPMENT_FALLBACK',
+  {
+    providedIn: 'root',
+    factory: () => isDevMode(),
+  },
+);
+
 @Injectable({
   providedIn: 'root',
 })
 export class SessionService {
   private readonly httpClient = inject(HttpClient);
+  private readonly developmentFallbackEnabled = inject(SESSION_DEVELOPMENT_FALLBACK);
   private readonly sessionState = signal<AdminSession | null>(null);
   private readonly loadingState = signal(false);
   private readonly errorState = signal<string | null>(null);
+  private readonly developmentFallbackState = signal(false);
 
   public readonly session: Signal<AdminSession | null> = this.sessionState.asReadonly();
   public readonly loading: Signal<boolean> = this.loadingState.asReadonly();
   public readonly error: Signal<string | null> = this.errorState.asReadonly();
+  public readonly developmentFallback: Signal<boolean> =
+    this.developmentFallbackState.asReadonly();
 
   public load(): void {
     if (this.loadingState())
@@ -25,6 +37,7 @@ export class SessionService {
 
     this.loadingState.set(true);
     this.errorState.set(null);
+    this.developmentFallbackState.set(false);
 
     this.httpClient
       .get<AdminSession>(SESSION_ENDPOINT)
@@ -34,12 +47,7 @@ export class SessionService {
       )
       .subscribe({
         next: (session) => this.sessionState.set(session),
-        error: () => {
-          this.sessionState.set(null);
-          this.errorState.set(
-            $localize`:@@admin.session.loadError:Não foi possível identificar a sessão atual.`,
-          );
-        },
+        error: () => this.handleLoadError(),
       });
   }
 
@@ -77,5 +85,17 @@ export class SessionService {
     } catch {
       return '';
     }
+  }
+
+  private handleLoadError(): void {
+    if (this.developmentFallbackEnabled) {
+      this.sessionState.set(null);
+      this.developmentFallbackState.set(true);
+      return;
+    }
+
+    this.errorState.set(
+      $localize`:@@admin.session.loadError:Não foi possível identificar a sessão atual. Tente novamente.`,
+    );
   }
 }

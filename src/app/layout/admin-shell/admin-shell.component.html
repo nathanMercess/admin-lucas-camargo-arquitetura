@@ -1,27 +1,54 @@
-<div class="admin-shell">
-  <aside class="admin-shell-sidebar">
+<div class="admin-shell" [class.admin-shell--focused-editor]="focusedEditor()"
+  [class.admin-shell--navigation-collapsed]="navigationCollapsed()">
+  <aside class="admin-shell-sidebar" aria-label="Navegação administrativa" i18n-aria-label>
     <div class="admin-shell-brand">
       <span class="admin-shell-brand-monogram" aria-hidden="true">LC</span>
-      <div>
+      <div class="admin-shell-brand-copy">
         <strong>Lucas Camargo</strong>
         <span i18n>Administração</span>
       </div>
+      <p-button class="admin-shell-navigation-toggle" [label]="navigationToggleLabel()"
+        [icon]="navigationCollapsed() ? 'pi pi-bars' : 'pi pi-angle-left'" [text]="true"
+        (onClick)="toggleNavigation()"></p-button>
     </div>
 
-    <p-menu class="admin-shell-navigation" styleClass="admin-navigation" [model]="navigationItems"
-      aria-label="Navegação do painel" i18n-aria-label></p-menu>
+    <nav class="admin-shell-navigation admin-navigation" aria-label="Navegação do painel" i18n-aria-label>
+      <ul class="p-menu-list">
+        @for (item of navigationItems; track $index) {
+          <li>
+            <a class="p-menu-item-link" [routerLink]="item.routerLink"
+              routerLinkActive="p-menu-item-link-active" [routerLinkActiveOptions]="item.routerLinkActiveOptions!"
+              [attr.aria-label]="item.label" [pTooltip]="navigationCollapsed() ? item.label : ''"
+              tooltipPosition="right">
+              <span class="p-menu-item-icon" [ngClass]="item.icon" aria-hidden="true"></span>
+              <span class="p-menu-item-label">{{ item.label }}</span>
+            </a>
+          </li>
+        }
+      </ul>
+    </nav>
 
-    <div class="admin-shell-access">
+    <div class="admin-shell-access" aria-live="polite">
       <p-avatar [label]="sessionInitials()" shape="circle"></p-avatar>
-      <div>
+      <div class="admin-shell-access-copy">
         <strong>
-          @if (sessionService.session()?.email; as email) {
+          @if (sessionService.loading()) {
+            <span i18n>Identificando acesso...</span>
+          } @else if (sessionService.session()?.email; as email) {
             {{ email }}
+          } @else if (sessionService.developmentFallback()) {
+            <span i18n>Desenvolvimento local</span>
+          } @else if (sessionService.error()) {
+            <span i18n>Acesso temporariamente indisponível</span>
           } @else {
-            <span i18n>Sessão não identificada</span>
+            <span i18n>Aguardando identificação</span>
           }
         </strong>
-        <p-tag [value]="roleLabel()" [severity]="sessionService.error() ? 'danger' : 'info'"></p-tag>
+        <p-tag [value]="roleLabel()" [severity]="roleSeverity()"></p-tag>
+        @if (sessionService.error() && !sessionService.loading()) {
+          <p-button label="Tentar novamente" icon="pi pi-refresh" size="small" [text]="true"
+            (onClick)="retrySession()" i18n-label></p-button>
+        }
       </div>
     </div>
   </aside>
@@ -29,12 +56,23 @@
   <div class="admin-shell-workspace">
     <header class="admin-shell-header">
       <div>
-        <span class="admin-shell-kicker" i18n>Estúdio de conteúdo</span>
-        <p i18n>Edite, visualize, publique e reverta sem gerar uma nova versão do site.</p>
+        @if (focusedEditor()) {
+          <span class="admin-shell-kicker" i18n>Modo de edição focado</span>
+          <p i18n>O menu foi recolhido para ampliar a área útil do editor.</p>
+        } @else {
+          <span class="admin-shell-kicker" i18n>Estúdio de conteúdo</span>
+          <p i18n>Edite, visualize, publique e reverta sem gerar uma nova versão do site.</p>
+        }
       </div>
-      <div class="admin-shell-environment">
-        <span class="admin-shell-environment-dot" aria-hidden="true"></span>
-        <span i18n>Ambiente administrativo</span>
+      <div class="admin-shell-header-actions">
+        <div class="admin-shell-environment">
+          <span class="admin-shell-environment-dot" aria-hidden="true"></span>
+          <span i18n>Ambiente administrativo</span>
+        </div>
+        @if (focusedEditor()) {
+          <p-button label="Voltar ao painel" icon="pi pi-arrow-left" severity="secondary"
+            [outlined]="true" [routerLink]="['/dashboard']" i18n-label></p-button>
+        }
       </div>
     </header>
 

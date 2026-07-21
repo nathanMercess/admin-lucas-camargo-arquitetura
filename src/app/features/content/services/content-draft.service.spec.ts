@@ -197,4 +197,25 @@ describe('ContentDraftService', () => {
     expect(service.etag()).toBe('"draft-v3"');
     expect(service.dirty()).toBe(false);
   });
+
+  it('registers an uploaded asset once in the current draft', () => {
+    service.load();
+    httpTestingController.expectOne('/api/v1/content/draft').flush(DEFAULT_SITE_CONFIG, {
+      headers: { ETag: '"draft-v1"' },
+    });
+    const asset = {
+      id: 'new-project-image',
+      path: '/content/releases/new-project-image.webp',
+      mimeType: 'image/webp',
+      width: 1600,
+      height: 1000,
+      sha256: 'a'.repeat(64),
+      provenance: 'project' as const,
+    };
+
+    expect(service.registerMediaAsset(asset)).toBe(true);
+    expect(service.registerMediaAsset(asset)).toBe(false);
+    expect(service.draft()?.media.filter((current) => current.id === asset.id)).toEqual([asset]);
+    expect(service.dirty()).toBe(true);
+  });
 });

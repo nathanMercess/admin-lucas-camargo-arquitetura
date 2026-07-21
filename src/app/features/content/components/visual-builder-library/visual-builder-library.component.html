@@ -1,0 +1,123 @@
+<aside class="visual-builder-library" aria-label="Elementos da página" i18n-aria-label>
+  <header>
+    <div>
+      <span i18n>Construir</span>
+      <h3 i18n>Adicionar à página</h3>
+    </div>
+    <div class="visual-builder-library-tabs" role="tablist" aria-label="Painéis do editor" i18n-aria-label>
+      <button id="visual-builder-blocks-tab" type="button" role="tab"
+        aria-controls="visual-builder-blocks-panel" [attr.aria-selected]="activeView() === 'blocks'"
+        [attr.tabindex]="activeView() === 'blocks' ? 0 : -1" [class.active]="activeView() === 'blocks'"
+        (click)="activeView.set('blocks')" (keydown)="handleTabKeydown($event)" i18n>Componentes</button>
+      <button id="visual-builder-layers-tab" type="button" role="tab"
+        aria-controls="visual-builder-layers-panel" [attr.aria-selected]="activeView() === 'layers'"
+        [attr.tabindex]="activeView() === 'layers' ? 0 : -1" [class.active]="activeView() === 'layers'"
+        (click)="activeView.set('layers')" (keydown)="handleTabKeydown($event)" i18n>Estrutura</button>
+    </div>
+  </header>
+
+  @if (activeView() === 'blocks') {
+    <div id="visual-builder-blocks-panel" role="tabpanel" aria-labelledby="visual-builder-blocks-tab"
+      class="visual-builder-blocks-panel">
+      <div class="visual-builder-search">
+        <span class="pi pi-search" aria-hidden="true"></span>
+        <label for="visual-builder-block-search" class="visually-hidden" i18n>Buscar componentes</label>
+        <input id="visual-builder-block-search" type="search" placeholder="Buscar componentes"
+          aria-describedby="visual-builder-search-status" [value]="query()" (input)="handleSearch($event)"
+          i18n-placeholder />
+      </div>
+
+      <div class="visual-builder-kind-filters" role="group" aria-label="Tipos de componente" i18n-aria-label>
+        @for (filter of kindFilters; track filter.value) {
+          <button type="button" [class.active]="activeKind() === filter.value"
+            [attr.aria-pressed]="activeKind() === filter.value" (click)="activeKind.set(filter.value)">
+            <span [class]="'pi ' + filter.icon" aria-hidden="true"></span>
+            <span>{{ filter.label }}</span>
+          </button>
+        }
+      </div>
+
+      <p id="visual-builder-search-status" class="visually-hidden" role="status" aria-live="polite"
+        aria-atomic="true">{{ visibleBlockCount() }} <span i18n>componentes disponíveis</span></p>
+
+      <div class="visual-builder-block-scroll">
+        @for (category of filteredCategories(); track category.category.id) {
+          <section class="visual-builder-block-category"
+            [attr.aria-labelledby]="'block-category-' + category.category.id">
+            <h4 [id]="'block-category-' + category.category.id">
+              <span [class]="'pi ' + category.category.icon" aria-hidden="true"></span>
+              {{ category.category.label }}
+            </h4>
+            <div class="visual-builder-block-grid">
+              @for (block of category.blocks; track block.id) {
+                <article class="visual-builder-block-card" draggable="true" tabindex="0"
+                  [attr.aria-label]="'Adicionar ' + block.label + '. Arraste, clique ou pressione Enter.'"
+                  [attr.aria-describedby]="'block-description-' + block.id + ' block-configurable-' + block.id"
+                  (click)="handleCardClick(block, $event)" (keydown)="handleCardKeydown(block, $event)"
+                  (dragstart)="handleDragStart(block, $event)" (dragend)="blockDragEnd.emit()">
+                  <span class="visual-builder-block-thumbnail" [attr.data-preview]="block.preview" aria-hidden="true">
+                    <span [class]="'visual-builder-block-icon pi ' + block.icon"></span>
+                    <i></i><i></i><i></i>
+                  </span>
+                  <div class="visual-builder-block-copy">
+                    <span class="visual-builder-block-kind">{{ kindLabel(block.kind) }}</span>
+                    <strong>{{ block.label }}</strong>
+                    <small [id]="'block-description-' + block.id">{{ block.description }}</small>
+                    <small class="visual-builder-block-configurable" [id]="'block-configurable-' + block.id">
+                      <span class="pi pi-sliders-h" aria-hidden="true"></span>
+                      <span i18n>Editável:</span> {{ block.configurableFields.join(', ') }}
+                    </small>
+                    <small class="visual-builder-block-motion">
+                      <span class="pi pi-play" aria-hidden="true"></span>{{ block.animationLabel }}
+                    </small>
+                    @if (block.variations.length > 0) {
+                      <details class="visual-builder-block-variations"
+                        (toggle)="handleVariationToggle(block.id, $event)">
+                        <summary [attr.aria-expanded]="expandedVariationBlockIds().has(block.id)"
+                          [attr.aria-controls]="'block-variations-' + block.id">
+                          <span class="pi pi-clone" aria-hidden="true"></span>
+                          <span i18n>Variações</span> ({{ block.variations.length }})
+                        </summary>
+                        <div [id]="'block-variations-' + block.id">
+                          @for (variation of block.variations; track variation.id) {
+                            <button type="button"
+                              [attr.aria-label]="'Adicionar ' + variation.label + ' de ' + block.label"
+                              (click)="addVariation(block, variation)">
+                              <strong>{{ variation.label }}</strong>
+                              <small>{{ variation.description }}</small>
+                            </button>
+                          }
+                        </div>
+                      </details>
+                    }
+                  </div>
+                  <button class="visual-builder-block-add" type="button"
+                    [attr.aria-label]="'Adicionar ' + block.label" (click)="addVariation(block)">
+                    <span class="pi pi-plus" aria-hidden="true"></span>
+                    <span i18n>Adicionar</span>
+                  </button>
+                </article>
+              }
+            </div>
+          </section>
+        } @empty {
+          <div class="visual-builder-library-empty" role="status">
+            <span class="pi pi-search" aria-hidden="true"></span>
+            <strong i18n>Nenhum componente encontrado</strong>
+            <button type="button" (click)="query.set('')" i18n>Limpar busca</button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <div #layersHost id="visual-builder-layers-panel" class="visual-builder-layers" role="tabpanel"
+    aria-labelledby="visual-builder-layers-tab" [hidden]="activeView() !== 'layers'"></div>
+
+  <p class="visually-hidden" role="status" aria-live="polite" aria-atomic="true">{{ actionStatus() }}</p>
+
+  <footer>
+    <span class="pi pi-info-circle" aria-hidden="true"></span>
+    <p i18n>Arraste um componente ou use o botão Adicionar. A estrutura também permite mover itens sem arrastar.</p>
+  </footer>
+</aside>

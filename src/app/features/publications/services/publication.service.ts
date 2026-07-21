@@ -7,7 +7,9 @@ import { ReleaseRecord } from '../models/release-record.model';
 
 const RELEASES_ENDPOINT = '/api/v1/releases';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class PublicationService {
   private readonly httpClient = inject(HttpClient);
   private readonly releasesState = signal<ReleaseRecord[]>([]);
@@ -38,9 +40,12 @@ export class PublicationService {
       )
       .subscribe({
         next: (releases) => this.releasesState.set([...releases]),
-        error: () => this.errorState.set(
-          $localize`:@@admin.publications.historyError:Não foi possível carregar o histórico.`,
-        ),
+        error: () => {
+          this.releasesState.set([]);
+          this.errorState.set(
+            $localize`:@@admin.publications.historyError:Não foi possível carregar o histórico.`,
+          );
+        },
       });
   }
 
@@ -59,6 +64,7 @@ export class PublicationService {
 
     this.mutatingState.set(true);
     this.errorState.set(null);
+    this.lastManifestState.set(null);
 
     const headers = new HttpHeaders({
       'If-Match': draftEtag,
@@ -82,13 +88,43 @@ export class PublicationService {
   }
 
   private handleMutationError(error: unknown): void {
-    if (error instanceof HttpErrorResponse && error.status === 412) {
+    if (!(error instanceof HttpErrorResponse)) {
+      this.setGenericMutationError();
+      return;
+    }
+
+    if (error.status === 0) {
+      this.errorState.set(
+        $localize`:@@admin.publications.apiUnavailable:Não foi possível acessar o serviço de publicação. Tente novamente.`,
+      );
+      return;
+    }
+
+    if (error.status === 401 || error.status === 403) {
+      this.errorState.set(
+        $localize`:@@admin.publications.unauthorized:Sua sessão não permite esta publicação. Entre novamente e tente de novo.`,
+      );
+      return;
+    }
+
+    if (error.status === 412) {
       this.errorState.set(
         $localize`:@@admin.publications.conflict:O rascunho mudou. Recarregue antes de publicar ou restaurar.`,
       );
       return;
     }
 
+    if (error.status === 422) {
+      this.errorState.set(
+        $localize`:@@admin.publications.validationError:O conteúdo publicado não passou na validação. Revise os campos indicados no editor.`,
+      );
+      return;
+    }
+
+    this.setGenericMutationError();
+  }
+
+  private setGenericMutationError(): void {
     this.errorState.set(
       $localize`:@@admin.publications.mutationError:A operação não foi concluída. Nenhuma versão foi alterada.`,
     );

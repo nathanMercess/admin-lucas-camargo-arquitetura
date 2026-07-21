@@ -42,7 +42,7 @@ export class MediaComponent implements OnInit {
 
     this.mediaService.upload(file, this.provenanceControl.value, (asset) => {
       input.value = '';
-      this.registerAssetInDraft(asset);
+      this.draftService.registerAndSaveMediaAsset(asset);
     });
   }
 
@@ -50,13 +50,4 @@ export class MediaComponent implements OnInit {
     return this.sessionService.resolvePublishedContentPath(asset.path);
   }
 
-  private registerAssetInDraft(asset: MediaAsset): void {
-    const draft = this.draftService.draft();
-
-    if (!draft || draft.media.some((current) => current.id === asset.id))
-      return;
-
-    this.draftService.updateDraft({ ...draft, media: [...draft.media, asset] });
-    this.draftService.save();
-  }
 }

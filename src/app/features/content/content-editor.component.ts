@@ -2,6 +2,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   ChangeDetectionStrategy,
   Component,
+  HostListener,
   OnInit,
   computed,
   effect,
@@ -9,6 +10,8 @@ import {
   signal,
 } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { MediaAsset } from '@shared/models/media-asset.model';
 import { SiteConfigV1 } from '@shared/models/site-config-v1.model';
 import { SiteSection } from '@shared/models/site-section.model';
 import { SiteTemplateId } from '@shared/models/site-template-id.type';
@@ -16,8 +19,12 @@ import { ThemeConfig } from '@shared/models/theme-config.model';
 import { VisualBuilderDocument } from '@shared/models/visual-builder-document.model';
 import { ConfirmationService } from 'primeng/api';
 
+import { PublicationService } from '../publications/services/publication.service';
 import { ContentSectionEditorItem } from './models/content-section-editor-item.model';
+import { SitePageDefinition } from './models/site-page-definition.model';
 import { ContentDraftService } from './services/content-draft.service';
+import { SitePageRegistryService } from './services/site-page-registry.service';
+import { SiteSectionRegistryService } from './services/site-section-registry.service';
 import { approvedThemeColorValidator } from './validators/approved-theme-color.validator';
 
 @Component({
@@ -30,6 +37,10 @@ import { approvedThemeColorValidator } from './validators/approved-theme-color.v
 export class ContentEditorComponent implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly pageRegistry = inject(SitePageRegistryService);
+  private readonly router = inject(Router);
+  private readonly sectionRegistry = inject(SiteSectionRegistryService);
+  protected readonly publicationService = inject(PublicationService);
   private isHydrating = false;
   private hydratedDraft: SiteConfigV1 | null = null;
 
@@ -39,11 +50,29 @@ export class ContentEditorComponent implements OnInit {
   protected readonly motionChoice = signal<'off' | 'soft' | 'expressive'>('soft');
   protected readonly focusedSectionId = signal<string | null>(null);
   protected readonly sectionItems = signal<ContentSectionEditorItem[]>([]);
+  protected readonly sectionDefinitions = [...this.sectionRegistry.definitions];
+  protected readonly newSectionType = signal<SiteSection['type']>('manifesto');
+  protected readonly routeAbsenceNotes = this.pageRegistry.absentRouteFamilies;
+  protected readonly pageGroups = computed(() => {
+    const draft = this.draftService.draft();
+
+    if (!draft)
+      return [];
+
+    return [...this.pageRegistry.getGroupedPages(draft).entries()].map(([id, pages]) => ({
+      id,
+      label: pages[0]?.groupLabel ?? '',
+      pages,
+    }));
+  });
   protected readonly contentForm = this.formBuilder.nonNullable.group({
     identity: this.formBuilder.nonNullable.group({
       brandName: ['', [Validators.required, Validators.maxLength(80)]],
       descriptor: ['', [Validators.required, Validators.maxLength(120)]],
       canonicalUrl: ['', [Validators.required, Validators.pattern(/^https:\/\/.+/)]],
+      logoLightMediaId: ['', Validators.required],
+      logoDarkMediaId: ['', Validators.required],
+      faviconMediaId: ['', Validators.required],
     }),
     seo: this.formBuilder.nonNullable.group({
       title: ['', [Validators.required, Validators.maxLength(70)]],
@@ -54,11 +83,13 @@ export class ContentEditorComponent implements OnInit {
       openGraph: this.formBuilder.nonNullable.group({
         title: ['', [Validators.required, Validators.maxLength(70)]],
         description: ['', [Validators.required, Validators.maxLength(200)]],
+        imageMediaId: ['', Validators.required],
         imageAlt: ['', [Validators.required, Validators.maxLength(180)]],
       }),
       twitter: this.formBuilder.nonNullable.group({
         title: ['', [Validators.required, Validators.maxLength(70)]],
         description: ['', [Validators.required, Validators.maxLength(200)]],
+        imageMediaId: ['', Validators.required],
         imageAlt: ['', [Validators.required, Validators.maxLength(180)]],
       }),
       organization: this.formBuilder.nonNullable.group({
@@ -208,6 +239,19 @@ export class ContentEditorComponent implements OnInit {
     this.draftService.load();
   }
 
+  @HostListener('window:beforeunload', ['$event'])
+  public handleBeforeUnload(event: BeforeUnloadEvent): void {
+    if (!this.draftService.dirty())
+      return;
+
+    event.preventDefault();
+    event.returnValue = '';
+  }
+
+  public hasUnsavedChanges(): boolean {
+    return this.draftService.dirty();
+  }
+
   protected saveDraft(): void {
     if (this.contentForm.invalid) {
       this.contentForm.markAllAsTouched();
@@ -237,39 +281,174 @@ export class ContentEditorComponent implements OnInit {
     return control.invalid && (control.dirty || control.touched);
   }
 
-  protected handleSectionReorder(): void {
-    const reorderedItems = this.sectionItems().map((item, index) => ({
-      ...item,
-      section: {
-        ...item.section,
-        order: (index + 1) * 10,
-      },
-    }));
-
-    this.sectionItems.set(reorderedItems);
-    this.syncSectionsToDraft(reorderedItems);
+  protected getPageStatusLabel(status: SitePageDefinition['status']): string {
+    switch (status) {
+      case 'available':
+        return $localize`:@@admin.pages.status.available:Disponível no site`;
+      case 'empty':
+        return $localize`:@@admin.pages.status.empty:Aguardando conteúdo`;
+      case 'hidden':
+        return $localize`:@@admin.pages.status.hidden:Oculta no site`;
+    }
   }
 
-  protected handleSectionVisibilityChange(item: ContentSectionEditorItem): void {
-    const updatedItems = this.sectionItems().map((currentItem) => {
-      if (currentItem.id !== item.id)
-        return currentItem;
+  protected getPageEditorAreaLabel(editorArea: SitePageDefinition['editorArea']): string {
+    switch (editorArea) {
+      case 'content':
+        return $localize`:@@admin.pages.area.content:Conteúdo e editor visual`;
+      case 'projects':
+        return $localize`:@@admin.pages.area.projects:Projetos e categorias`;
+      case 'system':
+        return $localize`:@@admin.pages.area.system:Roteamento do site`;
+    }
+  }
 
-      return {
-        ...currentItem,
-        section: {
-          ...currentItem.section,
-          visible: item.visibilityControl.value,
-        },
-      };
+  protected getPageKindLabel(page: SitePageDefinition): string {
+    switch (page.kind) {
+      case 'concrete-page':
+        return $localize`:@@admin.pages.kind.concrete:Página concreta`;
+      case 'shared-template':
+        return $localize`:@@admin.pages.kind.template:Template compartilhado`;
+      case 'dynamic-data':
+        return $localize`:@@admin.pages.kind.dynamic:Dados dinâmicos`;
+      case 'system-page':
+        return $localize`:@@admin.pages.kind.system:Página de sistema`;
+    }
+  }
+
+  protected getPageRouteLabel(page: SitePageDefinition): string {
+    switch (page.routeKind) {
+      case 'fixed':
+        return page.listedInNavigation
+          ? $localize`:@@admin.pages.route.fixedMenu:Rota fixa · no menu`
+          : $localize`:@@admin.pages.route.fixedOutside:Rota fixa · fora do menu`;
+      case 'parameterized':
+        return $localize`:@@admin.pages.route.parameterized:Rota parametrizada · fora do menu`;
+      case 'dynamic':
+        return page.listedInNavigation
+          ? $localize`:@@admin.pages.route.dynamicMenu:Rota dinâmica · no menu`
+          : $localize`:@@admin.pages.route.dynamic:Rota dinâmica · fora do menu`;
+      case 'fallback':
+        return $localize`:@@admin.pages.route.fallback:Fallback 404 · fora do menu`;
+    }
+  }
+
+  protected getPageDataSourceLabel(dataSource: SitePageDefinition['dataSource']): string {
+    switch (dataSource) {
+      case 'site-sections':
+        return $localize`:@@admin.pages.source.sections:Seções da página inicial`;
+      case 'portfolio-index':
+        return $localize`:@@admin.pages.source.portfolio:Categorias e projetos`;
+      case 'portfolio-categories':
+        return $localize`:@@admin.pages.source.categories:Cadastro de categorias`;
+      case 'portfolio-projects':
+        return $localize`:@@admin.pages.source.projects:Cadastro de projetos e galerias`;
+      case 'router':
+        return $localize`:@@admin.pages.source.router:Roteador público`;
+    }
+  }
+
+  protected getPageActionLabel(page: SitePageDefinition): string {
+    if (page.editorArea === 'content')
+      return $localize`:@@admin.pages.action.edit:Editar layout e seções`;
+
+    if (page.kind === 'shared-template')
+      return $localize`:@@admin.pages.action.editTemplate:Editar dados do template`;
+
+    return $localize`:@@admin.pages.action.manageData:Editar dados`;
+  }
+
+  protected getPagePreviewUrl(page: SitePageDefinition): string | null {
+    const canonicalUrl = this.draftService.draft()?.identity.canonicalUrl;
+
+    if (!canonicalUrl || page.routeKind === 'parameterized' || page.routeKind === 'fallback')
+      return null;
+
+    try {
+      return new URL(page.route, canonicalUrl).toString();
+    } catch {
+      return null;
+    }
+  }
+
+  protected openPageEditor(page: SitePageDefinition): void {
+    if (page.editorArea === 'content') {
+      this.activeTab.set('sections');
+      return;
+    }
+
+    if (page.editorArea === 'system')
+      return;
+
+    void this.router.navigate(['/projects']);
+  }
+
+  protected addSection(): void {
+    const sections = this.sectionItems().map((item) => item.section);
+    const section = this.sectionRegistry.create(this.newSectionType(), sections);
+
+    this.replaceSections([...sections, section], section.id);
+  }
+
+  protected moveSection(sectionId: string, offset: -1 | 1): void {
+    const sections = this.sectionItems().map((item) => item.section);
+    const index = sections.findIndex((section) => section.id === sectionId);
+    const destination = index + offset;
+
+    if (index < 0 || destination < 0 || destination >= sections.length)
+      return;
+
+    const reorderedSections = [...sections];
+    const [section] = reorderedSections.splice(index, 1);
+
+    if (!section)
+      return;
+
+    reorderedSections.splice(destination, 0, section);
+    this.replaceSections(reorderedSections, sectionId);
+  }
+
+  protected duplicateSection(sectionId: string): void {
+    const sections = this.sectionItems().map((item) => item.section);
+    const index = sections.findIndex((section) => section.id === sectionId);
+    const source = sections[index];
+
+    if (!source)
+      return;
+
+    const duplicate = this.sectionRegistry.duplicate(source, sections);
+    const updatedSections = [...sections];
+    updatedSections.splice(index + 1, 0, duplicate);
+    this.replaceSections(updatedSections, duplicate.id);
+  }
+
+  protected requestSectionRemoval(sectionId: string): void {
+    const item = this.sectionItems().find((sectionItem) => sectionItem.id === sectionId);
+
+    if (!item)
+      return;
+
+    this.confirmationService.confirm({
+      header: $localize`:@@admin.content.removeSectionTitle:Excluir esta seção?`,
+      message: $localize`:@@admin.content.removeSectionMessage:A seção ${item.label}:sectionLabel: e seu conteúdo serão removidos do rascunho.`,
+      acceptLabel: $localize`:@@admin.content.removeSectionAccept:Excluir seção`,
+      rejectLabel: $localize`:@@admin.content.removeSectionReject:Cancelar`,
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        const sections = this.sectionItems()
+          .filter((sectionItem) => sectionItem.id !== sectionId)
+          .map((sectionItem) => sectionItem.section);
+        this.replaceSections(sections, sections[0]?.id ?? null);
+      },
     });
-
-    this.sectionItems.set(updatedItems);
-    this.syncSectionsToDraft(updatedItems);
   }
 
   protected handleConfigChange(config: SiteConfigV1): void {
     this.draftService.updateDraft(config);
+  }
+
+  protected registerUploadedAsset(asset: MediaAsset): void {
+    this.draftService.registerMediaAsset(asset);
   }
 
   protected handleSectionContentChange(section: SiteSection): void {
@@ -306,26 +485,24 @@ export class ContentEditorComponent implements OnInit {
     });
   }
 
-  protected handleVisualBuilderEnabledChange(enabled: boolean): void {
-    const draft = this.draftService.draft();
+  protected publishDraft(): void {
+    const etag = this.draftService.etag();
 
-    if (!draft)
+    if (!etag || this.draftService.dirty())
       return;
 
-    this.draftService.updateDraft({
-      ...draft,
-      visualBuilder: {
-        enabled,
-        projectData: draft.visualBuilder?.projectData ?? {},
-        html: draft.visualBuilder?.html ?? '',
-        css: draft.visualBuilder?.css ?? '',
-      },
+    this.confirmationService.confirm({
+      header: $localize`:@@admin.content.publishTitle:Publicar esta página?`,
+      message: $localize`:@@admin.content.publishMessage:A versão salva será validada e passará a ser usada no site público.`,
+      acceptLabel: $localize`:@@admin.content.publishAccept:Publicar agora`,
+      rejectLabel: $localize`:@@admin.content.publishReject:Cancelar`,
+      accept: () => this.publicationService.publish(etag, () => this.draftService.load()),
     });
   }
 
   protected customizeTemplate(theme: ThemeConfig): void {
     this.handleTemplateChange(theme);
-    this.activeTab.set('theme');
+    this.activeTab.set('appearance');
   }
 
   protected applyLayoutChoice(choice: 'gallery' | 'balanced' | 'spacious'): void {
@@ -359,6 +536,9 @@ export class ContentEditorComponent implements OnInit {
         brandName: draft.identity.brandName,
         descriptor: draft.identity.descriptor,
         canonicalUrl: draft.identity.canonicalUrl,
+        logoLightMediaId: draft.identity.logoLightMediaId,
+        logoDarkMediaId: draft.identity.logoDarkMediaId,
+        faviconMediaId: draft.identity.faviconMediaId,
       },
       seo: {
         title: draft.seo.title,
@@ -369,11 +549,13 @@ export class ContentEditorComponent implements OnInit {
         openGraph: {
           title: draft.seo.openGraph.title,
           description: draft.seo.openGraph.description,
+          imageMediaId: draft.seo.openGraph.imageMediaId,
           imageAlt: draft.seo.openGraph.imageAlt,
         },
         twitter: {
           title: draft.seo.twitter.title,
           description: draft.seo.twitter.description,
+          imageMediaId: draft.seo.twitter.imageMediaId,
           imageAlt: draft.seo.twitter.imageAlt,
         },
         organization: {
@@ -481,30 +663,18 @@ export class ContentEditorComponent implements OnInit {
   private createSectionItem(section: SiteSection): ContentSectionEditorItem {
     return {
       id: section.id,
-      label: this.getSectionLabel(section),
+      label: this.sectionRegistry.label(section.type),
       section,
       visibilityControl: new FormControl(section.visible, { nonNullable: true }),
     };
   }
 
-  private getSectionLabel(section: SiteSection): string {
-    switch (section.type) {
-      case 'hero':
-        return $localize`:@@admin.content.section.hero:Abertura`;
-      case 'manifesto':
-        return $localize`:@@admin.content.section.manifesto:Manifesto`;
-      case 'practice':
-        return $localize`:@@admin.content.section.practice:Atuação`;
-      case 'portfolio':
-        return $localize`:@@admin.content.section.portfolio:Portfólio`;
-      case 'metrics':
-        return $localize`:@@admin.content.section.metrics:Indicadores`;
-      case 'about':
-        return $localize`:@@admin.content.section.about:Sobre`;
-      case 'process':
-        return $localize`:@@admin.content.section.process:Processo`;
-      case 'contact':
-        return $localize`:@@admin.content.section.contact:Contato`;
-    }
+  private replaceSections(sections: readonly SiteSection[], focusedSectionId: string | null): void {
+    const items = this.sectionRegistry.normalizeOrder(sections)
+      .map((section) => this.createSectionItem(section));
+
+    this.sectionItems.set(items);
+    this.focusedSectionId.set(focusedSectionId);
+    this.syncSectionsToDraft(items);
   }
 }

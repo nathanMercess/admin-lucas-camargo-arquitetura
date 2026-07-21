@@ -1,10 +1,174 @@
-<section class="page-builder-shell" aria-label="Editor visual livre" i18n-aria-label>
-  <header class="page-builder-help">
-    <div>
-      <strong i18n>Arraste para criar</strong>
-      <span i18n>Use os blocos à esquerda. Clique em qualquer elemento da página para editar e personalizar.</span>
+<section #builderRoot class="visual-page-builder" aria-label="Editor visual de página" i18n-aria-label
+  [class.visual-page-builder--focus]="focusMode()"
+  [class.visual-page-builder--library-open]="libraryPanelOpen()"
+  [class.visual-page-builder--properties-open]="propertiesPanelOpen()"
+  [class.visual-page-builder--mobile-canvas]="mobilePanel() === 'canvas'"
+  [class.visual-page-builder--mobile-blocks]="mobilePanel() === 'blocks'"
+  [class.visual-page-builder--mobile-properties]="mobilePanel() === 'properties'">
+  <app-visual-builder-toolbar [pageName]="pageName()" [dirty]="dirty()" [saving]="saving()"
+    [error]="saveError()" [canUndo]="canUndo()" [canRedo]="canRedo()" [device]="device()" [zoom]="zoom()"
+    [viewMode]="viewMode()" [fullscreen]="fullscreen()"
+    [enabled]="currentDocument().enabled" [canPublish]="canPublish()" (back)="back.emit()"
+    (pageNameChange)="updatePageName($event)"
+    (undo)="undo()" (redo)="redo()" (deviceChange)="setDevice($event)" (zoomChange)="setZoom($event)"
+    (zoomIn)="changeZoom(5)" (zoomOut)="changeZoom(-5)" (fitViewport)="fitCanvasToViewport()"
+    (actualSize)="showActualSize()" (centerPage)="centerCanvas()" (fullscreenChange)="toggleFullscreen()"
+    (templates)="templatesVisible.set(true)" (preview)="openPreview()" (save)="save.emit()"
+    (publish)="publish.emit()" (enabledChange)="updateEnabled($event)"></app-visual-builder-toolbar>
+
+  <div class="visual-page-builder-workspace">
+    <app-visual-builder-library [blocks]="blocks" (blockAdd)="addBlock($event)"
+      (blockDragStart)="startBlockDrag($event)" (blockDragEnd)="endBlockDrag()"></app-visual-builder-library>
+
+    <main class="visual-page-builder-stage" aria-label="Página em edição" i18n-aria-label>
+      <div class="visual-page-builder-stage-header">
+        <span><i aria-hidden="true"></i><span i18n>Página responsiva por padrão</span></span>
+        <div class="visual-builder-motion-controls" role="group" aria-label="Controles de animação do canvas"
+          i18n-aria-label>
+          <button type="button" (click)="toggleMotionPlayback()" [disabled]="reducedMotion()"
+            [attr.aria-label]="motionPlaying() ? 'Pausar animações' : 'Reproduzir animações'">
+            <span class="pi" [class.pi-pause]="motionPlaying()" [class.pi-play]="!motionPlaying()"
+              aria-hidden="true"></span>
+            <span i18n>{{ motionPlaying() ? 'Pausar' : 'Reproduzir' }}</span>
+          </button>
+          <button type="button" (click)="restartCanvasMotion()" [disabled]="reducedMotion()"
+            aria-label="Reiniciar animações" i18n-aria-label>
+            <span class="pi pi-refresh" aria-hidden="true"></span><span i18n>Reiniciar</span>
+          </button>
+          <button type="button" (click)="showCanvasMotionStart()" aria-label="Ver estado inicial"
+            i18n-aria-label>
+            <span class="pi pi-step-backward" aria-hidden="true"></span><span i18n>Início</span>
+          </button>
+          <button type="button" (click)="showCanvasMotionEnd()" aria-label="Ver estado final" i18n-aria-label>
+            <span class="pi pi-step-forward" aria-hidden="true"></span><span i18n>Final</span>
+          </button>
+          <label class="visual-builder-motion-speed">
+            <span class="visually-hidden" i18n>Velocidade da animação</span>
+            <select [value]="motionSpeed()" (change)="handleMotionSpeedChange($event)"
+              aria-label="Velocidade da animação" i18n-aria-label>
+              <option [value]="0.5" i18n>0,5×</option>
+              <option [value]="1" i18n>1×</option>
+              <option [value]="1.5" i18n>1,5×</option>
+              <option [value]="2" i18n>2×</option>
+            </select>
+          </label>
+          <button type="button" (click)="toggleSelectionAutoplay()"
+            [class.active]="selectionAutoplay()" [attr.aria-pressed]="selectionAutoplay()"
+            aria-label="Reproduzir seleção automaticamente" i18n-aria-label>
+            <span class="pi pi-bolt" aria-hidden="true"></span><span i18n>Seleção</span>
+          </button>
+          <button type="button" (click)="replaySelectedMotion()" [disabled]="!selection() || reducedMotion()"
+            aria-label="Reiniciar animação da seleção" i18n-aria-label>
+            <span class="pi pi-replay" aria-hidden="true"></span><span i18n>Rever</span>
+          </button>
+          <button type="button" (click)="toggleReducedMotion()"
+            [class.active]="reducedMotion()" [attr.aria-pressed]="reducedMotion()"
+            [disabled]="systemReducedMotion()" aria-label="Reduzir movimentos" i18n-aria-label>
+            <span class="pi pi-eye-slash" aria-hidden="true"></span><span i18n>Reduzir</span>
+          </button>
+        </div>
+        <span class="visual-page-builder-stage-actions">
+          <span i18n>Clique duas vezes em um texto para editar</span>
+          <button type="button" (click)="toggleLibraryPanel()" [attr.aria-pressed]="libraryPanelOpen()"
+            [attr.aria-label]="libraryPanelOpen() ? 'Recolher componentes' : 'Mostrar componentes'">
+            <span class="pi pi-th-large" aria-hidden="true"></span>
+            <span>{{ libraryPanelOpen() ? 'Recolher componentes' : 'Componentes' }}</span>
+          </button>
+          <button type="button" (click)="togglePropertiesPanel()" [attr.aria-pressed]="propertiesPanelOpen()"
+            [attr.aria-label]="propertiesPanelOpen() ? 'Recolher propriedades' : 'Mostrar propriedades'">
+            <span class="pi pi-sliders-h" aria-hidden="true"></span>
+            <span>{{ propertiesPanelOpen() ? 'Recolher propriedades' : 'Propriedades' }}</span>
+          </button>
+          <button type="button" (click)="toggleFocusMode()"
+            [attr.aria-label]="focusMode() ? 'Mostrar painéis do editor' : 'Focar somente na página'"
+            [attr.aria-pressed]="focusMode()">
+            <span class="pi" [class.pi-window-maximize]="!focusMode()"
+              [class.pi-window-minimize]="focusMode()" aria-hidden="true"></span>
+            <span>{{ focusMode() ? 'Mostrar painéis' : 'Focar na página' }}</span>
+          </button>
+        </span>
+      </div>
+      <div #canvasFrame class="visual-page-builder-canvas-frame">
+        <div #editorHost class="visual-builder-canvas-host"></div>
+        @if (loading()) {
+          <div class="visual-builder-loading" role="status">
+            <span class="visual-builder-loading-bar"></span>
+            <span class="visual-builder-loading-page"></span>
+            <strong i18n>Preparando seu espaço de criação...</strong>
+          </div>
+        }
+        @if (initializationError(); as errorMessage) {
+          <div class="visual-builder-error" role="alert">
+            <span class="pi pi-exclamation-triangle" aria-hidden="true"></span>
+            <strong>{{ errorMessage }}</strong>
+          </div>
+        }
+      </div>
+    </main>
+
+    <app-visual-builder-properties [selection]="selection()" [assets]="config().media"
+      [validationMessage]="validationMessage()" (assetUploaded)="assetUploaded.emit($event)"
+      (propertyChange)="applyProperty($event)" (duplicate)="duplicateSelected()" (remove)="requestRemoveSelected()"
+      (moveUp)="moveSelected(-1)" (moveDown)="moveSelected(1)"
+      (internalEdit)="toggleInternalEditing()"></app-visual-builder-properties>
+  </div>
+
+  <nav class="visual-builder-mobile-dock" aria-label="Ferramentas do editor no celular" i18n-aria-label>
+    <button type="button" [class.active]="mobilePanel() === 'canvas'"
+      [attr.aria-pressed]="mobilePanel() === 'canvas'" (click)="setMobilePanel('canvas')">
+      <span class="pi pi-eye" aria-hidden="true"></span><span i18n>Página</span>
+    </button>
+    <button type="button" [class.active]="mobilePanel() === 'blocks'"
+      [attr.aria-pressed]="mobilePanel() === 'blocks'" (click)="setMobilePanel('blocks')">
+      <span class="pi pi-plus" aria-hidden="true"></span><span i18n>Adicionar</span>
+    </button>
+    <button type="button" [class.active]="mobilePanel() === 'properties'"
+      [attr.aria-pressed]="mobilePanel() === 'properties'" [disabled]="!selection()"
+      (click)="setMobilePanel('properties')">
+      <span class="pi pi-sliders-h" aria-hidden="true"></span><span i18n>Ajustar</span>
+    </button>
+  </nav>
+
+  @if (notification(); as message) {
+    <div class="visual-builder-notification" role="status">
+      <span class="pi pi-check" aria-hidden="true"></span>{{ message }}
     </div>
-    <span i18n>As alterações entram no rascunho automaticamente.</span>
-  </header>
-  <div #editorHost class="page-builder-editor"></div>
+  }
+
+  <p-dialog header="Modelos de página" [visible]="templatesVisible()"
+    (visibleChange)="templatesVisible.set($event)" [modal]="true" [maximizable]="true"
+    [closeOnEscape]="true" [dismissableMask]="true" [blockScroll]="true"
+    [focusOnShow]="true" [focusTrap]="true" [draggable]="false" [resizable]="false"
+    closeAriaLabel="Fechar modelos de página" i18n-closeAriaLabel
+    [style]="{ width: 'min(1180px, calc(100vw - 32px))', height: 'min(820px, calc(100vh - 32px))' }"
+    styleClass="visual-builder-template-dialog" i18n-header>
+    <app-visual-builder-template-library [templates]="templates()" [currentDocument]="currentDocument()"
+      (applyTemplate)="requestTemplate($event)"
+      (saveTemplate)="saveCurrentAsTemplate($event)"></app-visual-builder-template-library>
+  </p-dialog>
+
+  <p-dialog header="Pré-visualização" [visible]="previewVisible()" (visibleChange)="previewVisible.set($event)"
+    [modal]="true" [maximizable]="true"
+    [closeOnEscape]="true" [dismissableMask]="true" [blockScroll]="true"
+    [focusOnShow]="true" [focusTrap]="true" [draggable]="false" [resizable]="false"
+    closeAriaLabel="Fechar pré-visualização" i18n-closeAriaLabel
+    [style]="{ width: 'calc(100vw - 24px)', height: 'calc(100vh - 24px)' }"
+    styleClass="visual-builder-preview-dialog" i18n-header>
+    <div class="visual-builder-preview-toolbar" aria-label="Tamanho da prévia" i18n-aria-label>
+      <button type="button" [class.active]="device() === 'desktop'" (click)="setDevice('desktop')">
+        <span class="pi pi-desktop" aria-hidden="true"></span><span i18n>Computador</span>
+      </button>
+      <button type="button" [class.active]="device() === 'notebook'" (click)="setDevice('notebook')">
+        <span class="pi pi-desktop" aria-hidden="true"></span><span i18n>Notebook</span>
+      </button>
+      <button type="button" [class.active]="device() === 'tablet'" (click)="setDevice('tablet')">
+        <span class="pi pi-tablet" aria-hidden="true"></span><span i18n>Tablet</span>
+      </button>
+      <button type="button" [class.active]="device() === 'mobile'" (click)="setDevice('mobile')">
+        <span class="pi pi-mobile" aria-hidden="true"></span><span i18n>Celular</span>
+      </button>
+    </div>
+    <app-visual-builder-preview [document]="currentDocument()" [width]="previewWidth()"
+      title="Pré-visualização da página atual" i18n-title></app-visual-builder-preview>
+  </p-dialog>
 </section>

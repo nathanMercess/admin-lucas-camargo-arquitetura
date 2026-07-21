@@ -33,6 +33,7 @@
         (linkChange)="updateLink($event)" i18n-label></app-site-link-editor>
       <app-media-reference-editor label="Imagem de fundo" [reference]="currentSection.background"
         [assets]="config().media" (referenceChange)="updateMedia($event)"
+        (assetUploaded)="assetUploaded.emit($event)"
         i18n-label></app-media-reference-editor>
     }
     @case ('manifesto') {
@@ -56,9 +57,22 @@
               <label class="full"><span i18n>Descrição</span><textarea pTextarea formControlName="description"
                 rows="3"></textarea></label>
             </div>
-            <p-button type="button" label="Remover área" severity="danger" [text]="true"
-              (onClick)="removePracticeArea($index)" i18n-label></p-button>
+            <div class="list-card-actions" role="group" aria-label="Ações da área" i18n-aria-label>
+              <p-button type="button" icon="pi pi-arrow-up" severity="secondary" [text]="true"
+                [disabled]="$first" ariaLabel="Mover área para cima"
+                (onClick)="moveCollectionItem('practiceAreas', $index, -1)" i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-arrow-down" severity="secondary" [text]="true"
+                [disabled]="$last" ariaLabel="Mover área para baixo"
+                (onClick)="moveCollectionItem('practiceAreas', $index, 1)" i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-copy" severity="secondary" [text]="true"
+                ariaLabel="Duplicar área" (onClick)="duplicateCollectionItem('practiceAreas', $index)"
+                i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
+                ariaLabel="Excluir área" (onClick)="removePracticeArea($index)" i18n-ariaLabel></p-button>
+            </div>
           </div>
+        } @empty {
+          <p class="list-editor-empty" i18n>Nenhuma área adicionada. Use “Adicionar área” para começar.</p>
         }
         <p-button type="button" label="Adicionar área" severity="secondary" [outlined]="true"
           (onClick)="addPracticeArea()" i18n-label></p-button>
@@ -94,9 +108,22 @@
               <label><span i18n>Valor</span><input pInputText formControlName="value" /></label>
               <label><span i18n>Rótulo</span><input pInputText formControlName="label" /></label>
             </div>
-            <p-button type="button" label="Remover indicador" severity="danger" [text]="true"
-              (onClick)="removeMetric($index)" i18n-label></p-button>
+            <div class="list-card-actions" role="group" aria-label="Ações do indicador" i18n-aria-label>
+              <p-button type="button" icon="pi pi-arrow-up" severity="secondary" [text]="true"
+                [disabled]="$first" ariaLabel="Mover indicador para cima"
+                (onClick)="moveCollectionItem('metrics', $index, -1)" i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-arrow-down" severity="secondary" [text]="true"
+                [disabled]="$last" ariaLabel="Mover indicador para baixo"
+                (onClick)="moveCollectionItem('metrics', $index, 1)" i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-copy" severity="secondary" [text]="true"
+                ariaLabel="Duplicar indicador" (onClick)="duplicateCollectionItem('metrics', $index)"
+                i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
+                ariaLabel="Excluir indicador" (onClick)="removeMetric($index)" i18n-ariaLabel></p-button>
+            </div>
           </div>
+        } @empty {
+          <p class="list-editor-empty" i18n>Nenhum indicador adicionado.</p>
         }
         <p-button type="button" label="Adicionar indicador" severity="secondary" [outlined]="true"
           (onClick)="addMetric()" i18n-label></p-button>
@@ -119,7 +146,8 @@
           <input pInputText formControlName="portraitAriaLabel" /></label></div>
       </details>
       <app-media-reference-editor label="Retrato" [reference]="currentSection.portrait" [assets]="config().media"
-        (referenceChange)="updateMedia($event)" i18n-label></app-media-reference-editor>
+        (referenceChange)="updateMedia($event)" (assetUploaded)="assetUploaded.emit($event)"
+        i18n-label></app-media-reference-editor>
       <app-site-link-editor label="Link do perfil" [link]="currentSection.link"
         (linkChange)="updateLink($event)" i18n-label></app-site-link-editor>
     }
@@ -136,9 +164,22 @@
               <label class="full"><span i18n>Descrição</span><textarea pTextarea formControlName="description"
                 rows="3"></textarea></label>
             </div>
-            <p-button type="button" label="Remover etapa" severity="danger" [text]="true"
-              (onClick)="removeStep($index)" i18n-label></p-button>
+            <div class="list-card-actions" role="group" aria-label="Ações da etapa" i18n-aria-label>
+              <p-button type="button" icon="pi pi-arrow-up" severity="secondary" [text]="true"
+                [disabled]="$first" ariaLabel="Mover etapa para cima"
+                (onClick)="moveCollectionItem('steps', $index, -1)" i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-arrow-down" severity="secondary" [text]="true"
+                [disabled]="$last" ariaLabel="Mover etapa para baixo"
+                (onClick)="moveCollectionItem('steps', $index, 1)" i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-copy" severity="secondary" [text]="true"
+                ariaLabel="Duplicar etapa" (onClick)="duplicateCollectionItem('steps', $index)"
+                i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
+                ariaLabel="Excluir etapa" (onClick)="removeStep($index)" i18n-ariaLabel></p-button>
+            </div>
           </div>
+        } @empty {
+          <p class="list-editor-empty" i18n>Nenhuma etapa adicionada.</p>
         }
         <p-button type="button" label="Adicionar etapa" severity="secondary" [outlined]="true"
           (onClick)="addStep()" i18n-label></p-button>
@@ -158,9 +199,22 @@
               <label><span i18n>Valor exibido</span><input pInputText formControlName="value" /></label>
               <label class="full"><span i18n>Link opcional</span><input pInputText formControlName="href" /></label>
             </div>
-            <p-button type="button" label="Remover canal" severity="danger" [text]="true"
-              (onClick)="removeChannel($index)" i18n-label></p-button>
+            <div class="list-card-actions" role="group" aria-label="Ações do canal" i18n-aria-label>
+              <p-button type="button" icon="pi pi-arrow-up" severity="secondary" [text]="true"
+                [disabled]="$first" ariaLabel="Mover canal para cima"
+                (onClick)="moveCollectionItem('channels', $index, -1)" i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-arrow-down" severity="secondary" [text]="true"
+                [disabled]="$last" ariaLabel="Mover canal para baixo"
+                (onClick)="moveCollectionItem('channels', $index, 1)" i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-copy" severity="secondary" [text]="true"
+                ariaLabel="Duplicar canal" (onClick)="duplicateCollectionItem('channels', $index)"
+                i18n-ariaLabel></p-button>
+              <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
+                ariaLabel="Excluir canal" (onClick)="removeChannel($index)" i18n-ariaLabel></p-button>
+            </div>
           </div>
+        } @empty {
+          <p class="list-editor-empty" i18n>Nenhum canal de contato adicionado.</p>
         }
         <p-button type="button" label="Adicionar canal" severity="secondary" [outlined]="true"
           (onClick)="addChannel()" i18n-label></p-button>

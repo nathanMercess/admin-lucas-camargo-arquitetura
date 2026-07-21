@@ -1,8 +1,16 @@
 <fieldset class="media-reference-editor" [formGroup]="referenceForm">
   <legend>{{ label() }}</legend>
   <div class="media-grid">
-    <div class="field full"><span i18n>Arquivo</span><p-select [options]="assetOptions()" optionLabel="id" optionValue="id"
-      formControlName="assetId" [filter]="true" ariaLabel="Arquivo de mídia" i18n-ariaLabel></p-select></div>
+    <app-media-asset-picker
+      class="full"
+      label="Imagem"
+      [assets]="assetOptions()"
+      [value]="referenceForm.controls.assetId.value"
+      provenance="reference"
+      (valueChange)="updateAssetId($event)"
+      (assetUploaded)="assetUploaded.emit($event)"
+      i18n-label>
+    </app-media-asset-picker>
     <label class="full"><span i18n>Descrição da imagem</span><input pInputText formControlName="alt" /></label>
     <label class="full"><span i18n>Legenda</span><input pInputText formControlName="caption" /></label>
     <details class="advanced full">

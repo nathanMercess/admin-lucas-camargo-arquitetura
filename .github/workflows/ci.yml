@@ -97,5 +97,8 @@ jobs:
             --quiet
       - name: Verificar publicação
         run: |
+          ADMIN_URL="https://$SERVICE-${{ vars.GCP_PROJECT_NUMBER }}.$GCP_REGION.run.app"
           test "$(gcloud run services describe "$SERVICE" --project="$GCP_PROJECT_ID" --region="$GCP_REGION" --format='value(status.conditions[0].status)')" = True
           test "$(gcloud run services describe "$SERVICE" --project="$GCP_PROJECT_ID" --region="$GCP_REGION" --format="value(metadata.annotations.'run.googleapis.com/iap-enabled')")" = true
+          STATUS="$(curl --silent --output /dev/null --write-out '%{http_code}' "$ADMIN_URL/healthz")"
+          test "$STATUS" = 302 -o "$STATUS" = 401 -o "$STATUS" = 403

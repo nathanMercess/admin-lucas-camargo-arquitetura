@@ -6,6 +6,7 @@ import {
 } from '@angular/common/http';
 import { Injectable, InjectionToken, Signal, inject, isDevMode, signal } from '@angular/core';
 import { DEFAULT_SITE_CONFIG } from '@shared/config/default-site-config';
+import { MediaAsset } from '@shared/models/media-asset.model';
 import { SiteConfigV1 } from '@shared/models/site-config-v1.model';
 import { finalize, take } from 'rxjs';
 
@@ -65,6 +66,21 @@ export class ContentDraftService {
   public updateDraft(draft: SiteConfigV1): void {
     this.draftState.set(draft);
     this.dirtyState.set(true);
+  }
+
+  public registerMediaAsset(asset: MediaAsset): boolean {
+    const draft = this.draftState();
+
+    if (!draft || draft.media.some((current) => current.id === asset.id))
+      return false;
+
+    this.updateDraft({ ...draft, media: [...draft.media, asset] });
+    return true;
+  }
+
+  public registerAndSaveMediaAsset(asset: MediaAsset): void {
+    if (this.registerMediaAsset(asset))
+      this.save();
   }
 
   public save(): void {

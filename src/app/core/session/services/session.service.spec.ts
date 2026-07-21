@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 
-import { SessionService } from './session.service';
+import { SESSION_DEVELOPMENT_FALLBACK, SessionService } from './session.service';
 
 describe('SessionService', () => {
   let service: SessionService;
@@ -10,7 +10,11 @@ describe('SessionService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: SESSION_DEVELOPMENT_FALLBACK, useValue: false },
+      ],
     });
 
     service = TestBed.inject(SessionService);
@@ -21,6 +25,9 @@ describe('SessionService', () => {
 
   it('loads the authenticated identity from the same-origin API', () => {
     service.load();
+
+    expect(service.loading()).toBe(true);
+    expect(service.error()).toBeNull();
 
     const request = httpTestingController.expectOne('/api/v1/session');
     request.flush({
@@ -40,6 +47,7 @@ describe('SessionService', () => {
     expect(service.resolvePublishedContentPath('/content/media/../secret.webp')).toBe('');
     expect(service.resolvePublishedContentPath('/content/media//asset.webp')).toBe('');
     expect(service.loading()).toBe(false);
+    expect(service.developmentFallback()).toBe(false);
   });
 
   it('rejects an unsafe published content base returned by the API', () => {
@@ -55,5 +63,49 @@ describe('SessionService', () => {
     });
 
     expect(service.resolvePublishedContentPath('/content/media/asset.webp')).toBe('');
+  });
+
+  it('exposes a recoverable error when the session API is unavailable in production', () => {
+    service.load();
+
+    const request = httpTestingController.expectOne('/api/v1/session');
+    request.flush('Unavailable', { status: 503, statusText: 'Service Unavailable' });
+
+    expect(service.loading()).toBe(false);
+    expect(service.session()).toBeNull();
+    expect(service.developmentFallback()).toBe(false);
+    expect(service.error()).toContain('Tente novamente');
+  });
+});
+
+describe('SessionService local development fallback', () => {
+  let service: SessionService;
+  let httpTestingController: HttpTestingController;
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: SESSION_DEVELOPMENT_FALLBACK, useValue: true },
+      ],
+    });
+
+    service = TestBed.inject(SessionService);
+    httpTestingController = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => httpTestingController.verify());
+
+  it('uses a neutral local state when the API is unavailable', () => {
+    service.load();
+
+    const request = httpTestingController.expectOne('/api/v1/session');
+    request.flush('Unavailable', { status: 503, statusText: 'Service Unavailable' });
+
+    expect(service.loading()).toBe(false);
+    expect(service.session()).toBeNull();
+    expect(service.error()).toBeNull();
+    expect(service.developmentFallback()).toBe(true);
   });
 });

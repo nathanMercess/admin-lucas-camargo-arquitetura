@@ -1,13 +1,16 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  ElementRef,
   OnInit,
+  ViewChild,
   computed,
   effect,
   inject,
   signal,
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { MediaAsset } from '@shared/models/media-asset.model';
 import { MediaReference } from '@shared/models/media-reference.model';
 import { PortfolioCategory } from '@shared/models/portfolio-category.model';
 import { PortfolioProject } from '@shared/models/portfolio-project.model';
@@ -29,11 +32,41 @@ export class ProjectsComponent implements OnInit {
   private readonly confirmationService = inject(ConfirmationService);
   private readonly editingProjectId = signal<string | null>(null);
   private readonly editingCategoryId = signal<string | null>(null);
+  private readonly pendingSave = signal<'project' | 'category' | null>(null);
+  private projectReturnFocus: HTMLElement | null = null;
+  private categoryReturnFocus: HTMLElement | null = null;
+
+  @ViewChild('projectTitleInput')
+  private projectTitleInput?: ElementRef<HTMLInputElement>;
+
+  @ViewChild('categoryTitleInput')
+  private categoryTitleInput?: ElementRef<HTMLInputElement>;
+
   protected readonly draftService = inject(ContentDraftService);
   protected readonly projectRows = signal<PortfolioProject[]>([]);
   protected readonly categoryRows = signal<PortfolioCategory[]>([]);
   protected readonly projectDrawerVisible = signal(false);
   protected readonly categoryDrawerVisible = signal(false);
+  protected readonly projectSubmissionPending = computed(() => this.pendingSave() === 'project');
+  protected readonly categorySubmissionPending = computed(() => this.pendingSave() === 'category');
+  protected readonly projectDrawerTitle = computed(() => this.editingProjectId()
+    ? $localize`:@@admin.projects.editProjectTitle:Editar projeto`
+    : $localize`:@@admin.projects.createProjectTitle:Adicionar projeto`);
+  protected readonly projectDrawerDescription = computed(() => this.editingProjectId()
+    ? $localize`:@@admin.projects.editProjectDescription:Atualize o conteúdo, as imagens e a publicação deste projeto.`
+    : $localize`:@@admin.projects.createProjectDescription:Cadastre as informações e imagens do novo projeto.`);
+  protected readonly projectSubmitLabel = computed(() => this.editingProjectId()
+    ? $localize`:@@admin.projects.updateProject:Salvar alterações do projeto`
+    : $localize`:@@admin.projects.createProject:Adicionar projeto`);
+  protected readonly categoryDrawerTitle = computed(() => this.editingCategoryId()
+    ? $localize`:@@admin.projects.editCategoryTitle:Editar categoria`
+    : $localize`:@@admin.projects.createCategoryTitle:Criar categoria`);
+  protected readonly categoryDrawerDescription = computed(() => this.editingCategoryId()
+    ? $localize`:@@admin.projects.editCategoryDescription:Atualize o nome, a descrição e a imagem desta categoria.`
+    : $localize`:@@admin.projects.createCategoryDescription:Crie uma categoria para organizar os projetos do portfólio.`);
+  protected readonly categorySubmitLabel = computed(() => this.editingCategoryId()
+    ? $localize`:@@admin.projects.updateCategory:Salvar alterações da categoria`
+    : $localize`:@@admin.projects.createCategory:Criar categoria`);
   protected readonly mediaOptions = computed(() => [...(this.draftService.draft()?.media ?? [])]);
   protected readonly approvedVisualClasses = [
     {
@@ -100,6 +133,25 @@ export class ProjectsComponent implements OnInit {
       this.projectRows.set([...draft.projects].sort((first, second) => first.order - second.order));
       this.categoryRows.set([...draft.portfolioCategories]);
     });
+
+    effect(() => {
+      const pendingSave = this.pendingSave();
+
+      if (!pendingSave || this.draftService.saving())
+        return;
+
+      if (this.draftService.dirty()) {
+        if (this.draftService.error())
+          this.pendingSave.set(null);
+
+        return;
+      }
+
+      if (pendingSave === 'project')
+        this.closeProjectDrawer();
+      else
+        this.closeCategoryDrawer();
+    });
   }
 
   public ngOnInit(): void {
@@ -107,6 +159,10 @@ export class ProjectsComponent implements OnInit {
   }
 
   protected openNewProject(): void {
+    if (this.draftService.saving())
+      return;
+
+    this.projectReturnFocus = this.activeElement();
     this.editingProjectId.set(null);
     this.projectForm.controls.id.enable();
     this.projectForm.reset({
@@ -135,6 +191,10 @@ export class ProjectsComponent implements OnInit {
   }
 
   protected editProject(project: PortfolioProject): void {
+    if (this.draftService.saving())
+      return;
+
+    this.projectReturnFocus = this.activeElement();
     this.editingProjectId.set(project.id);
     this.projectForm.controls.id.disable();
     this.projectForm.reset({
@@ -159,7 +219,7 @@ export class ProjectsComponent implements OnInit {
   protected saveProject(): void {
     const draft = this.draftService.draft();
 
-    if (!draft)
+    if (!draft || this.draftService.saving() || this.pendingSave())
       return;
 
     if (this.hasProjectConflict(draft.projects) || this.projectForm.invalid) {
@@ -197,8 +257,26 @@ export class ProjectsComponent implements OnInit {
       : [...draft.projects, project];
 
     this.draftService.updateDraft({ ...draft, projects });
+    this.pendingSave.set('project');
     this.draftService.save();
-    this.projectDrawerVisible.set(false);
+  }
+
+  protected handleProjectDrawerVisibleChange(visible: boolean): void {
+    if (visible) {
+      this.projectDrawerVisible.set(true);
+      return;
+    }
+
+    if (this.projectSubmissionPending()) {
+      this.projectDrawerVisible.set(true);
+      return;
+    }
+
+    this.closeProjectDrawer();
+  }
+
+  protected focusProjectTitle(): void {
+    this.projectTitleInput?.nativeElement.focus();
   }
 
   protected synchronizeCanonicalPath(): void {
@@ -235,15 +313,19 @@ export class ProjectsComponent implements OnInit {
   }
 
   protected requestDeleteProject(project: PortfolioProject): void {
+    if (this.draftService.saving())
+      return;
+
     this.confirmationService.confirm({
+      key: 'project-actions',
       header: $localize`:@@admin.projects.deleteTitle:Excluir projeto?`,
       message: $localize`:@@admin.projects.deleteMessage:O projeto ${project.title} será removido do rascunho.`,
-      acceptLabel: $localize`:@@admin.projects.deleteAccept:Excluir`,
+      acceptLabel: $localize`:@@admin.projects.deleteProjectAccept:Excluir projeto`,
       rejectLabel: $localize`:@@admin.projects.cancel:Cancelar`,
       accept: () => {
         const draft = this.draftService.draft();
 
-        if (!draft)
+        if (!draft || this.draftService.saving())
           return;
 
         this.draftService.updateDraft({
@@ -258,7 +340,7 @@ export class ProjectsComponent implements OnInit {
   protected toggleProjectVisibility(project: PortfolioProject): void {
     const draft = this.draftService.draft();
 
-    if (!draft)
+    if (!draft || this.draftService.saving())
       return;
 
     const projects = draft.projects.map((current) => current.id === project.id
@@ -271,7 +353,7 @@ export class ProjectsComponent implements OnInit {
   protected handleProjectReorder(): void {
     const draft = this.draftService.draft();
 
-    if (!draft)
+    if (!draft || this.draftService.saving())
       return;
 
     const projects = this.projectRows().map((project, index) => ({
@@ -284,6 +366,10 @@ export class ProjectsComponent implements OnInit {
   }
 
   protected openNewCategory(): void {
+    if (this.draftService.saving())
+      return;
+
+    this.categoryReturnFocus = this.activeElement();
     this.editingCategoryId.set(null);
     this.categoryForm.controls.id.enable();
     this.categoryForm.reset({
@@ -298,6 +384,10 @@ export class ProjectsComponent implements OnInit {
   }
 
   protected editCategory(category: PortfolioCategory): void {
+    if (this.draftService.saving())
+      return;
+
+    this.categoryReturnFocus = this.activeElement();
     this.editingCategoryId.set(category.id);
     this.categoryForm.controls.id.disable();
     this.categoryForm.reset({
@@ -314,7 +404,7 @@ export class ProjectsComponent implements OnInit {
   protected saveCategory(): void {
     const draft = this.draftService.draft();
 
-    if (!draft)
+    if (!draft || this.draftService.saving() || this.pendingSave())
       return;
 
     if (this.hasCategoryConflict(draft.portfolioCategories) || this.categoryForm.invalid) {
@@ -337,15 +427,37 @@ export class ProjectsComponent implements OnInit {
       : [...draft.portfolioCategories, category];
 
     this.draftService.updateDraft({ ...draft, portfolioCategories: categories });
+    this.pendingSave.set('category');
     this.draftService.save();
-    this.categoryDrawerVisible.set(false);
+  }
+
+  protected handleCategoryDrawerVisibleChange(visible: boolean): void {
+    if (visible) {
+      this.categoryDrawerVisible.set(true);
+      return;
+    }
+
+    if (this.categorySubmissionPending()) {
+      this.categoryDrawerVisible.set(true);
+      return;
+    }
+
+    this.closeCategoryDrawer();
+  }
+
+  protected focusCategoryTitle(): void {
+    this.categoryTitleInput?.nativeElement.focus();
   }
 
   protected requestDeleteCategory(category: PortfolioCategory): void {
+    if (this.draftService.saving())
+      return;
+
     this.confirmationService.confirm({
+      key: 'project-actions',
       header: $localize`:@@admin.projects.categoryDeleteTitle:Excluir categoria?`,
       message: $localize`:@@admin.projects.categoryDeleteMessage:A categoria ${category.title} será removida dos projetos e da navegação do portfólio.`,
-      acceptLabel: $localize`:@@admin.projects.deleteAccept:Excluir`,
+      acceptLabel: $localize`:@@admin.projects.deleteCategoryAccept:Excluir categoria`,
       rejectLabel: $localize`:@@admin.projects.cancel:Cancelar`,
       accept: () => this.deleteCategory(category.id),
     });
@@ -354,7 +466,7 @@ export class ProjectsComponent implements OnInit {
   protected handleCategoryReorder(): void {
     const draft = this.draftService.draft();
 
-    if (!draft)
+    if (!draft || this.draftService.saving())
       return;
 
     const portfolioCategories = this.categoryRows().map((category, index) => ({
@@ -375,7 +487,7 @@ export class ProjectsComponent implements OnInit {
     const draft = this.draftService.draft();
     const portfolio = this.portfolioSection();
 
-    if (!draft || !portfolio)
+    if (!draft || !portfolio || this.draftService.saving())
       return;
 
     const categoryIds = portfolio.categoryIds.includes(categoryId)
@@ -392,6 +504,10 @@ export class ProjectsComponent implements OnInit {
     this.projectForm.controls.gallery.push(this.createMediaReferenceForm());
   }
 
+  protected registerUploadedAsset(asset: MediaAsset): void {
+    this.draftService.registerAndSaveMediaAsset(asset);
+  }
+
   protected removeGalleryReference(index: number): void {
     this.projectForm.controls.gallery.removeAt(index);
   }
@@ -399,7 +515,7 @@ export class ProjectsComponent implements OnInit {
   private deleteCategory(categoryId: string): void {
     const draft = this.draftService.draft();
 
-    if (!draft)
+    if (!draft || this.draftService.saving())
       return;
 
     const projects = draft.projects.map((project) => ({
@@ -498,5 +614,36 @@ export class ProjectsComponent implements OnInit {
 
   private lines(value: string): readonly string[] {
     return value.split('\n').map((line) => line.trim()).filter(Boolean);
+  }
+
+  private closeProjectDrawer(): void {
+    this.projectDrawerVisible.set(false);
+    this.pendingSave.set(null);
+    this.editingProjectId.set(null);
+    this.projectForm.markAsPristine();
+    this.projectForm.markAsUntouched();
+    this.restoreFocus(this.projectReturnFocus);
+    this.projectReturnFocus = null;
+  }
+
+  private closeCategoryDrawer(): void {
+    this.categoryDrawerVisible.set(false);
+    this.pendingSave.set(null);
+    this.editingCategoryId.set(null);
+    this.categoryForm.markAsPristine();
+    this.categoryForm.markAsUntouched();
+    this.restoreFocus(this.categoryReturnFocus);
+    this.categoryReturnFocus = null;
+  }
+
+  private activeElement(): HTMLElement | null {
+    return document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  }
+
+  private restoreFocus(element: HTMLElement | null): void {
+    if (!element)
+      return;
+
+    queueMicrotask(() => element.focus());
   }
 }

@@ -84,4 +84,27 @@ describe('MediaLibraryService', () => {
     expect(service.assets()).toEqual([asset]);
     expect(service.uploading()).toBe(false);
   });
+
+  it('rejects unsupported files before requesting an upload ticket', () => {
+    const file = new File(['not-an-image'], 'briefing.pdf', { type: 'application/pdf' });
+    const completed = vi.fn();
+
+    service.upload(file, 'reference', completed);
+
+    expect(service.error()).toContain('JPEG, PNG, WebP ou AVIF');
+    expect(service.uploading()).toBe(false);
+    expect(completed).not.toHaveBeenCalled();
+  });
+
+  it('rejects images larger than 15 MB before requesting an upload ticket', () => {
+    const file = new File(['image'], 'obra.webp', { type: 'image/webp' });
+    Object.defineProperty(file, 'size', { value: (15 * 1024 * 1024) + 1 });
+    const completed = vi.fn();
+
+    service.upload(file, 'project', completed);
+
+    expect(service.error()).toContain('15 MB');
+    expect(service.uploading()).toBe(false);
+    expect(completed).not.toHaveBeenCalled();
+  });
 });

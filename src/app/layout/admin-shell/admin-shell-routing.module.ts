@@ -22,6 +22,7 @@ const routes: Routes = [
       },
       {
         path: 'content',
+        data: { adminShellMode: 'focused-editor' },
         loadChildren: () =>
           import('../../features/content/content.module').then((module) => module.ContentModule),
       },

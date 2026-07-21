@@ -7,9 +7,10 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageModule } from 'primeng/message';
 import { TableModule } from 'primeng/table';
 
+import { SharedModule } from '@shared/shared.module';
+
 import { PublicationsRoutingModule } from './publications-routing.module';
 import { PublicationsComponent } from './publications.component';
-import { PublicationService } from './services/publication.service';
 
 @NgModule({
   declarations: [PublicationsComponent],
@@ -19,9 +20,10 @@ import { PublicationService } from './services/publication.service';
     ButtonModule,
     ConfirmDialogModule,
     MessageModule,
+    SharedModule,
     TableModule,
     PublicationsRoutingModule,
   ],
-  providers: [ConfirmationService, PublicationService],
+  providers: [ConfirmationService],
 })
 export class PublicationsModule {}

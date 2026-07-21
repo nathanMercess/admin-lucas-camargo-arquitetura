@@ -1,0 +1,58 @@
+<div class="media-asset-picker">
+  <div class="media-asset-picker__controls">
+    <div class="media-asset-picker__select">
+      <span>{{ label() }}</span>
+      <p-select
+        [options]="options()"
+        optionLabel="id"
+        optionValue="id"
+        [ngModel]="value()"
+        [ngModelOptions]="{ standalone: true }"
+        [showClear]="optional()"
+        [filter]="true"
+        [ariaLabel]="label()"
+        emptyMessage="Nenhuma imagem enviada"
+        emptyFilterMessage="Nenhuma imagem encontrada"
+        (ngModelChange)="selectAsset($event)"
+        i18n-emptyMessage
+        i18n-emptyFilterMessage>
+      </p-select>
+    </div>
+
+    <input
+      class="media-asset-picker__file"
+      [id]="inputId"
+      type="file"
+      accept="image/png,image/jpeg,image/webp,image/avif"
+      [disabled]="mediaService.uploading()"
+      (change)="upload($event)" />
+    <label class="media-asset-picker__upload" [for]="inputId">
+      <i class="pi pi-upload" aria-hidden="true"></i>
+      <span i18n>Enviar do computador</span>
+    </label>
+  </div>
+
+  @if (mediaService.uploading()) {
+    <p class="media-asset-picker__status" role="status">
+      <i class="pi pi-spin pi-spinner" aria-hidden="true"></i>
+      <span i18n>Enviando e preparando a imagem...</span>
+    </p>
+  } @else if (mediaService.error(); as errorMessage) {
+    <p class="media-asset-picker__error" role="alert">{{ errorMessage }}</p>
+  }
+
+  @if (selectedAsset(); as asset) {
+    <figure class="media-asset-picker__preview">
+      <img [src]="assetUrl(asset)" alt="" loading="lazy" />
+      <figcaption>
+        <strong>{{ asset.id }}</strong>
+        <span>{{ asset.width }} × {{ asset.height }} · {{ asset.mimeType }}</span>
+      </figcaption>
+    </figure>
+  } @else {
+    <div class="media-asset-picker__empty">
+      <i class="pi pi-image" aria-hidden="true"></i>
+      <span i18n>Selecione uma imagem da biblioteca ou envie um arquivo.</span>
+    </div>
+  }
+</div>

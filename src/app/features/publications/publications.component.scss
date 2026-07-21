@@ -62,6 +62,10 @@ p {
   background: var(--admin-color-ink);
 }
 
+.preview-stage app-visual-builder-preview {
+  height: min(74vh, 860px);
+}
+
 .site-preview {
   min-width: 320px;
   margin: 0 auto;

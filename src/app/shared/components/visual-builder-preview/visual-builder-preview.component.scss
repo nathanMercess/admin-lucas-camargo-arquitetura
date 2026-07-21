@@ -1,0 +1,29 @@
+:host {
+  display: block;
+  min-width: 0;
+  height: 100%;
+}
+
+.visual-builder-preview-stage {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  height: 100%;
+  overflow: auto;
+  background: #d9d8d6;
+}
+
+iframe {
+  display: block;
+  flex: 0 0 auto;
+  min-height: 100%;
+  border: 0;
+  background: #fff;
+  transition: width 180ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  iframe {
+    transition: none;
+  }
+}

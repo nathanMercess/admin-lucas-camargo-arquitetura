@@ -1,4 +1,5 @@
-<section class="publications-page" aria-labelledby="publications-title">
+<section class="publications-page" aria-labelledby="publications-title"
+  [attr.aria-busy]="publicationService.mutating()">
   <header class="publications-heading">
     <div>
       <span i18n>Publicação</span>
@@ -35,29 +36,41 @@
 
     @if (draftService.draft(); as draft) {
       <div class="preview-stage">
-        <article class="site-preview" [style.max-width]="previewWidth()">
-          <header>
-            <strong>{{ draft.identity.brandName }}</strong>
-            <span>{{ draft.identity.descriptor }}</span>
-          </header>
-          @for (section of visibleSections(); track section.id) {
-            <section>
-              <small>{{ section.type }} · {{ section.anchor }}</small>
-              <h3>{{ sectionTitle(section) }}</h3>
-              @switch (section.type) {
-                @case ('hero') { <p>{{ richText(section.supportingText) }}</p> }
-                @case ('manifesto') { <p>{{ section.body.join(' ') }}</p> }
-                @case ('practice') { <p>{{ section.practiceAreas.length }} áreas de atuação</p> }
-                @case ('portfolio') { <p>{{ section.description.join(' ') }}</p> }
-                @case ('metrics') { <p>{{ section.metrics.length }} indicadores</p> }
-                @case ('about') { <p>{{ section.profile.biography }}</p> }
-                @case ('process') { <p>{{ section.steps.length }} etapas</p> }
-                @case ('contact') { <p>{{ section.contactChannels.length }} canais de contato</p> }
-              }
-            </section>
+        @if (draft.visualBuilder; as visualBuilder) {
+          @if (visualBuilder.enabled && visualBuilder.html) {
+            <app-visual-builder-preview [document]="visualBuilder" [width]="previewWidth()"
+              title="Prévia da página criada no editor visual" i18n-title></app-visual-builder-preview>
+          } @else {
+            <ng-container *ngTemplateOutlet="legacyPreview"></ng-container>
           }
-          <footer>{{ draft.footer.statement }} · {{ draft.footer.location }}</footer>
-        </article>
+        } @else {
+          <ng-container *ngTemplateOutlet="legacyPreview"></ng-container>
+        }
+        <ng-template #legacyPreview>
+          <article class="site-preview" [style.max-width]="previewWidth()">
+            <header>
+              <strong>{{ draft.identity.brandName }}</strong>
+              <span>{{ draft.identity.descriptor }}</span>
+            </header>
+            @for (section of visibleSections(); track section.id) {
+              <section>
+                <small>{{ section.type }} · {{ section.anchor }}</small>
+                <h3>{{ sectionTitle(section) }}</h3>
+                @switch (section.type) {
+                  @case ('hero') { <p>{{ richText(section.supportingText) }}</p> }
+                  @case ('manifesto') { <p>{{ section.body.join(' ') }}</p> }
+                  @case ('practice') { <p>{{ section.practiceAreas.length }} áreas de atuação</p> }
+                  @case ('portfolio') { <p>{{ section.description.join(' ') }}</p> }
+                  @case ('metrics') { <p>{{ section.metrics.length }} indicadores</p> }
+                  @case ('about') { <p>{{ section.profile.biography }}</p> }
+                  @case ('process') { <p>{{ section.steps.length }} etapas</p> }
+                  @case ('contact') { <p>{{ section.contactChannels.length }} canais de contato</p> }
+                }
+              </section>
+            }
+            <footer>{{ draft.footer.statement }} · {{ draft.footer.location }}</footer>
+          </article>
+        </ng-template>
       </div>
     }
   </section>
@@ -86,5 +99,8 @@
     </p-table>
   </section>
 
-  <p-confirmdialog></p-confirmdialog>
+  <p-confirmdialog key="publication-actions" [blockScroll]="true" [closeOnEscape]="true"
+    [dismissableMask]="true" [focusTrap]="true" defaultFocus="reject"
+    [style]="{ width: 'min(34rem, calc(100vw - 32px))' }"
+    [breakpoints]="{ '430px': 'calc(100vw - 24px)' }"></p-confirmdialog>
 </section>

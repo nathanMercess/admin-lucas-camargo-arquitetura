@@ -1,0 +1,62 @@
+<section class="visual-builder-template-library" aria-labelledby="builder-template-title">
+  <header>
+    <div>
+      <span i18n>Modelos de página</span>
+      <h2 id="builder-template-title" i18n>Comece com uma boa base.</h2>
+      <p i18n>Veja o modelo inteiro antes de criar uma cópia. Seu conteúdo atual só será substituído após confirmação.</p>
+    </div>
+    <label for="builder-template-category">
+      <span i18n>Categoria</span>
+      <p-select inputId="builder-template-category" [options]="categoryOptions()" optionLabel="label" optionValue="value"
+        [ngModel]="category()" [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="category.set($event)"></p-select>
+    </label>
+  </header>
+
+  <div class="visual-builder-template-layout">
+    <div class="visual-builder-template-list" role="list" aria-label="Modelos disponíveis" i18n-aria-label>
+      @for (template of filteredTemplates(); track template.id) {
+        <button type="button" role="listitem" class="visual-builder-template-card"
+          [class.active]="selectedTemplate().id === template.id" (click)="selectedId.set(template.id)">
+          <span class="visual-builder-template-thumbnail" [attr.data-thumbnail]="template.thumbnail" aria-hidden="true">
+            <i></i><i></i><i></i><i></i>
+          </span>
+          <span class="visual-builder-template-copy">
+            <small>{{ template.category }}</small>
+            <strong>{{ template.name }}</strong>
+            <span>{{ template.description }}</span>
+          </span>
+          @if (template.custom) {
+            <span class="visual-builder-template-badge" i18n>Seu modelo</span>
+          }
+        </button>
+      } @empty {
+        <div class="visual-builder-template-empty" i18n>Nenhum modelo nesta categoria.</div>
+      }
+    </div>
+
+    <div class="visual-builder-template-preview">
+      <header>
+        <div><small>{{ selectedTemplate().category }}</small><strong>{{ selectedTemplate().name }}</strong></div>
+        <button type="button" pButton (click)="applyTemplate.emit(selectedTemplate())">
+          <span class="pi pi-copy" aria-hidden="true"></span><span i18n>Usar uma cópia</span>
+        </button>
+      </header>
+      <app-visual-builder-preview [document]="previewDocument()" title="Prévia do modelo selecionado"
+        i18n-title></app-visual-builder-preview>
+    </div>
+  </div>
+
+  <footer>
+    <div>
+      <strong i18n>Transforme a página atual em um modelo</strong>
+      <span i18n>O modelo ficará salvo junto ao rascunho para reutilização futura.</span>
+    </div>
+    <label for="custom-template-name" class="visually-hidden" i18n>Nome do novo modelo</label>
+    <input id="custom-template-name" [value]="customTemplateName()" placeholder="Ex.: Apresentação residencial"
+      maxlength="80" (input)="handleTemplateName($event)" i18n-placeholder />
+    <button type="button" pButton [disabled]="!customTemplateName().trim()" (click)="saveCurrent()">
+      <span class="pi pi-bookmark" aria-hidden="true"></span><span i18n>Salvar como modelo</span>
+    </button>
+  </footer>
+</section>

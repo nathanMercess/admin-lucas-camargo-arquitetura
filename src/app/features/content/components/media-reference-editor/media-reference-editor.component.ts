@@ -19,6 +19,7 @@ export class MediaReferenceEditorComponent {
   public readonly reference = input.required<MediaReference>();
   public readonly assets = input.required<readonly MediaAsset[]>();
   public readonly referenceChange = output<MediaReference>();
+  public readonly assetUploaded = output<MediaAsset>();
   protected readonly assetOptions = computed(() => [...this.assets()]);
   protected readonly referenceForm = this.formBuilder.nonNullable.group({
     assetId: ['', Validators.required],
@@ -53,6 +54,11 @@ export class MediaReferenceEditorComponent {
       this.referenceForm.markAsPristine();
       this.isHydrating = false;
     });
+  }
+
+  protected updateAssetId(assetId: string): void {
+    this.referenceForm.controls.assetId.setValue(assetId);
+    this.referenceForm.controls.assetId.markAsDirty();
   }
 
   private emitChange(): void {

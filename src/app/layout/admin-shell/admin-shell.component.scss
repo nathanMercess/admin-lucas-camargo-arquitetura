@@ -5,16 +5,24 @@
 
 .admin-shell {
   display: grid;
-  grid-template-columns: minmax(260px, 19vw) 1fr;
+  grid-template-columns: minmax(260px, 19vw) minmax(0, 1fr);
   min-height: 100vh;
+  overflow-x: clip;
+  transition: grid-template-columns 220ms ease;
+}
+
+.admin-shell--navigation-collapsed {
+  grid-template-columns: 76px minmax(0, 1fr);
 }
 
 .admin-shell-sidebar {
   position: sticky;
+  z-index: 20;
   top: 0;
   display: flex;
-  flex-direction: column;
+  min-width: 0;
   height: 100vh;
+  flex-direction: column;
   padding: 28px 22px;
   color: var(--admin-color-paper);
   background: var(--admin-color-ink);
@@ -23,14 +31,16 @@
 .admin-shell-brand,
 .admin-shell-access,
 .admin-shell-header,
+.admin-shell-header-actions,
 .admin-shell-environment {
   display: flex;
   align-items: center;
 }
 
 .admin-shell-brand {
-  gap: 14px;
-  padding: 0 8px 28px;
+  gap: 12px;
+  min-width: 0;
+  padding: 0 2px 28px 8px;
   border-bottom: 1px solid rgb(245 244 244 / 16%);
 }
 
@@ -38,6 +48,7 @@
   display: grid;
   width: 42px;
   height: 42px;
+  flex: 0 0 42px;
   place-items: center;
   border: 1px solid var(--admin-color-coral);
   color: var(--admin-color-coral);
@@ -46,11 +57,15 @@
   letter-spacing: 0.12em;
 }
 
-.admin-shell-brand div,
-.admin-shell-access div {
+.admin-shell-brand-copy,
+.admin-shell-access-copy {
   display: grid;
-  gap: 4px;
   min-width: 0;
+  gap: 4px;
+}
+
+.admin-shell-brand-copy {
+  flex: 1 1 auto;
 }
 
 .admin-shell-navigation {
@@ -71,6 +86,28 @@
   text-transform: uppercase;
 }
 
+:host ::ng-deep .admin-shell-navigation-toggle .p-button {
+  display: inline-flex;
+  min-width: 36px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgb(245 244 244 / 16%);
+  color: var(--admin-color-paper);
+  background: transparent;
+}
+
+:host ::ng-deep .admin-shell-navigation-toggle .p-button-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 :host ::ng-deep .admin-navigation {
   margin-top: 24px;
   border: 0;
@@ -87,10 +124,20 @@
 
 :host ::ng-deep .admin-navigation .p-menu-item-link {
   display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
   padding: 12px 14px;
   border-left: 2px solid transparent;
   color: rgb(245 244 244 / 72%);
   text-decoration: none;
+}
+
+:host ::ng-deep .admin-navigation .p-menu-item-icon {
+  flex: 0 0 18px;
+  width: 18px;
+  font-size: 15px;
+  text-align: center;
 }
 
 :host ::ng-deep .admin-navigation .p-menu-item-link:hover,
@@ -103,9 +150,14 @@
 
 .admin-shell-access {
   gap: 12px;
+  min-width: 0;
   margin-top: auto;
   padding: 20px 8px 0;
   border-top: 1px solid rgb(245 244 244 / 16%);
+}
+
+.admin-shell-access-copy {
+  flex: 1 1 auto;
 }
 
 .admin-shell-access strong {
@@ -118,9 +170,9 @@
 
 :host ::ng-deep .admin-shell-access .p-avatar {
   display: grid;
-  flex: 0 0 38px;
   width: 38px;
   height: 38px;
+  flex: 0 0 38px;
   place-items: center;
   border-radius: 50%;
   color: var(--admin-color-ink);
@@ -133,6 +185,71 @@
   font-size: 8px;
   font-weight: 400;
   text-transform: uppercase;
+}
+
+:host ::ng-deep .admin-shell-access .p-button {
+  justify-content: flex-start;
+  padding: 4px 0;
+  color: var(--admin-color-paper);
+  background: transparent;
+}
+
+.admin-shell--navigation-collapsed .admin-shell-sidebar {
+  padding-right: 10px;
+  padding-left: 10px;
+}
+
+.admin-shell--navigation-collapsed .admin-shell-brand {
+  flex-direction: column;
+  padding: 0 0 20px;
+}
+
+.admin-shell--navigation-collapsed .admin-shell-brand-copy,
+.admin-shell--navigation-collapsed .admin-shell-access-copy {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.admin-shell--navigation-collapsed .admin-shell-access {
+  justify-content: center;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.admin-shell--navigation-collapsed .admin-navigation .p-menu-item-link {
+  justify-content: center;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.admin-shell--navigation-collapsed .admin-navigation .p-menu-item-label {
+  display: none;
+}
+
+.admin-shell--navigation-collapsed .admin-navigation .p-menu-item-icon {
+  flex-basis: 20px;
+  width: 20px;
+  margin: 0;
+  font-size: 17px;
+}
+
+:host ::ng-deep .admin-shell--navigation-collapsed .admin-navigation .p-menu-item-link {
+  justify-content: center;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+:host ::ng-deep .admin-shell--navigation-collapsed .admin-navigation .p-menu-item-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 .admin-shell-workspace {
@@ -159,6 +276,11 @@
   font-size: 13px;
 }
 
+.admin-shell-header-actions {
+  flex: 0 0 auto;
+  gap: 16px;
+}
+
 .admin-shell-environment {
   flex: 0 0 auto;
   gap: 8px;
@@ -177,38 +299,92 @@
 }
 
 .admin-shell-main {
+  min-width: 0;
   padding: clamp(28px, 4vw, 64px);
 }
 
+.admin-shell--focused-editor .admin-shell-header {
+  min-height: 64px;
+  padding: 10px 20px;
+}
+
+.admin-shell--focused-editor {
+  height: 100svh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.admin-shell--focused-editor .admin-shell-workspace {
+  display: grid;
+  height: 100svh;
+  min-height: 0;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.admin-shell--focused-editor .admin-shell-header p,
+.admin-shell--focused-editor .admin-shell-environment {
+  display: none;
+}
+
+.admin-shell--focused-editor .admin-shell-main {
+  position: relative;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.admin-shell-main > router-outlet {
+  display: none;
+}
+
+.admin-shell--focused-editor .admin-shell-main > app-content-editor {
+  position: absolute;
+  inset: 0;
+  display: block;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
 @media (width <= 840px) {
-  .admin-shell {
-    grid-template-columns: 1fr;
+  .admin-shell,
+  .admin-shell--navigation-collapsed {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .admin-shell-sidebar {
-    position: static;
+    position: sticky;
     display: grid;
-    grid-template-columns: 1fr auto;
     height: auto;
-    padding: max(18px, calc(env(safe-area-inset-top) + 12px))
-      max(20px, calc(env(safe-area-inset-right) + 16px)) 14px
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: max(14px, calc(env(safe-area-inset-top) + 10px))
+      max(20px, calc(env(safe-area-inset-right) + 16px)) 12px
       max(20px, calc(env(safe-area-inset-left) + 16px));
   }
 
-  .admin-shell-brand {
+  .admin-shell-brand,
+  .admin-shell--navigation-collapsed .admin-shell-brand {
+    flex-direction: row;
     padding: 0;
     border: 0;
   }
 
+  .admin-shell--navigation-collapsed .admin-shell-brand-copy {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+  }
+
   .admin-shell-navigation {
     grid-column: 1 / -1;
-    grid-row: 2;
     width: 100%;
   }
 
   :host ::ng-deep .admin-navigation {
     width: 100%;
-    margin-top: 16px;
+    margin-top: 14px;
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -225,12 +401,22 @@
     gap: 4px;
   }
 
-  :host ::ng-deep .admin-navigation .p-menu-item-link {
+  :host ::ng-deep .admin-navigation .p-menu-item-link,
+  :host ::ng-deep .admin-shell--navigation-collapsed .admin-navigation .p-menu-item-link {
+    justify-content: flex-start;
     padding: 10px 12px;
     border-bottom: 2px solid transparent;
     border-left: 0;
     font-size: 0.9rem;
     white-space: nowrap;
+  }
+
+  :host ::ng-deep .admin-shell--navigation-collapsed .admin-navigation .p-menu-item-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
   }
 
   :host ::ng-deep .admin-navigation .p-menu-item-link:hover,
@@ -240,13 +426,8 @@
     border-left-color: transparent;
   }
 
+  .admin-shell--navigation-collapsed .admin-shell-navigation,
   .admin-shell-access {
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-
-  .admin-shell-access div {
     display: none;
   }
 
@@ -256,24 +437,14 @@
     padding-right: max(clamp(24px, 4vw, 64px), calc(env(safe-area-inset-right) + 18px));
     padding-left: max(clamp(24px, 4vw, 64px), calc(env(safe-area-inset-left) + 18px));
   }
+
+  .admin-shell--focused-editor .admin-shell-header {
+    padding-right: max(16px, calc(env(safe-area-inset-right) + 12px));
+    padding-left: max(16px, calc(env(safe-area-inset-left) + 12px));
+  }
 }
 
 @media (width <= 560px) {
-  :host ::ng-deep .admin-navigation {
-    overflow-x: auto;
-  }
-
-  :host ::ng-deep .admin-navigation .p-menu-list {
-    display: flex;
-    width: max-content;
-    min-width: 100%;
-  }
-
-  :host ::ng-deep .admin-navigation .p-menu-item-link {
-    padding-right: 12px;
-    padding-left: 12px;
-  }
-
   .admin-shell-header {
     display: grid;
     padding-top: 20px;
@@ -285,9 +456,28 @@
     display: none;
   }
 
+  .admin-shell-header-actions {
+    width: 100%;
+  }
+
+  :host ::ng-deep .admin-shell-header-actions .p-button {
+    width: 100%;
+    justify-content: center;
+  }
+
   .admin-shell-main {
     padding: 24px max(20px, calc(env(safe-area-inset-right) + 16px))
       max(24px, calc(env(safe-area-inset-bottom) + 18px))
       max(20px, calc(env(safe-area-inset-left) + 16px));
+  }
+
+  .admin-shell--focused-editor .admin-shell-main {
+    padding: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell {
+    transition: none;
   }
 }

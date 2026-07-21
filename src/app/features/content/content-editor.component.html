@@ -1,4 +1,5 @@
-<section class="content-editor" aria-labelledby="content-editor-title">
+<section class="content-editor" aria-labelledby="content-editor-title"
+  [class.content-editor--visual-mode]="activeTab() === 'sections'">
   <header class="content-editor-heading">
     <div>
       <span class="content-editor-kicker" i18n>Conteúdo dinâmico</span>
@@ -26,6 +27,9 @@
   @if (draftService.error(); as errorMessage) {
     <p-message class="content-editor-message" [severity]="draftService.developmentFallback() ? 'warn' : 'error'"
       [text]="errorMessage"></p-message>
+  }
+  @if (publicationService.error(); as publicationError) {
+    <p-message severity="error" [text]="publicationError"></p-message>
   }
 
   @if (draftService.loading() && !draftService.draft()) {
@@ -57,21 +61,86 @@
       <aside class="content-editor-guide" aria-label="Fluxo recomendado" i18n-aria-label>
         <strong i18n>Por onde começar</strong>
         <ol>
-          <li i18n>Atualize os textos do site.</li>
-          <li i18n>Veja e escolha um modelo visual.</li>
+          <li i18n>Escolha a página ou área que deseja administrar.</li>
+          <li i18n>Atualize o visual, os textos e as mídias.</li>
           <li i18n>Salve o rascunho para revisar antes de publicar.</li>
         </ol>
       </aside>
 
+      <nav class="content-editor-pages" aria-labelledby="content-editor-pages-title">
+        <header class="content-editor-pages-heading">
+          <div>
+            <span i18n>Páginas e rotas</span>
+            <h2 id="content-editor-pages-title" i18n>Onde você quer trabalhar?</h2>
+          </div>
+          <p i18n>Cada rota real do site aparece aqui com seu status e a área responsável pela configuração.</p>
+        </header>
+
+        <div class="content-editor-page-groups">
+          @for (group of pageGroups(); track group.id) {
+            <section class="content-editor-page-group" [attr.aria-labelledby]="'page-group-' + group.id">
+              <header>
+                <h3 [id]="'page-group-' + group.id">{{ group.label }}</h3>
+                <span>{{ group.pages.length }}</span>
+              </header>
+              <div class="content-editor-page-grid">
+                @for (page of group.pages; track page.technicalId) {
+                  <article class="content-editor-page-card" [attr.data-page-id]="page.technicalId">
+                    <div class="content-editor-page-card-heading">
+                      <span class="pi" [class.pi-home]="page.route === '/'"
+                        [class.pi-sitemap]="page.kind === 'shared-template'"
+                        [class.pi-database]="page.kind === 'dynamic-data'"
+                        [class.pi-exclamation-triangle]="page.kind === 'system-page'"
+                        [class.pi-folder-open]="page.route === '/portfolio'" aria-hidden="true"></span>
+                      <div>
+                        <h4>{{ page.name }}</h4>
+                        <code>{{ page.route }}</code>
+                      </div>
+                    </div>
+                    <p>{{ page.description }}</p>
+                    <div class="content-editor-page-metadata">
+                      <span class="content-editor-page-status"
+                        [class.content-editor-page-status--available]="page.status === 'available'"
+                        [class.content-editor-page-status--empty]="page.status === 'empty'"
+                        [class.content-editor-page-status--hidden]="page.status === 'hidden'">
+                        {{ getPageStatusLabel(page.status) }}
+                      </span>
+                      <small>{{ getPageKindLabel(page) }}</small>
+                      <small>{{ getPageRouteLabel(page) }}</small>
+                      <small>{{ getPageDataSourceLabel(page.dataSource) }}</small>
+                      <small>{{ getPageEditorAreaLabel(page.editorArea) }}</small>
+                    </div>
+                    @if (page.configurable) {
+                      <p-button type="button" [label]="getPageActionLabel(page)" severity="secondary"
+                        [outlined]="true" (onClick)="openPageEditor(page)"></p-button>
+                    }
+                    @if (getPagePreviewUrl(page); as previewUrl) {
+                      <a [href]="previewUrl" target="_blank" rel="noopener noreferrer" i18n>
+                        Visualizar rota <span class="pi pi-external-link" aria-hidden="true"></span>
+                      </a>
+                    }
+                  </article>
+                }
+              </div>
+            </section>
+          }
+        </div>
+        <aside class="content-editor-page-inventory-note" aria-label="Rotas não publicadas" i18n-aria-label>
+          @for (note of routeAbsenceNotes; track note) {
+            <p>{{ note }}</p>
+          }
+        </aside>
+      </nav>
+
       <p-tabs [(value)]="activeTab" class="content-editor-tabs">
         <p-tablist>
-          <p-tab value="section-content" i18n>Textos do site</p-tab>
-          <p-tab value="identity" i18n>Marca</p-tab>
-          <p-tab value="templates" i18n>Modelos visuais</p-tab>
-          <p-tab value="structure" i18n>Menu e rodapé</p-tab>
           <p-tab value="sections" i18n>Editor visual</p-tab>
+          <p-tab value="section-content" i18n>Textos e seções</p-tab>
+          <p-tab value="identity" i18n>Marca e logos</p-tab>
+          <p-tab value="structure" i18n>Menu e rodapé</p-tab>
+          <p-tab value="templates" i18n>Estilos prontos</p-tab>
+          <p-tab value="appearance" i18n>Aparência avançada</p-tab>
           <p-tab value="seo" i18n>Google e compartilhamento</p-tab>
-          <p-tab value="theme" i18n>Aparência avançada</p-tab>
         </p-tablist>
 
         <p-tabpanels>
@@ -111,6 +180,24 @@
                     <small i18n>Use um endereço HTTPS completo.</small>
                   }
                 </div>
+
+                <app-media-asset-picker class="content-editor-field content-editor-field--full"
+                  label="Logo para fundos escuros" [assets]="draftService.draft()?.media ?? []"
+                  [value]="contentForm.controls.identity.controls.logoLightMediaId.value" provenance="brand"
+                  (valueChange)="contentForm.controls.identity.controls.logoLightMediaId.setValue($event)"
+                  (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
+
+                <app-media-asset-picker class="content-editor-field content-editor-field--full"
+                  label="Logo para fundos claros" [assets]="draftService.draft()?.media ?? []"
+                  [value]="contentForm.controls.identity.controls.logoDarkMediaId.value" provenance="brand"
+                  (valueChange)="contentForm.controls.identity.controls.logoDarkMediaId.setValue($event)"
+                  (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
+
+                <app-media-asset-picker class="content-editor-field content-editor-field--full"
+                  label="Ícone do navegador" [assets]="draftService.draft()?.media ?? []"
+                  [value]="contentForm.controls.identity.controls.faviconMediaId.value" provenance="brand"
+                  (valueChange)="contentForm.controls.identity.controls.faviconMediaId.setValue($event)"
+                  (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
               </div>
             </section>
           </p-tabpanel>
@@ -168,6 +255,12 @@
                   <h3 i18n>Como aparece em redes e mensagens</h3>
                 </header>
                 <div class="content-editor-fields content-editor-fields--two-columns">
+                  <app-media-asset-picker class="content-editor-field content-editor-field--full"
+                    label="Imagem de compartilhamento" [assets]="draftService.draft()?.media ?? []"
+                    [value]="contentForm.controls.seo.controls.openGraph.controls.imageMediaId.value"
+                    provenance="brand"
+                    (valueChange)="contentForm.controls.seo.controls.openGraph.controls.imageMediaId.setValue($event)"
+                    (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
                   <div class="content-editor-field">
                     <label for="seo-og-title" i18n>Título</label>
                     <input id="seo-og-title" pInputText formControlName="title" maxlength="70" />
@@ -191,6 +284,12 @@
                   <h3 i18n>Prévia em outras plataformas</h3>
                 </header>
                 <div class="content-editor-fields content-editor-fields--two-columns">
+                  <app-media-asset-picker class="content-editor-field content-editor-field--full"
+                    label="Imagem de compartilhamento" [assets]="draftService.draft()?.media ?? []"
+                    [value]="contentForm.controls.seo.controls.twitter.controls.imageMediaId.value"
+                    provenance="brand"
+                    (valueChange)="contentForm.controls.seo.controls.twitter.controls.imageMediaId.setValue($event)"
+                    (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
                   <div class="content-editor-field">
                     <label for="seo-twitter-title" i18n>Título</label>
                     <input id="seo-twitter-title" pInputText formControlName="title" maxlength="70" />
@@ -256,7 +355,7 @@
             }
           </p-tabpanel>
 
-          <p-tabpanel value="theme">
+          <p-tabpanel value="appearance">
             <section class="content-editor-panel" formGroupName="theme" aria-labelledby="theme-title">
               <header class="content-editor-panel-heading">
                 <span i18n>Personalização</span>
@@ -368,7 +467,8 @@
           <p-tabpanel value="structure">
             @if (draftService.draft(); as draft) {
               <app-site-structure-editor [config]="draft"
-                (configChange)="handleConfigChange($event)"></app-site-structure-editor>
+                (configChange)="handleConfigChange($event)"
+                (assetUploaded)="registerUploadedAsset($event)"></app-site-structure-editor>
             }
           </p-tabpanel>
 
@@ -378,13 +478,50 @@
                 <header class="content-editor-panel-heading">
                   <span i18n>Textos do site</span>
                   <h2 id="section-content-title" i18n>Edite cada parte da página.</h2>
-                  <p i18n>Abra uma seção, altere os campos desejados e acompanhe o status do rascunho no topo.</p>
+                  <p i18n>Crie, ordene e reaproveite seções. Abra uma delas para alterar seus textos e opções.</p>
                 </header>
+                <div class="content-editor-section-manager" aria-label="Adicionar uma seção" i18n-aria-label>
+                  <div>
+                    <label for="new-section-type" i18n>Tipo da nova seção</label>
+                    <p-select inputId="new-section-type" [options]="sectionDefinitions" optionLabel="label"
+                      optionValue="type" [ngModel]="newSectionType()" (ngModelChange)="newSectionType.set($event)"
+                      [ngModelOptions]="{ standalone: true }" ariaLabel="Tipo da nova seção"
+                      i18n-ariaLabel></p-select>
+                  </div>
+                  <p-button type="button" label="Adicionar seção" icon="pi pi-plus" severity="secondary"
+                    [outlined]="true" (onClick)="addSection()" i18n-label></p-button>
+                </div>
                 <div class="content-editor-section-content-list">
                   @for (item of sectionItems(); track item.id) {
-                    <app-section-content-editor [section]="item.section" [config]="draft"
-                      [expanded]="focusedSectionId() === item.id"
-                      (sectionChange)="handleSectionContentChange($event)"></app-section-content-editor>
+                    <article class="content-editor-section-item">
+                      <div class="content-editor-section-item-actions">
+                        <span>{{ $index + 1 | number: '2.0' }} · {{ item.label }}</span>
+                        <div>
+                          <p-button type="button" icon="pi pi-arrow-up" severity="secondary" [text]="true"
+                            [disabled]="$first" ariaLabel="Mover seção para cima"
+                            (onClick)="moveSection(item.id, -1)" i18n-ariaLabel></p-button>
+                          <p-button type="button" icon="pi pi-arrow-down" severity="secondary" [text]="true"
+                            [disabled]="$last" ariaLabel="Mover seção para baixo"
+                            (onClick)="moveSection(item.id, 1)" i18n-ariaLabel></p-button>
+                          <p-button type="button" icon="pi pi-copy" severity="secondary" [text]="true"
+                            ariaLabel="Duplicar seção" (onClick)="duplicateSection(item.id)"
+                            i18n-ariaLabel></p-button>
+                          <p-button type="button" icon="pi pi-trash" severity="danger" [text]="true"
+                            ariaLabel="Excluir seção" (onClick)="requestSectionRemoval(item.id)"
+                            i18n-ariaLabel></p-button>
+                        </div>
+                      </div>
+                      <app-section-content-editor [section]="item.section" [config]="draft"
+                        [expanded]="focusedSectionId() === item.id"
+                        (sectionChange)="handleSectionContentChange($event)"
+                        (assetUploaded)="registerUploadedAsset($event)"></app-section-content-editor>
+                    </article>
+                  } @empty {
+                    <div class="content-editor-section-empty" role="status">
+                      <span class="pi pi-inbox" aria-hidden="true"></span>
+                      <h3 i18n>Nenhuma seção configurada.</h3>
+                      <p i18n>Escolha um tipo acima para começar uma nova composição.</p>
+                    </div>
                   }
                 </div>
               </section>
@@ -392,29 +529,19 @@
           </p-tabpanel>
 
           <p-tabpanel value="sections">
-            <section class="content-editor-panel" aria-labelledby="sections-title">
-              <header class="content-editor-panel-heading">
-                <span i18n>Construtor por blocos</span>
-                <h2 id="sections-title" i18n>Monte a página do seu jeito.</h2>
-                <p i18n>Adicione blocos, mude a ordem e edite cada parte sem lidar com código.</p>
-              </header>
-
-              <div class="visual-builder-publish-choice">
-                <div>
-                  <strong i18n>Usar a página criada no editor</strong>
-                  <span i18n>Quando ativado, este layout substitui a página antiga depois da publicação.</span>
-                </div>
-                <p-toggleswitch inputId="visual-builder-enabled"
-                  [ngModel]="draftService.draft()?.visualBuilder?.enabled ?? false"
-                  [ngModelOptions]="{ standalone: true }"
-                  ariaLabel="Usar a página criada no editor" i18n-ariaLabel
-                  (ngModelChange)="handleVisualBuilderEnabledChange($event)"></p-toggleswitch>
-              </div>
-
-              <app-visual-page-builder [document]="draftService.draft()?.visualBuilder"
-                [config]="draftService.draft()!"
-                (documentChange)="handleVisualBuilderChange($event)"></app-visual-page-builder>
-            </section>
+            @if (activeTab() === 'sections') {
+              <section class="content-editor-panel content-editor-panel--visual" aria-label="Construtor por blocos"
+                i18n-aria-label>
+                <app-visual-page-builder [document]="draftService.draft()?.visualBuilder"
+                  [config]="draftService.draft()!" [dirty]="draftService.dirty()"
+                  [saving]="draftService.saving()"
+                  [canPublish]="!!draftService.etag() && !draftService.developmentFallback()"
+                  [saveError]="draftService.developmentFallback() ? null : draftService.error()"
+                  (documentChange)="handleVisualBuilderChange($event)" (save)="saveDraft()"
+                  (publish)="publishDraft()" (assetUploaded)="registerUploadedAsset($event)"
+                  (back)="activeTab.set('section-content')"></app-visual-page-builder>
+              </section>
+            }
           </p-tabpanel>
         </p-tabpanels>
       </p-tabs>

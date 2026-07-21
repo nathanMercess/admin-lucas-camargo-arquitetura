@@ -1,0 +1,134 @@
+<header class="visual-builder-toolbar" role="toolbar" aria-label="Ferramentas do editor visual"
+  i18n-aria-label>
+  <div class="visual-builder-toolbar-start">
+    <button type="button" class="visual-builder-icon-button" pButton pTooltip="Voltar aos textos"
+      tooltipPosition="bottom" aria-label="Voltar aos textos" (click)="back.emit()" i18n-pTooltip i18n-aria-label>
+      <span class="pi pi-arrow-left" aria-hidden="true"></span>
+    </button>
+    <label class="visual-builder-page-name">
+      <span i18n>Nome da página</span>
+      <input [value]="pageName()" maxlength="80" aria-describedby="visual-builder-save-status"
+        (change)="handlePageNameChange($event)" />
+    </label>
+    <span id="visual-builder-save-status" class="visual-builder-save-status"
+      [class.visual-builder-save-status--error]="error()" [class.visual-builder-save-status--dirty]="dirty()"
+      role="status" aria-live="polite" aria-atomic="true">
+      <span class="visual-builder-status-dot" aria-hidden="true"></span>
+      {{ statusLabel() }}
+    </span>
+  </div>
+
+  <div class="visual-builder-toolbar-center">
+    <div class="visual-builder-history" role="group" aria-label="Histórico de alterações" i18n-aria-label>
+      <button type="button" class="visual-builder-icon-button" pButton pTooltip="Desfazer (Ctrl + Z)"
+        tooltipPosition="bottom" aria-label="Desfazer" aria-keyshortcuts="Control+Z" [disabled]="!canUndo()"
+        (click)="undo.emit()"
+        i18n-pTooltip i18n-aria-label>
+        <span class="pi pi-undo" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="visual-builder-icon-button" pButton pTooltip="Refazer (Ctrl + Shift + Z)"
+        tooltipPosition="bottom" aria-label="Refazer" aria-keyshortcuts="Control+Shift+Z" [disabled]="!canRedo()"
+        (click)="redo.emit()"
+        i18n-pTooltip i18n-aria-label>
+        <span class="pi pi-redo" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <div class="visual-builder-devices" role="group" aria-label="Tamanho da página" i18n-aria-label>
+      <button type="button" class="visual-builder-device-button" pButton pTooltip="Computador"
+        tooltipPosition="bottom" aria-label="Visualizar no computador" [class.active]="device() === 'desktop'"
+        [attr.aria-pressed]="device() === 'desktop'" (click)="deviceChange.emit('desktop')"
+        i18n-pTooltip i18n-aria-label>
+        <span class="pi pi-desktop" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="visual-builder-device-button" pButton pTooltip="Notebook"
+        tooltipPosition="bottom" aria-label="Visualizar no notebook" [class.active]="device() === 'notebook'"
+        [attr.aria-pressed]="device() === 'notebook'" (click)="deviceChange.emit('notebook')"
+        i18n-pTooltip i18n-aria-label>
+        <span class="pi pi-desktop" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="visual-builder-device-button" pButton pTooltip="Tablet"
+        tooltipPosition="bottom" aria-label="Visualizar no tablet" [class.active]="device() === 'tablet'"
+        [attr.aria-pressed]="device() === 'tablet'" (click)="deviceChange.emit('tablet')"
+        i18n-pTooltip i18n-aria-label>
+        <span class="pi pi-tablet" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="visual-builder-device-button" pButton pTooltip="Celular"
+        tooltipPosition="bottom" aria-label="Visualizar no celular" [class.active]="device() === 'mobile'"
+        [attr.aria-pressed]="device() === 'mobile'" (click)="deviceChange.emit('mobile')"
+        i18n-pTooltip i18n-aria-label>
+        <span class="pi pi-mobile" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <div class="visual-builder-view-actions" role="group" aria-label="Enquadramento da página"
+      i18n-aria-label>
+      <button type="button" class="visual-builder-icon-button" pButton pTooltip="Ajustar à tela"
+        tooltipPosition="bottom" aria-label="Ajustar página à tela" [class.active]="viewMode() === 'fit'"
+        [attr.aria-pressed]="viewMode() === 'fit'" (click)="fitViewport.emit()" i18n-pTooltip i18n-aria-label>
+        <span class="pi pi-arrows-alt" aria-hidden="true"></span>
+      </button>
+      <button type="button" class="visual-builder-icon-button" pButton pTooltip="Tamanho real"
+        tooltipPosition="bottom" aria-label="Mostrar página em tamanho real" [class.active]="viewMode() === 'actual'"
+        [attr.aria-pressed]="viewMode() === 'actual'" (click)="actualSize.emit()" i18n-pTooltip i18n-aria-label>
+        <span class="visual-builder-one-to-one" aria-hidden="true">1:1</span>
+      </button>
+      <button type="button" class="visual-builder-icon-button" pButton pTooltip="Centralizar página"
+        tooltipPosition="bottom" aria-label="Centralizar página" (click)="centerPage.emit()"
+        i18n-pTooltip i18n-aria-label>
+        <span class="pi pi-align-center" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <div class="visual-builder-zoom" role="group" aria-label="Controle de zoom" i18n-aria-label>
+      <button type="button" pButton pTooltip="Reduzir zoom" tooltipPosition="bottom" aria-label="Reduzir zoom"
+        [disabled]="zoom() <= 25" (click)="zoomOut.emit()" i18n-pTooltip i18n-aria-label>
+        <span class="pi pi-minus" aria-hidden="true"></span>
+      </button>
+      <label for="visual-builder-zoom" class="visually-hidden" i18n>Zoom da página</label>
+      <input id="visual-builder-zoom" type="range" min="25" max="150" step="5" [value]="zoom()"
+        [attr.aria-valuetext]="zoom() + '%'" aria-describedby="visual-builder-zoom-value"
+        (input)="handleZoomChange($event)" />
+      <output id="visual-builder-zoom-value" for="visual-builder-zoom" aria-live="polite">{{ zoom() }}%</output>
+      <button type="button" pButton pTooltip="Aumentar zoom" tooltipPosition="bottom" aria-label="Aumentar zoom"
+        [disabled]="zoom() >= 150" (click)="zoomIn.emit()" i18n-pTooltip i18n-aria-label>
+        <span class="pi pi-plus" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <button type="button" class="visual-builder-icon-button visual-builder-fullscreen-button" pButton
+      [pTooltip]="fullscreen() ? 'Sair da tela cheia' : 'Usar tela cheia'" tooltipPosition="bottom"
+      [attr.aria-label]="fullscreen() ? 'Sair da tela cheia' : 'Usar editor em tela cheia'"
+      [attr.aria-pressed]="fullscreen()" (click)="fullscreenChange.emit()">
+      <span class="pi" [class.pi-window-minimize]="fullscreen()"
+        [class.pi-window-maximize]="!fullscreen()" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <div class="visual-builder-toolbar-end">
+    <label class="visual-builder-live-toggle" for="visual-builder-live">
+      <span i18n>Usar no site</span>
+      <p-toggleswitch inputId="visual-builder-live" [ngModel]="enabled()"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="enabledChange.emit($event)"></p-toggleswitch>
+    </label>
+    <button type="button" class="visual-builder-secondary-button" pButton aria-label="Abrir modelos de página"
+      (click)="templates.emit()" i18n-aria-label>
+      <span class="pi pi-sparkles" aria-hidden="true"></span><span i18n>Modelos</span>
+    </button>
+    <button type="button" class="visual-builder-secondary-button" pButton aria-label="Abrir pré-visualização"
+      (click)="preview.emit()" i18n-aria-label>
+      <span class="pi pi-eye" aria-hidden="true"></span><span i18n>Pré-visualizar</span>
+    </button>
+    <button type="button" class="visual-builder-secondary-button" pButton aria-label="Salvar página"
+      aria-describedby="visual-builder-save-status" [disabled]="!dirty() || saving()" (click)="save.emit()"
+      i18n-aria-label>
+      <span class="pi pi-save" aria-hidden="true"></span><span i18n>Salvar</span>
+    </button>
+    <button type="button" class="visual-builder-publish-button" pButton aria-label="Publicar página"
+      aria-describedby="visual-builder-save-status" [disabled]="!canPublish() || dirty() || saving()"
+      (click)="publish.emit()" i18n-aria-label>
+      <span class="pi pi-upload" aria-hidden="true"></span><span i18n>Publicar</span>
+    </button>
+  </div>
+</header>

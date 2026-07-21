@@ -11,7 +11,11 @@ import { MediaUploadTicket } from '../models/media-upload-ticket.model';
 const MEDIA_ASSETS_ENDPOINT = '/api/v1/media/assets';
 const MEDIA_UPLOADS_ENDPOINT = '/api/v1/media/uploads';
 
-@Injectable()
+const MAX_IMAGE_SIZE_BYTES = 15 * 1024 * 1024;
+
+@Injectable({
+  providedIn: 'root',
+})
 export class MediaLibraryService {
   private readonly httpClient = inject(HttpClient);
   private readonly assetsState = signal<MediaAsset[]>([]);
@@ -56,6 +60,13 @@ export class MediaLibraryService {
     if (!this.isSupportedMimeType(file.type)) {
       this.errorState.set(
         $localize`:@@admin.media.invalidType:Use uma imagem JPEG, PNG, WebP ou AVIF.`,
+      );
+      return;
+    }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      this.errorState.set(
+        $localize`:@@admin.media.invalidSize:A imagem deve ter no máximo 15 MB.`,
       );
       return;
     }

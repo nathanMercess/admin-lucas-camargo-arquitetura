@@ -1,14 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { FooterLink } from '@shared/models/footer-link.model';
+import { MediaAsset } from '@shared/models/media-asset.model';
 import { MediaReference } from '@shared/models/media-reference.model';
 import { NavigationItem } from '@shared/models/navigation-item.model';
 import { SiteConfigV1 } from '@shared/models/site-config-v1.model';
 import { SiteLink } from '@shared/models/site-link.model';
 import { SocialLink } from '@shared/models/social-link.model';
+import { ConfirmationService } from 'primeng/api';
 
 import { MediaReferenceFormValue } from '../../../../shared/models/media-reference-form-value.model';
 import { SiteLinkFormValue } from '../../models/site-link-form-value.model';
+import { FormArrayEditorService } from '../../services/form-array-editor.service';
 import { safeHrefValidator } from '../../validators/safe-href.validator';
 
 @Component({
@@ -19,11 +22,13 @@ import { safeHrefValidator } from '../../validators/safe-href.validator';
   standalone: false,
 })
 export class SiteStructureEditorComponent {
+  private readonly arrayEditor = inject(FormArrayEditorService);
+  private readonly confirmationService = inject(ConfirmationService);
   private readonly formBuilder = inject(FormBuilder);
   private hydratedConfig: SiteConfigV1 | null = null;
   public readonly config = input.required<SiteConfigV1>();
   public readonly configChange = output<SiteConfigV1>();
-  protected readonly mediaOptions = computed(() => [...this.config().media]);
+  public readonly assetUploaded = output<MediaAsset>();
   protected readonly targetOptions = [
     { label: $localize`:@@admin.structure.targetSame:Mesma aba`, value: '_self' },
     { label: $localize`:@@admin.structure.targetNew:Nova aba`, value: '_blank' },
@@ -118,20 +123,22 @@ export class SiteStructureEditorComponent {
   }
 
   protected removeNavigationItem(index: number): void {
-    this.structureForm.controls.navigationItems.removeAt(index);
+    this.requestRemoval('item do menu', () =>
+      this.arrayEditor.remove(this.structureForm.controls.navigationItems, index));
   }
 
-  protected moveNavigationItem(index: number, offset: number): void {
-    const controls = this.structureForm.controls.navigationItems;
-    const destination = index + offset;
+  protected moveNavigationItem(index: number, offset: -1 | 1): void {
+    this.arrayEditor.move(this.structureForm.controls.navigationItems, index, offset);
+  }
 
-    if (destination < 0 || destination >= controls.length)
-      return;
-
-    const control = controls.at(index);
-    controls.removeAt(index);
-    controls.insert(destination, control);
-    controls.markAsDirty();
+  protected duplicateNavigationItem(index: number): void {
+    const item = this.structureForm.controls.navigationItems.at(index).getRawValue();
+    this.structureForm.controls.navigationItems.insert(index + 1, this.createNavigationItemForm({
+      ...item,
+      id: crypto.randomUUID(),
+      label: `${item.label} (cópia)`,
+    }));
+    this.structureForm.controls.navigationItems.markAsDirty();
   }
 
   protected addFooterLink(): void {
@@ -139,7 +146,22 @@ export class SiteStructureEditorComponent {
   }
 
   protected removeFooterLink(index: number): void {
-    this.structureForm.controls.footerLinks.removeAt(index);
+    this.requestRemoval('link do rodapé', () =>
+      this.arrayEditor.remove(this.structureForm.controls.footerLinks, index));
+  }
+
+  protected moveFooterLink(index: number, offset: -1 | 1): void {
+    this.arrayEditor.move(this.structureForm.controls.footerLinks, index, offset);
+  }
+
+  protected duplicateFooterLink(index: number): void {
+    const link = this.structureForm.controls.footerLinks.at(index).getRawValue();
+    this.structureForm.controls.footerLinks.insert(index + 1, this.createFooterLinkForm({
+      ...link,
+      id: crypto.randomUUID(),
+      label: `${link.label} (cópia)`,
+    }));
+    this.structureForm.controls.footerLinks.markAsDirty();
   }
 
   protected addSocialLink(): void {
@@ -147,7 +169,33 @@ export class SiteStructureEditorComponent {
   }
 
   protected removeSocialLink(index: number): void {
-    this.structureForm.controls.socialLinks.removeAt(index);
+    this.requestRemoval('rede social', () =>
+      this.arrayEditor.remove(this.structureForm.controls.socialLinks, index));
+  }
+
+  protected moveSocialLink(index: number, offset: -1 | 1): void {
+    this.arrayEditor.move(this.structureForm.controls.socialLinks, index, offset);
+  }
+
+  protected duplicateSocialLink(index: number): void {
+    const link = this.structureForm.controls.socialLinks.at(index).getRawValue();
+    this.structureForm.controls.socialLinks.insert(index + 1, this.createSocialLinkForm({
+      ...link,
+      id: crypto.randomUUID(),
+      label: `${link.label} (cópia)`,
+    }));
+    this.structureForm.controls.socialLinks.markAsDirty();
+  }
+
+  private requestRemoval(label: string, accept: () => void): void {
+    this.confirmationService.confirm({
+      header: $localize`:@@admin.structure.removeTitle:Excluir ${label}:itemLabel:?`,
+      message: $localize`:@@admin.structure.removeMessage:Essa alteração será aplicada ao rascunho quando você salvar esta área.`,
+      acceptLabel: $localize`:@@admin.structure.removeAccept:Excluir item`,
+      rejectLabel: $localize`:@@admin.structure.removeReject:Cancelar`,
+      acceptButtonStyleClass: 'p-button-danger',
+      accept,
+    });
   }
 
   private hydrate(config: SiteConfigV1): void {

@@ -472,68 +472,290 @@ body [data-pc-section='overlay'] [data-pc-section='emptymessage'] {
   color: var(--admin-color-muted);
 }
 
-.page-builder-editor .gjs-pn-views,
-.page-builder-editor .gjs-pn-views-container {
-  width: 280px;
+.visual-builder-canvas-host {
+  --gjs-main-color: #333332;
+  --gjs-primary-color: #333332;
+  --gjs-secondary-color: #f7f6f6;
+  --gjs-tertiary-color: #e36571;
+  --gjs-quaternary-color: #e36571;
+  --gjs-color-blue: #e36571;
+  --gjs-color-highlight: #e36571;
+  --gjs-placeholder-background-color: #e36571;
 }
 
-.page-builder-editor .gjs-cv-canvas {
-  width: calc(100% - 280px);
+.visual-builder-canvas-host .gjs-editor,
+.visual-builder-canvas-host .gjs-editor-cont,
+.visual-builder-canvas-host .gjs-cv-canvas {
+  width: 100%;
+  height: 100%;
 }
 
-.page-builder-editor .gjs-pn-options {
-  right: 280px;
+.visual-builder-canvas-host .gjs-cv-canvas {
+  top: 0;
+  background: #cfcecb;
 }
 
-.page-builder-editor .gjs-blocks-c {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  padding: 10px;
+.visual-builder-canvas-host .gjs-frame-wrapper {
+  box-shadow: 0 4px 20px rgb(30 30 29 / 15%);
 }
 
-.page-builder-editor .gjs-block {
-  width: auto;
-  min-height: 92px;
-  margin: 0;
-  padding: 12px 8px;
-  border: 1px solid rgb(255 255 255 / 10%);
-  border-radius: 4px;
-  box-shadow: none;
+.visual-builder-canvas-host .gjs-frame {
+  background: #fff;
 }
 
-.page-builder-editor .gjs-block:hover {
-  color: #fff;
-  border-color: var(--admin-color-accent);
+.visual-builder-canvas-host .gjs-toolbar,
+.visual-builder-canvas-host .gjs-com-badge,
+.visual-builder-canvas-host .gjs-badge {
+  background: #e36571;
 }
 
-.page-builder-editor .gjs-block-label {
+.visual-builder-canvas-host .gjs-cv-canvas .gjs-highlighter-sel {
+  outline-width: 1px;
+  outline-offset: -1px;
+}
+
+.visual-builder-canvas-host .gjs-com-badge,
+.visual-builder-canvas-host .gjs-badge {
+  padding: 3px 6px;
+  background: rgb(227 101 113 / 92%);
+  font-size: 10px;
+}
+
+.visual-builder-canvas-host .gjs-placeholder,
+.visual-builder-canvas-host .gjs-com-placeholder {
+  border-color: #e36571 transparent;
+}
+
+.visual-builder-layers .gjs-layers {
+  min-height: 100%;
+  color: var(--admin-color-ink);
+  background: var(--admin-color-surface);
   font-family: var(--admin-font-body);
   font-size: 11px;
 }
 
-.page-builder-editor .gjs-title {
-  padding: 12px 14px;
-  font-family: var(--admin-font-body);
+.visual-builder-layers .gjs-layer {
+  border-bottom: 1px solid var(--admin-color-border);
+  background: transparent;
 }
 
-@media (max-width: 900px) {
-  .page-builder-editor .gjs-pn-views,
-  .page-builder-editor .gjs-pn-views-container {
-    width: 210px;
+.visual-builder-layers .gjs-layer-title {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  background: transparent;
+}
+
+.visual-builder-layers .gjs-layer-title-c {
+  border-left: 2px solid transparent;
+}
+
+.visual-builder-layers .gjs-layer.gjs-selected > .gjs-layer-title-c {
+  border-left-color: var(--admin-color-coral);
+  background: rgb(227 101 113 / 8%);
+}
+
+.visual-builder-layers .gjs-layer-vis,
+.visual-builder-layers .gjs-layer-caret {
+  color: var(--admin-color-muted);
+}
+
+.visual-builder-template-dialog .p-dialog-content,
+.visual-builder-preview-dialog .p-dialog-content {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.p-dialog {
+  display: flex;
+  max-width: calc(100vw - 24px);
+  max-height: calc(100svh - 24px);
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--admin-color-border);
+  color: var(--admin-color-ink);
+  background: var(--admin-color-surface);
+  box-shadow: 0 28px 90px rgb(20 20 20 / 28%);
+}
+
+.p-dialog-content {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.p-dialog-title {
+  color: var(--admin-color-ink);
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.p-dialog-maximize-button,
+.p-dialog-close-button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  color: var(--admin-color-ink);
+  background: transparent;
+  cursor: pointer;
+}
+
+.p-dialog-maximize-button:hover,
+.p-dialog-close-button:hover {
+  border-color: var(--admin-color-border);
+  background: var(--admin-color-paper);
+}
+
+.p-colorpicker,
+p-colorpicker[data-pc-name='colorpicker'] {
+  position: relative;
+  display: inline-flex;
+  width: 44px;
+}
+
+p-colorpicker[data-pc-name='colorpicker'] > p-overlay {
+  position: absolute;
+  z-index: 1400;
+  top: 52px;
+  left: 0;
+  display: block;
+}
+
+body input.p-colorpicker-preview,
+body p-colorpicker[data-pc-name='colorpicker'] input[data-pc-section='preview'] {
+  flex: 0 0 44px;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 1px solid var(--admin-color-border);
+  border-radius: 0;
+  box-shadow: inset 0 0 0 4px var(--admin-color-surface);
+  cursor: pointer;
+}
+
+.p-colorpicker-panel,
+p-colorpicker[data-pc-name='colorpicker'] [data-pc-section='panel'] {
+  z-index: 1400;
+  width: 214px;
+  min-height: 174px;
+  padding: 12px;
+  border: 1px solid var(--admin-color-border);
+  border-radius: 0;
+  background: var(--admin-color-surface);
+  box-shadow: 0 18px 50px rgb(20 20 20 / 24%);
+}
+
+p-colorpicker[data-pc-name='colorpicker'] [data-pc-section='content'] {
+  display: flex;
+  gap: 12px;
+}
+
+.p-colorpicker-color-selector,
+p-colorpicker[data-pc-name='colorpicker'] [data-pc-section='colorselector'] {
+  position: relative;
+  float: left;
+  width: 154px;
+  height: 150px;
+  background: #f00;
+  cursor: crosshair;
+}
+
+.p-colorpicker-color,
+p-colorpicker[data-pc-name='colorpicker'] [data-pc-section='colorbackground'] {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #000, transparent),
+    linear-gradient(to right, #fff, transparent);
+}
+
+.p-colorpicker-hue,
+p-colorpicker[data-pc-name='colorpicker'] [data-pc-section='hue'] {
+  position: relative;
+  float: right;
+  width: 22px;
+  height: 150px;
+  background: linear-gradient(to bottom, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%);
+  cursor: row-resize;
+}
+
+.p-colorpicker-color-handle,
+.p-colorpicker-hue-handle,
+p-colorpicker[data-pc-name='colorpicker'] [data-pc-section='colorhandle'],
+p-colorpicker[data-pc-name='colorpicker'] [data-pc-section='huehandle'] {
+  position: absolute;
+  z-index: 1;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 45%);
+}
+
+.p-colorpicker-color-handle,
+p-colorpicker[data-pc-name='colorpicker'] [data-pc-section='colorhandle'] {
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+}
+
+.p-colorpicker-hue-handle,
+p-colorpicker[data-pc-name='colorpicker'] [data-pc-section='huehandle'] {
+  right: -3px;
+  left: -3px;
+  height: 6px;
+  margin-top: -3px;
+}
+
+.p-tooltip {
+  z-index: 1600;
+  max-width: 240px;
+  pointer-events: none;
+}
+
+.p-tooltip-text {
+  display: block;
+  padding: 7px 9px;
+  color: #fff;
+  background: var(--admin-color-ink);
+  font-size: 10px;
+  line-height: 1.35;
+  box-shadow: 0 8px 24px rgb(20 20 20 / 18%);
+}
+
+.p-dialog-maximized {
+  width: 100vw !important;
+  height: 100svh !important;
+  max-height: 100svh !important;
+  margin: 0 !important;
+}
+
+@media (width <= 600px) {
+  .p-dialog-mask {
+    padding: 8px;
   }
 
-  .page-builder-editor .gjs-cv-canvas {
-    width: calc(100% - 210px);
+  .p-dialog {
+    width: calc(100vw - 16px) !important;
+    max-height: calc(100svh - 16px);
   }
 
-  .page-builder-editor .gjs-pn-options {
-    right: 210px;
+  .p-dialog-header {
+    padding: 14px 16px;
   }
 
-  .page-builder-editor .gjs-blocks-c {
-    grid-template-columns: 1fr;
+  .visual-builder-template-dialog .p-dialog-content {
+    padding: 12px;
   }
+}
+
+.visual-builder-template-dialog .p-dialog-content {
+  height: 100%;
+  padding: 20px;
+}
+
+.visual-builder-preview-dialog .p-dialog-content {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  padding: 0;
 }
 
 button,
@@ -1060,27 +1282,6 @@ body {
   padding: 12px 14px;
   border-left: 3px solid currentcolor;
   background: rgb(227 101 113 / 8%);
-}
-
-.content-editor .p-dialog-mask {
-  position: fixed;
-  z-index: 1000;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-  background: rgb(20 20 20 / 60%);
-}
-
-.content-editor .p-dialog {
-  width: min(480px, 100%);
-  padding: 24px;
-  border: 1px solid var(--admin-color-border);
-  background: var(--admin-color-surface);
-}
-
-.content-editor .p-dialog-content {
-  padding: 20px 0;
 }
 
 @media (width <= 700px) {

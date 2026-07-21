@@ -46,12 +46,13 @@ export class PublicationsComponent implements OnInit {
   protected publish(): void {
     const etag = this.draftService.etag();
 
-    if (!etag)
+    if (!etag || this.draftService.dirty() || this.publicationService.mutating())
       return;
 
     this.confirmationService.confirm({
+      key: 'publication-actions',
       header: $localize`:@@admin.publications.publishTitle:Publicar rascunho?`,
-      message: $localize`:@@admin.publications.publishMessage:O site público passará a usar exatamente esta versão.`,
+      message: $localize`:@@admin.publications.publishMessage:O site público passará a usar exatamente esta versão. Revise a prévia antes de continuar.`,
       acceptLabel: $localize`:@@admin.publications.publishAccept:Publicar agora`,
       rejectLabel: $localize`:@@admin.publications.cancel:Cancelar`,
       accept: () => this.publicationService.publish(etag, () => this.draftService.load()),
@@ -61,10 +62,11 @@ export class PublicationsComponent implements OnInit {
   protected rollback(release: ReleaseRecord): void {
     const etag = this.draftService.etag();
 
-    if (!etag)
+    if (!etag || this.publicationService.mutating())
       return;
 
     this.confirmationService.confirm({
+      key: 'publication-actions',
       header: $localize`:@@admin.publications.rollbackTitle:Restaurar versão?`,
       message: $localize`:@@admin.publications.rollbackMessage:A versão ${release.releaseId} voltará ao ar e a ação ficará registrada na auditoria.`,
       acceptLabel: $localize`:@@admin.publications.rollbackAccept:Restaurar versão`,

@@ -1,0 +1,245 @@
+<aside class="visual-builder-properties" aria-label="Configurações do elemento" i18n-aria-label>
+  @if (selection(); as selected) {
+    <header>
+      <div>
+        <span i18n>Selecionado</span>
+        <h3>{{ selected.label }}</h3>
+      </div>
+      <small>{{ selected.tagName }}</small>
+    </header>
+
+    <div class="visual-builder-property-scroll">
+      @if (validationMessage(); as message) {
+        <p class="visual-builder-property-error" role="alert">{{ message }}</p>
+      }
+
+      @if (selected.isSection) {
+        <section class="visual-builder-section-summary" aria-labelledby="visual-builder-section-summary-title">
+          <div>
+            <span i18n>Editar seção</span>
+            <h4 id="visual-builder-section-summary-title" i18n>Conteúdo principal</h4>
+            <p i18n>Altere os textos, destinos e imagens mais importantes sem procurar cada camada.</p>
+          </div>
+          <button type="button" (click)="internalEdit.emit()">
+            <span class="pi" [class.pi-list]="!selected.detailedEditing"
+              [class.pi-compress]="selected.detailedEditing" aria-hidden="true"></span>
+            <span>{{ internalEditLabel(selected.detailedEditing) }}</span>
+          </button>
+        </section>
+
+        @if (selected.sectionFields.length) {
+          <details open>
+            <summary i18n>Campos principais da seção</summary>
+            <div class="visual-builder-property-group visual-builder-section-fields">
+              @for (field of selected.sectionFields; track field.id) {
+                @if (field.type === 'media') {
+                  <app-media-asset-picker [label]="field.label" [assets]="assets()"
+                    [value]="assetIdFor(field.value)" provenance="reference"
+                    (valueChange)="selectSectionMedia(field, $event)"
+                    (assetUploaded)="handleSectionAssetUploaded(field, $event)"></app-media-asset-picker>
+                } @else {
+                  <div class="visual-builder-section-field">
+                    <div>
+                      <span [id]="'builder-section-field-' + field.id">{{ field.label }}</span>
+                    @if (field.type === 'link') {
+                      <input type="url" [value]="field.value" placeholder="https://... ou #seção"
+                        [attr.aria-labelledby]="'builder-section-field-' + field.id"
+                        (change)="emitSectionText(field, $event)" i18n-placeholder />
+                    } @else {
+                      <textarea rows="3" [value]="field.value"
+                        [attr.aria-labelledby]="'builder-section-field-' + field.id"
+                        (input)="emitSectionText(field, $event)"></textarea>
+                    }
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          </details>
+        }
+      }
+
+      @if (selected.canEditText || selected.canEditLink || selected.canEditMedia) {
+        <details open>
+          <summary i18n>Conteúdo</summary>
+          <div class="visual-builder-property-group">
+            @if (selected.canEditText) {
+              <label>
+                <span i18n>Texto</span>
+                <textarea rows="4" [value]="selected.text" (input)="emitText('text', $event)"></textarea>
+                <small i18n>Você também pode clicar duas vezes no texto da página.</small>
+              </label>
+            }
+            @if (selected.canEditLink) {
+              <label>
+                <span i18n>Para onde leva</span>
+                <input type="url" [value]="selected.href" placeholder="https://... ou #seção"
+                  (change)="emitText('href', $event)" i18n-placeholder />
+              </label>
+              <div class="visual-builder-toggle-row">
+                <label for="builder-target-blank" i18n>Abrir em nova aba</label>
+                <p-toggleswitch inputId="builder-target-blank" [ngModel]="selected.targetBlank"
+                  [ngModelOptions]="{ standalone: true }"
+                  (ngModelChange)="emitValue('targetBlank', $event)"></p-toggleswitch>
+              </div>
+            }
+            @if (selected.canEditMedia) {
+              <app-media-asset-picker label="Imagem" [assets]="assets()" [value]="selectedAssetId()"
+                provenance="reference" (valueChange)="selectMedia($event)"
+                (assetUploaded)="handleAssetUploaded($event)" i18n-label></app-media-asset-picker>
+              @if (selected.tagName === 'img') {
+                <label>
+                  <span i18n>Descrição da imagem</span>
+                  <textarea rows="3" [value]="selected.alt" (input)="emitText('alt', $event)"></textarea>
+                  <small i18n>Descreva o que é importante para quem não vê a imagem.</small>
+                </label>
+              }
+            }
+          </div>
+        </details>
+      }
+
+      <details open>
+        <summary i18n>Aparência</summary>
+        <div class="visual-builder-property-group">
+          @if (selected.isSection) {
+            <label for="builder-variation">
+              <span i18n>Variação visual</span>
+              <p-select inputId="builder-variation" [options]="variationOptions" optionLabel="label"
+                optionValue="value" [ngModel]="selected.variation" [ngModelOptions]="{ standalone: true }"
+                (ngModelChange)="emitValue('variation', $event)" />
+              <small i18n>A variação preserva o conteúdo e altera somente a apresentação da seção.</small>
+            </label>
+          }
+          <div class="visual-builder-color-row">
+            <label for="builder-text-color" i18n>Cor do texto</label>
+            <p-colorpicker inputId="builder-text-color" [ngModel]="selected.color || '#333332'"
+              [ngModelOptions]="{ standalone: true }" format="hex"
+              (ngModelChange)="emitValue('color', $event)"></p-colorpicker>
+          </div>
+          <div class="visual-builder-color-row">
+            <label for="builder-background-color" i18n>Cor de fundo</label>
+            <p-colorpicker inputId="builder-background-color"
+              [ngModel]="selected.backgroundColor || '#ffffff'" [ngModelOptions]="{ standalone: true }"
+              format="hex" (ngModelChange)="emitValue('backgroundColor', $event)"></p-colorpicker>
+          </div>
+          <div>
+            <span class="visual-builder-field-label" i18n>Alinhamento</span>
+            <div class="visual-builder-alignment" role="group" aria-label="Alinhamento" i18n-aria-label>
+              <button type="button" [class.active]="selected.textAlign === 'left'"
+                [attr.aria-pressed]="selected.textAlign === 'left'" aria-label="Alinhar à esquerda"
+                (click)="emitValue('textAlign', 'left')" i18n-aria-label>
+                <span class="pi pi-align-left" aria-hidden="true"></span>
+              </button>
+              <button type="button" [class.active]="selected.textAlign === 'center'"
+                [attr.aria-pressed]="selected.textAlign === 'center'" aria-label="Centralizar"
+                (click)="emitValue('textAlign', 'center')" i18n-aria-label>
+                <span class="pi pi-align-center" aria-hidden="true"></span>
+              </button>
+              <button type="button" [class.active]="selected.textAlign === 'right'"
+                [attr.aria-pressed]="selected.textAlign === 'right'" aria-label="Alinhar à direita"
+                (click)="emitValue('textAlign', 'right')" i18n-aria-label>
+                <span class="pi pi-align-right" aria-hidden="true"></span>
+              </button>
+            </div>
+          </div>
+          @if (selected.canEditText) {
+            <label for="builder-font-size">
+              <span i18n>Tamanho do texto</span>
+              <p-inputnumber inputId="builder-font-size" [ngModel]="selected.fontSize"
+                [ngModelOptions]="{ standalone: true }" suffix=" px" [min]="10" [max]="180"
+                (ngModelChange)="emitValue('fontSize', $event)"></p-inputnumber>
+            </label>
+          }
+          @if (selected.canEditMedia) {
+            <label for="builder-width">
+              <span i18n>Largura</span>
+              <p-inputnumber inputId="builder-width" [ngModel]="selected.width"
+                [ngModelOptions]="{ standalone: true }" suffix=" %" [min]="10" [max]="100"
+                (ngModelChange)="emitValue('width', $event)"></p-inputnumber>
+            </label>
+          }
+          <label for="builder-radius">
+            <span i18n>Arredondamento</span>
+            <p-inputnumber inputId="builder-radius" [ngModel]="selected.borderRadius"
+              [ngModelOptions]="{ standalone: true }" suffix=" px" [min]="0" [max]="80"
+              (ngModelChange)="emitValue('borderRadius', $event)"></p-inputnumber>
+          </label>
+        </div>
+      </details>
+
+      <details>
+        <summary i18n>Espaçamento</summary>
+        <div class="visual-builder-property-group">
+          <label for="builder-padding">
+            <span i18n>Espaço interno</span>
+            <p-inputnumber inputId="builder-padding" [ngModel]="selected.padding"
+              [ngModelOptions]="{ standalone: true }" suffix=" px" [min]="0" [max]="240"
+              (ngModelChange)="emitValue('padding', $event)"></p-inputnumber>
+            <small i18n>Distância entre o conteúdo e as bordas do elemento.</small>
+          </label>
+        </div>
+      </details>
+
+      <details>
+        <summary i18n>Visibilidade e celular</summary>
+        <div class="visual-builder-property-group">
+          <div class="visual-builder-toggle-row">
+            <div><strong i18n>Mostrar no celular</strong><small i18n>Desative apenas quando o conteúdo for opcional.</small></div>
+            <p-toggleswitch inputId="builder-display-mobile" [ngModel]="selected.displayMobile"
+              [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="emitValue('displayMobile', $event)"></p-toggleswitch>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary i18n>Animação de entrada</summary>
+        <div class="visual-builder-property-group">
+          <label for="builder-animation">
+            <span i18n>Efeito</span>
+            <p-select inputId="builder-animation" [options]="animationOptions" optionLabel="label"
+              optionValue="value" [ngModel]="selected.animation" [ngModelOptions]="{ standalone: true }"
+              (ngModelChange)="emitValue('animation', $event)" />
+            <small i18n>Efeitos discretos são desativados quando a pessoa prefere menos movimento.</small>
+          </label>
+          @if (selected.animation !== 'none') {
+            <label for="builder-animation-duration">
+              <span i18n>Duração</span>
+              <p-inputnumber inputId="builder-animation-duration" [ngModel]="selected.animationDuration"
+                [ngModelOptions]="{ standalone: true }" suffix=" ms" [min]="150" [max]="1800" [step]="50"
+                (ngModelChange)="emitValue('animationDuration', $event)" />
+            </label>
+            <label for="builder-animation-delay">
+              <span i18n>Atraso</span>
+              <p-inputnumber inputId="builder-animation-delay" [ngModel]="selected.animationDelay"
+                [ngModelOptions]="{ standalone: true }" suffix=" ms" [min]="0" [max]="1200" [step]="50"
+                (ngModelChange)="emitValue('animationDelay', $event)" />
+            </label>
+          }
+        </div>
+      </details>
+
+      <details open>
+        <summary i18n>Ações</summary>
+        <div class="visual-builder-action-grid">
+          <button type="button" (click)="emitValue('hidden', !selected.hidden)">
+            <span class="pi" [class.pi-eye]="selected.hidden" [class.pi-eye-slash]="!selected.hidden"
+              aria-hidden="true"></span>
+            <span>{{ visibilityLabel(selected.hidden) }}</span>
+          </button>
+          <button type="button" [disabled]="!selected.canMoveUp" (click)="moveUp.emit()"><span class="pi pi-arrow-up" aria-hidden="true"></span><span i18n>Mover acima</span></button>
+          <button type="button" [disabled]="!selected.canMoveDown" (click)="moveDown.emit()"><span class="pi pi-arrow-down" aria-hidden="true"></span><span i18n>Mover abaixo</span></button>
+          <button type="button" (click)="duplicate.emit()"><span class="pi pi-copy" aria-hidden="true"></span><span i18n>Duplicar</span></button>
+          <button type="button" class="danger" [disabled]="!selected.canRemove" (click)="remove.emit()"><span class="pi pi-trash" aria-hidden="true"></span><span i18n>Remover</span></button>
+        </div>
+      </details>
+    </div>
+  } @else {
+    <div class="visual-builder-properties-empty">
+      <span class="pi pi-sliders-h" aria-hidden="true"></span>
+      <h3 i18n>Selecione algo na página</h3>
+      <p i18n>As opções certas aparecerão aqui, sem configurações técnicas.</p>
+    </div>
+  }
+</aside>
