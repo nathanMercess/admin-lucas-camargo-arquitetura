@@ -69,7 +69,7 @@
           <p-tab value="identity" i18n>Marca</p-tab>
           <p-tab value="templates" i18n>Modelos visuais</p-tab>
           <p-tab value="structure" i18n>Menu e rodapé</p-tab>
-          <p-tab value="sections" i18n>Ordem e visibilidade</p-tab>
+          <p-tab value="sections" i18n>Editor visual</p-tab>
           <p-tab value="seo" i18n>Google e compartilhamento</p-tab>
           <p-tab value="theme" i18n>Aparência avançada</p-tab>
         </p-tablist>
@@ -264,6 +264,39 @@
                 <p i18n>Escolha o resultado visual. Fontes, proporções e acessibilidade são cuidadas automaticamente.</p>
               </header>
 
+              <section class="theme-live-preview" aria-labelledby="theme-preview-title"
+                [class.theme-live-preview--gallery]="layoutChoice() === 'gallery'"
+                [class.theme-live-preview--spacious]="layoutChoice() === 'spacious'"
+                [style.--preview-accent]="contentForm.controls.theme.controls.colors.controls.accent.value"
+                [style.--preview-ink]="contentForm.controls.theme.controls.colors.controls.ink.value"
+                [style.--preview-surface]="contentForm.controls.theme.controls.colors.controls.surface.value">
+                <header>
+                  <div>
+                    <span i18n>Prévia ao vivo</span>
+                    <h3 id="theme-preview-title" i18n>Veja o efeito das escolhas</h3>
+                  </div>
+                  <small i18n>Atualiza enquanto você edita</small>
+                </header>
+                <div class="theme-live-preview-canvas">
+                  <nav>
+                    <strong>{{ contentForm.controls.identity.controls.brandName.value }}</strong>
+                    <span i18n>Projetos&nbsp;&nbsp;&nbsp;Sobre&nbsp;&nbsp;&nbsp;Contato</span>
+                  </nav>
+                  <div class="theme-live-preview-hero">
+                    <div>
+                      <small>{{ contentForm.controls.identity.controls.descriptor.value }}</small>
+                      <h4>{{ themePreviewTitle() }}</h4>
+                      <p>{{ themePreviewSupportingText() }}</p>
+                    </div>
+                    <div class="theme-live-preview-image" aria-hidden="true"></div>
+                  </div>
+                  <div class="theme-live-preview-section">
+                    <small i18n>Projetos selecionados</small>
+                    <strong i18n>Arquitetura com identidade e cuidado.</strong>
+                  </div>
+                </div>
+              </section>
+
               <div class="content-editor-subsection" formGroupName="colors">
                 <header>
                   <span i18n>Cores</span>
@@ -350,6 +383,7 @@
                 <div class="content-editor-section-content-list">
                   @for (item of sectionItems(); track item.id) {
                     <app-section-content-editor [section]="item.section" [config]="draft"
+                      [expanded]="focusedSectionId() === item.id"
                       (sectionChange)="handleSectionContentChange($event)"></app-section-content-editor>
                   }
                 </div>
@@ -360,31 +394,26 @@
           <p-tabpanel value="sections">
             <section class="content-editor-panel" aria-labelledby="sections-title">
               <header class="content-editor-panel-heading">
-                <span i18n>Organização da página</span>
-                <h2 id="sections-title" i18n>Ordem e visibilidade das seções.</h2>
-                <p i18n>Arraste para mudar a ordem ou use o interruptor para mostrar e ocultar cada parte.</p>
+                <span i18n>Construtor por blocos</span>
+                <h2 id="sections-title" i18n>Monte a página do seu jeito.</h2>
+                <p i18n>Adicione blocos, mude a ordem e edite cada parte sem lidar com código.</p>
               </header>
 
-              <p-orderlist class="content-editor-order-list" [value]="sectionItems()" dataKey="id"
-                [dragdrop]="true" [responsive]="true" [trackBy]="trackSection" scrollHeight="32rem"
-                ariaLabel="Ordem das seções do site" (onReorder)="handleSectionReorder()"
-                i18n-ariaLabel>
-                <ng-template #item let-item>
-                  <div class="content-editor-section-item">
-                    <span class="content-editor-section-order">{{ item.section.order }}</span>
-                    <div>
-                      <strong>{{ item.label }}</strong>
-                      <span>/{{ item.section.anchor }}</span>
-                    </div>
-                    <div class="content-editor-section-visibility">
-                      <label [for]="'section-visible-' + item.id" i18n>Visível</label>
-                      <p-toggleswitch [inputId]="'section-visible-' + item.id"
-                        [formControl]="item.visibilityControl" [ariaLabel]="item.label"
-                        (onChange)="handleSectionVisibilityChange(item)"></p-toggleswitch>
-                    </div>
-                  </div>
-                </ng-template>
-              </p-orderlist>
+              <div class="visual-builder-publish-choice">
+                <div>
+                  <strong i18n>Usar a página criada no editor</strong>
+                  <span i18n>Quando ativado, este layout substitui a página antiga depois da publicação.</span>
+                </div>
+                <p-toggleswitch inputId="visual-builder-enabled"
+                  [ngModel]="draftService.draft()?.visualBuilder?.enabled ?? false"
+                  [ngModelOptions]="{ standalone: true }"
+                  ariaLabel="Usar a página criada no editor" i18n-ariaLabel
+                  (ngModelChange)="handleVisualBuilderEnabledChange($event)"></p-toggleswitch>
+              </div>
+
+              <app-visual-page-builder [document]="draftService.draft()?.visualBuilder"
+                [config]="draftService.draft()!"
+                (documentChange)="handleVisualBuilderChange($event)"></app-visual-page-builder>
             </section>
           </p-tabpanel>
         </p-tabpanels>

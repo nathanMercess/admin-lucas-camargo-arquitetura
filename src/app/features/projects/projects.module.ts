@@ -8,7 +8,6 @@ import { DrawerModule } from 'primeng/drawer';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
-import { MultiSelectModule } from 'primeng/multiselect';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
@@ -30,7 +29,6 @@ import { ProjectsComponent } from './projects.component';
     InputNumberModule,
     InputTextModule,
     MessageModule,
-    MultiSelectModule,
     SelectModule,
     TableModule,
     TabsModule,

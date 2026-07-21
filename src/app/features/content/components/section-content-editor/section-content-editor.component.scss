@@ -26,6 +26,13 @@
   list-style: none;
 }
 
+.section-editor-visibility {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
 .section-editor > summary::-webkit-details-marker {
   display: none;
 }

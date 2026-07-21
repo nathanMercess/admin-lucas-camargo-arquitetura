@@ -13,6 +13,7 @@ import { SiteConfigV1 } from '@shared/models/site-config-v1.model';
 import { SiteSection } from '@shared/models/site-section.model';
 import { SiteTemplateId } from '@shared/models/site-template-id.type';
 import { ThemeConfig } from '@shared/models/theme-config.model';
+import { VisualBuilderDocument } from '@shared/models/visual-builder-document.model';
 import { ConfirmationService } from 'primeng/api';
 
 import { ContentSectionEditorItem } from './models/content-section-editor-item.model';
@@ -36,6 +37,7 @@ export class ContentEditorComponent implements OnInit {
   protected readonly activeTab = signal<string>('section-content');
   protected readonly layoutChoice = signal<'gallery' | 'balanced' | 'spacious'>('balanced');
   protected readonly motionChoice = signal<'off' | 'soft' | 'expressive'>('soft');
+  protected readonly focusedSectionId = signal<string | null>(null);
   protected readonly sectionItems = signal<ContentSectionEditorItem[]>([]);
   protected readonly contentForm = this.formBuilder.nonNullable.group({
     identity: this.formBuilder.nonNullable.group({
@@ -108,6 +110,28 @@ export class ContentEditorComponent implements OnInit {
       : $localize`:@@admin.content.saveDraft:Salvar rascunho`,
   );
 
+  protected readonly themePreviewTitle = computed(() => {
+    const hero = this.draftService.draft()?.sections.find((section) => section.type === 'hero');
+
+    if (!hero || hero.type !== 'hero')
+      return $localize`:@@admin.content.previewFallback:Espaços que permanecem.`;
+
+    return hero.title.lines
+      .map((line) => line.segments.map((segment) => segment.text).join(''))
+      .join(' ');
+  });
+
+  protected readonly themePreviewSupportingText = computed(() => {
+    const hero = this.draftService.draft()?.sections.find((section) => section.type === 'hero');
+
+    if (!hero || hero.type !== 'hero')
+      return '';
+
+    return hero.supportingText.lines
+      .map((line) => line.segments.map((segment) => segment.text).join(''))
+      .join(' ');
+  });
+
   protected readonly colorFields = [
     {
       id: 'theme-accent',
@@ -164,9 +188,6 @@ export class ContentEditorComponent implements OnInit {
       advanced: true,
     },
   ];
-
-  protected readonly trackSection = (_index: number, item: ContentSectionEditorItem): string =>
-    item.id;
 
   public constructor() {
     this.contentForm.valueChanges
@@ -270,6 +291,38 @@ export class ContentEditorComponent implements OnInit {
     });
   }
 
+  protected handleVisualBuilderChange(document: VisualBuilderDocument): void {
+    const draft = this.draftService.draft();
+
+    if (!draft)
+      return;
+
+    this.draftService.updateDraft({
+      ...draft,
+      visualBuilder: {
+        ...document,
+        enabled: draft.visualBuilder?.enabled ?? false,
+      },
+    });
+  }
+
+  protected handleVisualBuilderEnabledChange(enabled: boolean): void {
+    const draft = this.draftService.draft();
+
+    if (!draft)
+      return;
+
+    this.draftService.updateDraft({
+      ...draft,
+      visualBuilder: {
+        enabled,
+        projectData: draft.visualBuilder?.projectData ?? {},
+        html: draft.visualBuilder?.html ?? '',
+        css: draft.visualBuilder?.css ?? '',
+      },
+    });
+  }
+
   protected customizeTemplate(theme: ThemeConfig): void {
     this.handleTemplateChange(theme);
     this.activeTab.set('theme');
@@ -348,6 +401,8 @@ export class ContentEditorComponent implements OnInit {
       .map((section) => this.createSectionItem(section));
 
     this.sectionItems.set(sectionItems);
+    if (!sectionItems.some((item) => item.id === this.focusedSectionId()))
+      this.focusedSectionId.set(sectionItems[0]?.id ?? null);
     this.contentForm.markAsPristine();
     this.isHydrating = false;
   }

@@ -26,6 +26,7 @@ export class SectionContentEditorComponent {
   private hydratedSection: SiteSection | null = null;
   public readonly section = input.required<SiteSection>();
   public readonly config = input.required<SiteConfigV1>();
+  public readonly expanded = input(false);
   public readonly sectionChange = output<SiteSection>();
   protected readonly categoryOptions = computed(() => [...this.config().portfolioCategories]);
   protected readonly rotationIntervalOptions = [
@@ -100,6 +101,10 @@ export class SectionContentEditorComponent {
       default:
         return;
     }
+  }
+
+  protected updateVisibility(visible: boolean): void {
+    this.emit({ ...this.section(), visible });
   }
 
   protected updateSupportingText(supportingText: RichTextBlock): void {

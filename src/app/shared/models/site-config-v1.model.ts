@@ -9,6 +9,7 @@ import { SiteIdentity } from './site-identity.model';
 import { SiteSection } from './site-section.model';
 import { SiteUiLabels } from './site-ui-labels.model';
 import { ThemeConfig } from './theme-config.model';
+import { VisualBuilderDocument } from './visual-builder-document.model';
 
 export interface SiteConfigV1 {
   readonly schemaVersion: 1;
@@ -26,4 +27,5 @@ export interface SiteConfigV1 {
   readonly portfolioCategories: readonly PortfolioCategory[];
   readonly projects: readonly PortfolioProject[];
   readonly footer: SiteFooter;
+  readonly visualBuilder?: VisualBuilderDocument;
 }

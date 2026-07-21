@@ -102,9 +102,16 @@
           <label class="full"><span i18n>Resumo</span><textarea pTextarea formControlName="summary" rows="3"></textarea></label>
           <label class="full"><span i18n>Sobre o projeto</span>
             <textarea pTextarea formControlName="description" rows="6"></textarea></label>
-          <div class="field full"><span i18n>Categorias</span><p-multiselect [options]="categoryRows()"
-            optionLabel="title" optionValue="id" formControlName="categoryIds" display="chip"
-            ariaLabel="Categorias do projeto" i18n-ariaLabel></p-multiselect></div>
+          <fieldset class="category-options full">
+            <legend i18n>Categorias</legend>
+            @for (category of categoryRows(); track category.id) {
+              <label class="category-option">
+                <input type="checkbox" [checked]="projectForm.controls.categoryIds.value.includes(category.id)"
+                  (change)="toggleProjectCategory(category.id, $any($event.target).checked)" />
+                <span>{{ category.title }}</span>
+              </label>
+            }
+          </fieldset>
           <label><span i18n>Local</span><input pInputText formControlName="location" /></label>
           <label><span i18n>Ano</span><input pInputText formControlName="year" /></label>
           <label class="full"><span i18n>Serviços realizados</span><textarea pTextarea formControlName="services"

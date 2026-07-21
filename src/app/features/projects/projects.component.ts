@@ -225,6 +225,15 @@ export class ProjectsComponent implements OnInit {
     this.synchronizeCanonicalPath();
   }
 
+  protected toggleProjectCategory(categoryId: string, selected: boolean): void {
+    const currentIds = this.projectForm.controls.categoryIds.value;
+    const categoryIds = selected
+      ? [...currentIds, categoryId]
+      : currentIds.filter((currentId) => currentId !== categoryId);
+    this.projectForm.controls.categoryIds.setValue([...new Set(categoryIds)]);
+    this.projectForm.controls.categoryIds.markAsDirty();
+  }
+
   protected requestDeleteProject(project: PortfolioProject): void {
     this.confirmationService.confirm({
       header: $localize`:@@admin.projects.deleteTitle:Excluir projeto?`,

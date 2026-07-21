@@ -58,11 +58,6 @@ p,
   font-size: 12px;
 }
 
-.media-upload-controls p-progressspinner {
-  width: 32px;
-  height: 32px;
-}
-
 .media-file-input {
   position: absolute;
   width: 1px;
@@ -125,6 +120,13 @@ p,
 .media-empty {
   padding: 48px;
   text-align: center;
+}
+
+.media-loading,
+.media-uploading {
+  padding: 16px;
+  color: var(--admin-color-muted);
+  font-size: 13px;
 }
 
 @media (width <= 760px) {

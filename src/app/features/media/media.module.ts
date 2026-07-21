@@ -1,9 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
-import { DataViewModule } from 'primeng/dataview';
 import { MessageModule } from 'primeng/message';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 
@@ -16,9 +14,7 @@ import { MediaLibraryService } from './services/media-library.service';
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    DataViewModule,
     MessageModule,
-    ProgressSpinnerModule,
     SelectModule,
     TagModule,
     MediaRoutingModule,

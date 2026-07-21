@@ -1,12 +1,17 @@
 @let currentSection = section();
-<details class="section-editor" [formGroup]="sectionForm">
+<details class="section-editor" [formGroup]="sectionForm" [open]="expanded()">
   <summary>
     <div>
       <h3>{{ sectionLabel(currentSection) }}</h3>
       <p i18n>Clique para editar</p>
     </div>
-    <p-tag [value]="currentSection.visible ? 'Visível' : 'Oculta'"
-      [severity]="currentSection.visible ? 'success' : 'secondary'"></p-tag>
+    <div class="section-editor-visibility">
+      <label [for]="'section-visible-' + currentSection.id" i18n>Mostrar no site</label>
+      <p-toggleswitch [inputId]="'section-visible-' + currentSection.id"
+        [ngModel]="currentSection.visible" [ngModelOptions]="{ standalone: true }"
+        [ariaLabel]="sectionLabel(currentSection)"
+        (ngModelChange)="updateVisibility($event)"></p-toggleswitch>
+    </div>
   </summary>
 
   @if ('overline' in currentSection) {

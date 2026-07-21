@@ -1,0 +1,40 @@
+:host {
+  display: block;
+}
+
+.page-builder-shell {
+  overflow: hidden;
+  border: 1px solid var(--admin-color-border);
+  background: #2f2f2e;
+}
+
+.page-builder-help {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 18px;
+  color: #fff;
+  background: #252524;
+}
+
+.page-builder-help div {
+  display: grid;
+  gap: 3px;
+}
+
+.page-builder-help span {
+  color: rgb(255 255 255 / 70%);
+  font-size: 12px;
+}
+
+.page-builder-editor {
+  min-height: 620px;
+}
+
+@media (max-width: 720px) {
+  .page-builder-help {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

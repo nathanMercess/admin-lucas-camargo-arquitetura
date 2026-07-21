@@ -132,6 +132,26 @@ legend {
   text-transform: uppercase;
 }
 
+.category-options {
+  gap: 8px;
+}
+
+.category-option {
+  display: flex !important;
+  align-items: center;
+  gap: 10px !important;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--admin-color-border);
+  cursor: pointer;
+}
+
+.category-option input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+}
+
 .drawer-actions {
   position: sticky;
   bottom: 0;

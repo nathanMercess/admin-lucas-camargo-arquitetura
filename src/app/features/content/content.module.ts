@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -10,7 +10,6 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { MultiSelectModule } from 'primeng/multiselect';
-import { OrderListModule } from 'primeng/orderlist';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { SelectModule } from 'primeng/select';
 import { TabsModule } from 'primeng/tabs';
@@ -26,6 +25,7 @@ import { SiteLinkEditorComponent } from './components/site-link-editor/site-link
 import { SiteStructureEditorComponent } from './components/site-structure-editor/site-structure-editor.component';
 import { SiteTemplateLibraryComponent } from './components/site-template-library/site-template-library.component';
 import { StringListEditorComponent } from './components/string-list-editor/string-list-editor.component';
+import { VisualPageBuilderComponent } from './components/visual-page-builder/visual-page-builder.component';
 import { ContentEditorComponent } from './content-editor.component';
 
 @NgModule({
@@ -38,9 +38,11 @@ import { ContentEditorComponent } from './content-editor.component';
     SiteStructureEditorComponent,
     SiteTemplateLibraryComponent,
     StringListEditorComponent,
+    VisualPageBuilderComponent,
   ],
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
     ButtonModule,
     CardModule,
@@ -50,7 +52,6 @@ import { ContentEditorComponent } from './content-editor.component';
     InputTextModule,
     MessageModule,
     MultiSelectModule,
-    OrderListModule,
     ProgressSpinnerModule,
     SelectModule,
     TabsModule,

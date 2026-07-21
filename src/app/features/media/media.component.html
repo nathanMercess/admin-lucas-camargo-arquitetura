@@ -26,7 +26,7 @@
         (change)="upload($event)" />
       <label class="media-file-button" for="media-file" i18n>Selecionar imagem</label>
       @if (mediaService.uploading()) {
-        <p-progressspinner strokeWidth="3" aria-label="Enviando imagem" i18n-aria-label></p-progressspinner>
+        <span class="media-uploading" role="status" i18n>Enviando imagem...</span>
       }
     </div>
   </section>
@@ -34,26 +34,25 @@
   <p-message severity="info" text="A descrição e o enquadramento podem ser ajustados quando você usar a imagem."
     i18n-text></p-message>
 
-  <p-dataview [value]="mediaService.assets()" [loading]="mediaService.loading()" [paginator]="true" [rows]="12">
-    <ng-template #list let-assets>
-      <div class="media-grid">
-        @for (asset of assets; track asset.id) {
-          <article class="media-card">
-            <div class="media-card-preview">
-              <img [src]="assetUrl(asset)" alt="" loading="lazy" />
-            </div>
-            <div>
-              <p-tag [value]="asset.provenance" severity="secondary"></p-tag>
-              <strong>{{ asset.id }}</strong>
-              <span>{{ asset.width }} × {{ asset.height }} · {{ asset.mimeType }}</span>
-              <details><summary i18n>Detalhes do arquivo</summary><code>{{ asset.sha256 }}</code></details>
-            </div>
-          </article>
-        }
-      </div>
-    </ng-template>
-    <ng-template #empty>
-      <div class="media-empty" i18n>Nenhum arquivo registrado.</div>
-    </ng-template>
-  </p-dataview>
+  @if (mediaService.loading()) {
+    <div class="media-loading" role="status" i18n>Carregando imagens...</div>
+  } @else if (mediaService.assets().length === 0) {
+    <div class="media-empty" i18n>Nenhuma imagem adicionada ainda.</div>
+  } @else {
+    <div class="media-grid">
+      @for (asset of mediaService.assets(); track asset.id) {
+        <article class="media-card">
+          <div class="media-card-preview">
+            <img [src]="assetUrl(asset)" alt="" loading="lazy" />
+          </div>
+          <div>
+            <p-tag [value]="asset.provenance" severity="secondary"></p-tag>
+            <strong>{{ asset.id }}</strong>
+            <span>{{ asset.width }} × {{ asset.height }} · {{ asset.mimeType }}</span>
+            <details><summary i18n>Detalhes do arquivo</summary><code>{{ asset.sha256 }}</code></details>
+          </div>
+        </article>
+      }
+    </div>
+  }
 </section>

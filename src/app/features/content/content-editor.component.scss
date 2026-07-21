@@ -9,7 +9,7 @@
 
 .content-editor {
   display: grid;
-  width: min(100%, 1180px);
+  width: min(100%, 1500px);
   gap: 28px;
   margin: 0 auto;
 }
@@ -18,9 +18,7 @@
 .content-editor-toolbar,
 .content-editor-actions,
 .content-editor-status,
-.content-editor-color-control,
-.content-editor-section-item,
-.content-editor-section-visibility {
+.content-editor-color-control {
   display: flex;
   align-items: center;
 }
@@ -116,8 +114,7 @@
 }
 
 .content-editor-actions,
-.content-editor-color-control,
-.content-editor-section-visibility {
+.content-editor-color-control {
   gap: 10px;
 }
 
@@ -166,8 +163,7 @@
   grid-column: 1 / -1;
 }
 
-.content-editor-field label,
-.content-editor-section-visibility label {
+.content-editor-field label {
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -206,6 +202,27 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+}
+
+.visual-builder-publish-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  padding: 18px 20px;
+  border-left: 3px solid var(--admin-color-accent);
+  background: rgb(227 101 113 / 9%);
+}
+
+.visual-builder-publish-choice div {
+  display: grid;
+  gap: 4px;
+}
+
+.visual-builder-publish-choice span {
+  color: var(--admin-color-muted);
+  font-size: 13px;
 }
 
 .content-editor-toolbar > div:first-child {
@@ -267,31 +284,13 @@
   background: var(--admin-color-surface);
 }
 
-.content-editor-section-item {
-  width: 100%;
-  gap: 16px;
-  padding: 14px;
-  border-left: 3px solid transparent;
-  background: var(--admin-color-paper);
-}
-
-.content-editor-section-item > div:nth-child(2) span,
-.content-editor-section-order {
-  color: var(--admin-color-muted);
-  font-family: var(--admin-font-mono);
-  font-size: 10px;
-}
-
-.content-editor-section-visibility {
-  margin-left: auto;
-}
-
 @media (width <= 1000px) {
   .content-editor-fields--three-columns,
   .content-editor-fields--four-columns,
   .content-editor-color-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
 }
 
 @media (width <= 700px) {
@@ -324,8 +323,5 @@
     display: grid;
   }
 
-  .content-editor-section-visibility {
-    align-items: flex-end;
-    flex-direction: column;
-  }
+
 }
