@@ -14,7 +14,9 @@ RUN yarn build --configuration production
 
 FROM nginxinc/nginx-unprivileged:stable-alpine
 
-COPY deploy/nginx-admin.conf /etc/nginx/conf.d/default.conf
+ENV NGINX_ENVSUBST_FILTER=^API_ORIGIN$
+
+COPY deploy/nginx-admin.conf /etc/nginx/templates/default.conf.template
 COPY --from=build --chown=101:101 /app/dist/admin/browser/ /usr/share/nginx/html/
 
 EXPOSE 8080
