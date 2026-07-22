@@ -1,16 +1,16 @@
 <form class="structure-editor" [formGroup]="structureForm" (ngSubmit)="apply()">
   <header>
     <div>
-      <span i18n>Menu e rodapé</span>
-      <h2 i18n>Organize os links e as informações fixas do site.</h2>
-      <p i18n>Altere os textos e escolha para onde cada botão leva.</p>
+      <span i18n>Estrutura do site</span>
+      <h2 i18n>Configure cabeçalho, menu e rodapé.</h2>
+      <p i18n>Use esta área para organizar os elementos que aparecem em todas as páginas.</p>
     </div>
     <p-button type="submit" label="Aplicar ao rascunho" [disabled]="structureForm.pristine"
       i18n-label></p-button>
   </header>
 
-  <section class="structure-card" aria-labelledby="header-config-title">
-    <header><span i18n>Cabeçalho</span><h3 id="header-config-title" i18n>Marca e chamadas principais</h3></header>
+  <section class="structure-card structure-card--header" aria-labelledby="header-config-title">
+    <header><div class="structure-card-heading"><span class="pi pi-window-maximize" aria-hidden="true"></span><div><span i18n>Cabeçalho</span><h3 id="header-config-title" i18n>Marca e chamada principal</h3></div></div></header>
     <fieldset formGroupName="headerLogo">
       <legend i18n>Logo</legend>
       <div class="field-grid">
@@ -63,9 +63,9 @@
     </fieldset>
   </section>
 
-  <section class="structure-card" formArrayName="navigationItems" aria-labelledby="navigation-config-title">
+  <section class="structure-card structure-card--navigation" formArrayName="navigationItems" aria-labelledby="navigation-config-title">
     <header>
-      <div><span i18n>Navegação</span><h3 id="navigation-config-title" i18n>Itens e ordem do menu</h3></div>
+      <div class="structure-card-heading"><span class="pi pi-bars" aria-hidden="true"></span><div><span i18n>Navegação</span><h3 id="navigation-config-title" i18n>Itens e ordem do menu</h3></div></div>
       <p-button type="button" label="Adicionar item" severity="secondary" [outlined]="true"
         (onClick)="addNavigationItem()" i18n-label></p-button>
     </header>
@@ -111,8 +111,8 @@
     </div>
   </details>
 
-  <section class="structure-card" aria-labelledby="footer-config-title">
-    <header><span i18n>Rodapé</span><h3 id="footer-config-title" i18n>Encerramento e links</h3></header>
+  <section class="structure-card structure-card--footer" aria-labelledby="footer-config-title">
+    <header><div class="structure-card-heading"><span class="pi pi-arrow-down" aria-hidden="true"></span><div><span i18n>Rodapé</span><h3 id="footer-config-title" i18n>Encerramento e links</h3></div></div></header>
     <fieldset formGroupName="footerLogo">
       <legend i18n>Logo</legend>
       <div class="field-grid">

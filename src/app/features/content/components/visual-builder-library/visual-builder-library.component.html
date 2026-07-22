@@ -3,6 +3,7 @@
     <div>
       <span i18n>Construir</span>
       <h3 i18n>Adicionar à página</h3>
+      <p>{{ visibleBlockCount() }} <span i18n>componentes prontos para usar</span></p>
     </div>
     <div class="visual-builder-library-tabs" role="tablist" aria-label="Painéis do editor" i18n-aria-label>
       <button id="visual-builder-blocks-tab" type="button" role="tab"
@@ -30,9 +31,10 @@
       <div class="visual-builder-kind-filters" role="group" aria-label="Tipos de componente" i18n-aria-label>
         @for (filter of kindFilters; track filter.value) {
           <button type="button" [class.active]="activeKind() === filter.value"
-            [attr.aria-pressed]="activeKind() === filter.value" (click)="activeKind.set(filter.value)">
+            [attr.aria-pressed]="activeKind() === filter.value" [attr.title]="filter.label"
+            (click)="activeKind.set(filter.value)">
             <span [class]="'pi ' + filter.icon" aria-hidden="true"></span>
-            <span>{{ filter.label }}</span>
+            <span class="visual-builder-kind-filter-label">{{ filter.label }}</span>
           </button>
         }
       </div>
@@ -47,6 +49,7 @@
             <h4 [id]="'block-category-' + category.category.id">
               <span [class]="'pi ' + category.category.icon" aria-hidden="true"></span>
               {{ category.category.label }}
+              <small>{{ category.blocks.length }}</small>
             </h4>
             <div class="visual-builder-block-grid">
               @for (block of category.blocks; track block.id) {
@@ -94,7 +97,7 @@
                   <button class="visual-builder-block-add" type="button"
                     [attr.aria-label]="'Adicionar ' + block.label" (click)="addVariation(block)">
                     <span class="pi pi-plus" aria-hidden="true"></span>
-                    <span i18n>Adicionar</span>
+                    <span class="visual-builder-block-add-label" i18n>Adicionar</span>
                   </button>
                 </article>
               }

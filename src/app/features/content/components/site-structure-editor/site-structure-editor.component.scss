@@ -5,12 +5,13 @@
 .structure-editor,
 .structure-card {
   display: grid;
-  gap: 24px;
+  gap: 18px;
 }
 
 .structure-advanced > summary {
-  font-size: 13px;
-  font-weight: 700;
+  padding: 2px 0;
+  font-size: 11px;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -26,6 +27,10 @@
   max-width: 760px;
 }
 
+.structure-editor > header {
+  padding-bottom: 2px;
+}
+
 header span {
   color: var(--admin-color-coral);
   font-family: var(--admin-font-mono);
@@ -34,9 +39,25 @@ header span {
   text-transform: uppercase;
 }
 
+.structure-card-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.structure-card-heading > .pi {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--admin-color-coral) 44%, var(--admin-color-border));
+  color: var(--admin-color-coral);
+  font-size: 12px;
+}
+
 h2,
 h3 {
-  margin: 7px 0;
+  margin: 4px 0;
   font-weight: 400;
 }
 
@@ -45,17 +66,19 @@ p {
 }
 
 .structure-card {
-  padding: clamp(20px, 3vw, 34px);
+  gap: 16px;
+  padding: clamp(16px, 2vw, 24px);
   border: 1px solid var(--admin-color-border);
   background: #fff;
 }
 
 fieldset {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   margin: 0;
-  padding: 20px;
+  padding: 14px;
   border: 1px solid var(--admin-color-border);
+  background: color-mix(in srgb, var(--admin-color-surface) 72%, #fff);
 }
 
 legend {
@@ -69,7 +92,7 @@ legend {
 .field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .field-grid--three {
@@ -89,7 +112,7 @@ legend {
 label,
 .field {
   display: grid;
-  gap: 7px;
+  gap: 6px;
   font-size: 12px;
 }
 
@@ -106,6 +129,10 @@ label,
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.inline-actions :is(button, .p-button) {
+  min-width: 30px;
 }
 
 .structure-empty {

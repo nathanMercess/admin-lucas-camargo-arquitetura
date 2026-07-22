@@ -17,10 +17,10 @@
 }
 
 .visual-builder-toolbar {
-  min-height: 72px;
+  min-height: 58px;
   justify-content: space-between;
-  gap: 18px;
-  padding: 12px 16px;
+  gap: 12px;
+  padding: 8px 14px;
   border-bottom: 1px solid var(--admin-color-border);
   background: var(--admin-color-surface);
 }
@@ -28,13 +28,13 @@
 .visual-builder-toolbar-start,
 .visual-builder-toolbar-center,
 .visual-builder-toolbar-end {
-  gap: 8px;
+  gap: 6px;
 }
 
 .visual-builder-page-name {
   display: grid;
-  gap: 3px;
-  min-width: 180px;
+  gap: 1px;
+  min-width: 164px;
 }
 
 .visual-builder-page-name span {
@@ -46,7 +46,7 @@
 }
 
 .visual-builder-page-name input {
-  width: 180px;
+  width: 164px;
   padding: 0;
   border: 0;
   color: var(--admin-color-ink);
@@ -78,10 +78,10 @@
 
 .visual-builder-icon-button,
 .visual-builder-device-button {
-  width: 38px;
-  min-width: 38px;
-  height: 38px;
-  min-height: 38px;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
   padding: 0;
   border: 1px solid transparent;
   color: var(--admin-color-ink);
@@ -97,8 +97,9 @@
 .visual-builder-history,
 .visual-builder-devices,
 .visual-builder-view-actions {
-  padding: 2px;
+  padding: 1px;
   border: 1px solid var(--admin-color-border);
+  background: rgb(51 51 50 / 2%);
 }
 
 .visual-builder-view-actions {
@@ -119,17 +120,17 @@
 }
 
 .visual-builder-zoom {
-  min-width: 178px;
-  gap: 5px;
+  min-width: 156px;
+  gap: 3px;
   color: var(--admin-color-muted);
   font-size: 10px;
 }
 
 .visual-builder-zoom button {
-  width: 30px;
-  min-width: 30px;
-  height: 30px;
-  min-height: 30px;
+  width: 28px;
+  min-width: 28px;
+  height: 28px;
+  min-height: 28px;
   padding: 0;
   border: 0;
   color: inherit;
@@ -137,15 +138,15 @@
 }
 
 .visual-builder-zoom input {
-  width: 64px;
+  width: 54px;
 }
 
 .visual-builder-secondary-button,
 .visual-builder-publish-button {
-  min-height: 38px;
-  gap: 7px;
-  padding: 8px 12px;
-  font-size: 12px;
+  min-height: 34px;
+  gap: 6px;
+  padding: 7px 10px;
+  font-size: 11px;
 }
 
 .visual-builder-live-toggle {
@@ -197,6 +198,20 @@
 
   .visual-builder-toolbar-center {
     gap: 5px;
+  }
+}
+
+@media (width <= 1320px) {
+  .visual-builder-live-toggle {
+    display: none;
+  }
+
+  .visual-builder-zoom {
+    min-width: auto;
+  }
+
+  .visual-builder-zoom input {
+    display: none;
   }
 }
 

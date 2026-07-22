@@ -103,6 +103,12 @@ export class VisualBuilderPropertiesComponent {
       : $localize`:@@admin.visualBuilder.section.editInternal:Editar elementos internos`;
   }
 
+  protected selectionKindLabel(isSection: boolean): string {
+    return isSection
+      ? $localize`:@@admin.visualBuilder.selection.section:Seção`
+      : $localize`:@@admin.visualBuilder.selection.content:Conteúdo`;
+  }
+
   protected visibilityLabel(hidden: boolean): string {
     return hidden
       ? $localize`:@@admin.visualBuilder.section.show:Mostrar`

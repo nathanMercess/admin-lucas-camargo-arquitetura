@@ -2,10 +2,10 @@
   @if (selection(); as selected) {
     <header>
       <div>
-        <span i18n>Selecionado</span>
+        <span i18n>Propriedades</span>
         <h3>{{ selected.label }}</h3>
       </div>
-      <small>{{ selected.tagName }}</small>
+      <small>{{ selectionKindLabel(selected.isSection) }}</small>
     </header>
 
     <div class="visual-builder-property-scroll">
@@ -26,10 +26,12 @@
             <span>{{ internalEditLabel(selected.detailedEditing) }}</span>
           </button>
         </section>
+      }
 
-        @if (selected.sectionFields.length) {
-          <details open>
-            <summary i18n>Campos principais da seção</summary>
+      @if (selected.isSection || selected.canEditText || selected.canEditLink || selected.canEditMedia) {
+        <details class="visual-builder-property-panel" open>
+          <summary><span class="pi pi-file-edit" aria-hidden="true"></span><span i18n>Conteúdo</span></summary>
+          @if (selected.isSection && selected.sectionFields.length) {
             <div class="visual-builder-property-group visual-builder-section-fields">
               @for (field of selected.sectionFields; track field.id) {
                 @if (field.type === 'media') {
@@ -55,13 +57,9 @@
                 }
               }
             </div>
-          </details>
-        }
-      }
+          }
 
-      @if (selected.canEditText || selected.canEditLink || selected.canEditMedia) {
-        <details open>
-          <summary i18n>Conteúdo</summary>
+          @if (selected.canEditText || selected.canEditLink || selected.canEditMedia) {
           <div class="visual-builder-property-group">
             @if (selected.canEditText) {
               <label>
@@ -96,11 +94,12 @@
               }
             }
           </div>
+          }
         </details>
       }
 
-      <details open>
-        <summary i18n>Aparência</summary>
+      <details class="visual-builder-property-panel" open>
+        <summary><span class="pi pi-palette" aria-hidden="true"></span><span i18n>Aparência</span></summary>
         <div class="visual-builder-property-group">
           @if (selected.isSection) {
             <label for="builder-variation">
@@ -116,12 +115,6 @@
             <p-colorpicker inputId="builder-text-color" [ngModel]="selected.color || '#333332'"
               [ngModelOptions]="{ standalone: true }" format="hex"
               (ngModelChange)="emitValue('color', $event)"></p-colorpicker>
-          </div>
-          <div class="visual-builder-color-row">
-            <label for="builder-background-color" i18n>Cor de fundo</label>
-            <p-colorpicker inputId="builder-background-color"
-              [ngModel]="selected.backgroundColor || '#ffffff'" [ngModelOptions]="{ standalone: true }"
-              format="hex" (ngModelChange)="emitValue('backgroundColor', $event)"></p-colorpicker>
           </div>
           <div>
             <span class="visual-builder-field-label" i18n>Alinhamento</span>
@@ -151,9 +144,15 @@
                 (ngModelChange)="emitValue('fontSize', $event)"></p-inputnumber>
             </label>
           }
+        </div>
+      </details>
+
+      <details class="visual-builder-property-panel">
+        <summary><span class="pi pi-arrows-h" aria-hidden="true"></span><span i18n>Layout</span></summary>
+        <div class="visual-builder-property-group">
           @if (selected.canEditMedia) {
             <label for="builder-width">
-              <span i18n>Largura</span>
+              <span i18n>Largura do conteúdo</span>
               <p-inputnumber inputId="builder-width" [ngModel]="selected.width"
                 [ngModelOptions]="{ standalone: true }" suffix=" %" [min]="10" [max]="100"
                 (ngModelChange)="emitValue('width', $event)"></p-inputnumber>
@@ -168,8 +167,8 @@
         </div>
       </details>
 
-      <details>
-        <summary i18n>Espaçamento</summary>
+      <details class="visual-builder-property-panel">
+        <summary><span class="pi pi-expand" aria-hidden="true"></span><span i18n>Espaçamento</span></summary>
         <div class="visual-builder-property-group">
           <label for="builder-padding">
             <span i18n>Espaço interno</span>
@@ -181,8 +180,20 @@
         </div>
       </details>
 
-      <details>
-        <summary i18n>Visibilidade e celular</summary>
+      <details class="visual-builder-property-panel">
+        <summary><span class="pi pi-image" aria-hidden="true"></span><span i18n>Fundo</span></summary>
+        <div class="visual-builder-property-group">
+          <div class="visual-builder-color-row">
+            <div><span class="visual-builder-field-label" i18n>Cor de fundo</span><small i18n>Aplicada atrás do conteúdo selecionado.</small></div>
+            <p-colorpicker inputId="builder-background-color"
+              [ngModel]="selected.backgroundColor || '#ffffff'" [ngModelOptions]="{ standalone: true }"
+              format="hex" (ngModelChange)="emitValue('backgroundColor', $event)"></p-colorpicker>
+          </div>
+        </div>
+      </details>
+
+      <details class="visual-builder-property-panel">
+        <summary><span class="pi pi-mobile" aria-hidden="true"></span><span i18n>Responsividade</span></summary>
         <div class="visual-builder-property-group">
           <div class="visual-builder-toggle-row">
             <div><strong i18n>Mostrar no celular</strong><small i18n>Desative apenas quando o conteúdo for opcional.</small></div>
@@ -193,8 +204,8 @@
         </div>
       </details>
 
-      <details>
-        <summary i18n>Animação de entrada</summary>
+      <details class="visual-builder-property-panel">
+        <summary><span class="pi pi-play" aria-hidden="true"></span><span i18n>Animação</span></summary>
         <div class="visual-builder-property-group">
           <label for="builder-animation">
             <span i18n>Efeito</span>
@@ -220,8 +231,9 @@
         </div>
       </details>
 
-      <details open>
-        <summary i18n>Ações</summary>
+      <details class="visual-builder-property-panel">
+        <summary><span class="pi pi-cog" aria-hidden="true"></span><span i18n>Avançado</span></summary>
+        <p class="visual-builder-advanced-copy" i18n>Use estas ações para organizar a página sem perder o contexto da seleção.</p>
         <div class="visual-builder-action-grid">
           <button type="button" (click)="emitValue('hidden', !selected.hidden)">
             <span class="pi" [class.pi-eye]="selected.hidden" [class.pi-eye-slash]="!selected.hidden"
