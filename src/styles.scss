@@ -577,6 +577,91 @@ body [data-pc-section='overlay'] [data-pc-section='emptymessage'] {
   box-shadow: 0 28px 90px rgb(20 20 20 / 28%);
 }
 
+.p-dialog-mask {
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  background: rgb(20 20 20 / 64%);
+}
+
+.p-dialog-header {
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--admin-color-border);
+  background: var(--admin-color-surface);
+}
+
+.p-dialog-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.p-dialog-content {
+  padding: 20px;
+  background: var(--admin-color-surface);
+}
+
+.p-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--admin-color-border);
+  background: var(--admin-color-paper);
+}
+
+.p-select,
+.p-inputnumber,
+.p-inputnumber-input,
+.p-colorpicker,
+.p-toggleswitch {
+  font-family: inherit;
+}
+
+.p-inputnumber {
+  display: flex;
+  width: 100%;
+}
+
+.p-inputnumber-input {
+  width: 100%;
+}
+
+.p-select:hover,
+.p-inputnumber-input:hover,
+body input:not([type='file']):not([type='checkbox']):not([type='radio']):hover,
+body textarea:hover {
+  border-color: rgb(227 101 113 / 58%);
+}
+
+.p-select:focus-within,
+.p-inputnumber:focus-within,
+body input:not([type='file']):not([type='checkbox']):not([type='radio']):focus,
+body textarea:focus {
+  border-color: var(--admin-color-coral);
+  box-shadow: 0 0 0 3px rgb(227 101 113 / 12%);
+  outline: 0;
+}
+
+.p-message {
+  margin: 0;
+}
+
+.p-tag {
+  border: 1px solid var(--admin-color-border);
+  border-radius: 0;
+  background: var(--admin-color-paper);
+}
+
+.p-toggleswitch {
+  flex: 0 0 auto;
+}
+
 .p-dialog-content {
   min-height: 0;
   overflow-y: auto;

@@ -23,7 +23,7 @@
   grid-template-columns: minmax(0, 1fr);
   height: auto;
   min-height: 0;
-  background: #e4e3e0;
+  background: #deddda;
   transition: grid-template-columns 180ms ease;
 }
 
@@ -41,15 +41,15 @@
 }
 
 .visual-page-builder--library-open .visual-page-builder-workspace {
-  grid-template-columns: 320px minmax(0, 1fr);
+  grid-template-columns: 300px minmax(0, 1fr);
 }
 
 .visual-page-builder--properties-open .visual-page-builder-workspace {
-  grid-template-columns: minmax(0, 1fr) 260px;
+  grid-template-columns: minmax(0, 1fr) 320px;
 }
 
 .visual-page-builder--library-open.visual-page-builder--properties-open .visual-page-builder-workspace {
-  grid-template-columns: 320px minmax(0, 1fr) 260px;
+  grid-template-columns: 300px minmax(420px, 1fr) 320px;
 }
 
 .visual-page-builder-stage {
@@ -66,8 +66,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  min-height: 34px;
-  padding: 5px 12px;
+  min-height: 40px;
+  padding: 6px 14px;
   border-bottom: 1px solid rgb(51 51 50 / 18%);
   color: #555552;
   background: #f4f3f1;
@@ -152,7 +152,7 @@
   position: relative;
   min-width: 0;
   min-height: 0;
-  padding: 12px;
+  padding: 16px;
   overflow: hidden;
 }
 
@@ -275,15 +275,15 @@
 
 @media (width <= 1200px) {
   .visual-page-builder--library-open .visual-page-builder-workspace {
-    grid-template-columns: 280px minmax(0, 1fr);
+    grid-template-columns: 276px minmax(0, 1fr);
   }
 
   .visual-page-builder--properties-open .visual-page-builder-workspace {
-    grid-template-columns: minmax(0, 1fr) 240px;
+    grid-template-columns: minmax(0, 1fr) 288px;
   }
 
   .visual-page-builder--library-open.visual-page-builder--properties-open .visual-page-builder-workspace {
-    grid-template-columns: 280px minmax(0, 1fr) 240px;
+    grid-template-columns: 276px minmax(360px, 1fr) 288px;
   }
 
   .visual-page-builder-canvas-frame {
@@ -337,6 +337,12 @@
 
   .visual-page-builder-stage-header {
     min-height: 34px;
+  }
+
+  .visual-page-builder-stage-header {
+    position: sticky;
+    z-index: 3;
+    top: 0;
   }
 
   .visual-page-builder-stage-header > span:first-child,
@@ -418,6 +424,10 @@
 
   .visual-page-builder-stage-header {
     justify-content: center;
+  }
+
+  .visual-page-builder-canvas-frame {
+    padding: 6px;
   }
 }
 

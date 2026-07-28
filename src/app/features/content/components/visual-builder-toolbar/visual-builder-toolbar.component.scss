@@ -17,6 +17,8 @@
 }
 
 .visual-builder-toolbar {
+  position: relative;
+  z-index: 4;
   min-height: 58px;
   justify-content: space-between;
   gap: 12px;
@@ -228,6 +230,7 @@
     order: 3;
     width: 100%;
     justify-content: center;
+    padding-top: 2px;
   }
 
   .visual-builder-page-name,
@@ -253,6 +256,19 @@
     flex-wrap: wrap;
     gap: 6px;
     justify-content: center;
+  }
+
+  .visual-builder-toolbar-end {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .visual-builder-secondary-button,
+  .visual-builder-publish-button {
+    justify-content: center;
+    min-width: 0;
+    padding-right: 6px;
+    padding-left: 6px;
   }
 
   .visual-builder-zoom {
