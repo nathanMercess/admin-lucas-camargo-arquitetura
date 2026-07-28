@@ -157,8 +157,6 @@ export class AdminShellComponent implements OnInit {
       currentSnapshot = currentSnapshot.firstChild;
     }
 
-    const primarySegments = this.router.parseUrl(this.router.url).root.children['primary']?.segments;
-
-    return primarySegments?.[0]?.path === 'content';
+    return this.router.parseUrl(this.router.url).queryParams['editor'] === 'visual';
   }
 }

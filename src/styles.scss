@@ -578,6 +578,9 @@ body [data-pc-section='overlay'] [data-pc-section='emptymessage'] {
 }
 
 .p-dialog-mask {
+  position: fixed;
+  z-index: 1400;
+  inset: 0;
   display: grid;
   place-items: center;
   padding: 12px;
@@ -613,6 +616,32 @@ body [data-pc-section='overlay'] [data-pc-section='emptymessage'] {
   padding: 14px 20px;
   border-top: 1px solid var(--admin-color-border);
   background: var(--admin-color-paper);
+}
+
+.p-confirmdialog {
+  width: min(480px, calc(100vw - 24px));
+}
+
+.p-confirmdialog .p-dialog-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  line-height: 1.5;
+}
+
+.p-confirmdialog-icon {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--admin-color-coral);
+  font-size: 20px;
+}
+
+.p-confirmdialog-message {
+  min-width: 0;
+}
+
+.p-confirmdialog .p-dialog-footer {
+  flex-wrap: wrap;
 }
 
 .p-select,

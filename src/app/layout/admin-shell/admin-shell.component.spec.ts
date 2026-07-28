@@ -107,11 +107,11 @@ describe('AdminShellComponent', () => {
     expect(rootElement.querySelector('router-outlet')).toBe(outlet);
   });
 
-  it('marks the content route for automatic focused editing', () => {
+  it('keeps the content route in the standard panel layout by default', () => {
     const router = TestBed.inject(Router);
     const shellRoute = router.config.find((route) => route.path === '');
     const contentRoute = shellRoute?.children?.find((route) => route.path === 'content');
 
-    expect(contentRoute?.data?.['adminShellMode']).toBe('focused-editor');
+    expect(contentRoute?.data?.['adminShellMode']).toBeUndefined();
   });
 });

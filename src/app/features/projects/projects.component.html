@@ -270,7 +270,7 @@
     </form>
   </p-drawer>
 
-  <p-confirmdialog key="project-actions" [blockScroll]="true" [closeOnEscape]="true"
+  <p-confirmdialog key="project-actions" [appendTo]="'body'" [blockScroll]="true" [closeOnEscape]="true"
     [dismissableMask]="true" [focusTrap]="true" defaultFocus="reject"
     [style]="{ width: 'min(32rem, calc(100vw - 32px))' }"
     [breakpoints]="{ '430px': 'calc(100vw - 24px)' }"></p-confirmdialog>

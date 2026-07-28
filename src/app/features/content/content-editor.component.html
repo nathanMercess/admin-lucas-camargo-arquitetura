@@ -132,7 +132,7 @@
         </aside>
       </nav>
 
-      <p-tabs [(value)]="activeTab" class="content-editor-tabs">
+      <p-tabs [value]="activeTab()" class="content-editor-tabs" (valueChange)="changeActiveTab($event)">
         <p-tablist>
           <p-tab value="sections" i18n>Editor visual</p-tab>
           <p-tab value="section-content" i18n>Textos e seções</p-tab>
@@ -539,7 +539,7 @@
                   [saveError]="draftService.developmentFallback() ? null : draftService.error()"
                   (documentChange)="handleVisualBuilderChange($event)" (save)="saveDraft()"
                   (publish)="publishDraft()" (assetUploaded)="registerUploadedAsset($event)"
-                  (back)="activeTab.set('section-content')"></app-visual-page-builder>
+                  (back)="changeActiveTab('section-content')"></app-visual-page-builder>
               </section>
             }
           </p-tabpanel>
@@ -555,5 +555,8 @@
     </div>
   }
 
-  <p-confirmdialog></p-confirmdialog>
+  <p-confirmdialog [appendTo]="'body'" [blockScroll]="true" [closeOnEscape]="true"
+    [dismissableMask]="true" [focusTrap]="true" defaultFocus="reject"
+    [style]="{ width: 'min(30rem, calc(100vw - 32px))' }"
+    [breakpoints]="{ '430px': 'calc(100vw - 24px)' }"></p-confirmdialog>
 </section>

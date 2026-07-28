@@ -99,7 +99,7 @@
     </p-table>
   </section>
 
-  <p-confirmdialog key="publication-actions" [blockScroll]="true" [closeOnEscape]="true"
+  <p-confirmdialog key="publication-actions" [appendTo]="'body'" [blockScroll]="true" [closeOnEscape]="true"
     [dismissableMask]="true" [focusTrap]="true" defaultFocus="reject"
     [style]="{ width: 'min(34rem, calc(100vw - 32px))' }"
     [breakpoints]="{ '430px': 'calc(100vw - 24px)' }"></p-confirmdialog>

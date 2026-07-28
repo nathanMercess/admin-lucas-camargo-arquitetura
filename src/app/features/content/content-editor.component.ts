@@ -10,7 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MediaAsset } from '@shared/models/media-asset.model';
 import { SiteConfigV1 } from '@shared/models/site-config-v1.model';
 import { SiteSection } from '@shared/models/site-section.model';
@@ -38,6 +38,7 @@ export class ContentEditorComponent implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly pageRegistry = inject(SitePageRegistryService);
+  private readonly activatedRoute = inject(ActivatedRoute, { optional: true });
   private readonly router = inject(Router);
   private readonly sectionRegistry = inject(SiteSectionRegistryService);
   protected readonly publicationService = inject(PublicationService);
@@ -221,6 +222,12 @@ export class ContentEditorComponent implements OnInit {
   ];
 
   public constructor() {
+    (this.activatedRoute?.queryParamMap ?? this.router.routerState.root.queryParamMap)
+      .pipe(takeUntilDestroyed())
+      .subscribe((parameters) => {
+        this.activeTab.set(parameters.get('editor') === 'visual' ? 'sections' : 'section-content');
+      });
+
     this.contentForm.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe(() => this.syncDraftFromForm());
@@ -373,7 +380,7 @@ export class ContentEditorComponent implements OnInit {
 
   protected openPageEditor(page: SitePageDefinition): void {
     if (page.editorArea === 'content') {
-      this.activeTab.set('sections');
+      this.changeActiveTab('sections');
       return;
     }
 
@@ -381,6 +388,23 @@ export class ContentEditorComponent implements OnInit {
       return;
 
     void this.router.navigate(['/projects']);
+  }
+
+  protected changeActiveTab(tab: string | number | undefined): void {
+    if (typeof tab !== 'string')
+      return;
+
+    const editor = tab === 'sections' ? 'visual' : null;
+
+    this.activeTab.set(tab);
+    if (!this.activatedRoute)
+      return;
+
+    void this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: { editor },
+      queryParamsHandling: 'merge',
+    });
   }
 
   protected addSection(): void {
