@@ -644,6 +644,67 @@ body [data-pc-section='overlay'] [data-pc-section='emptymessage'] {
   flex-wrap: wrap;
 }
 
+body [data-p~='modal'][data-pc-section='mask'] {
+  padding: 12px;
+  background: rgb(20 20 20 / 64%);
+}
+
+body [data-pc-name='dialog'][data-pc-section='root'] {
+  width: min(480px, calc(100vw - 24px));
+  max-width: calc(100vw - 24px);
+  max-height: calc(100svh - 24px);
+  overflow: hidden;
+  border: 1px solid var(--admin-color-border);
+  color: var(--admin-color-ink);
+  background: var(--admin-color-surface);
+  box-shadow: 0 28px 90px rgb(20 20 20 / 28%);
+}
+
+body [data-pc-name='dialog'] [data-pc-section='header'] {
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--admin-color-border);
+  background: var(--admin-color-surface);
+}
+
+body [data-pc-name='dialog'] [data-pc-section='headeractions'] {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+body [data-pc-name='dialog'] [data-pc-section='headeractions'] button {
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid transparent;
+  color: var(--admin-color-ink);
+  background: transparent;
+  cursor: pointer;
+}
+
+body [data-pc-name='dialog'] [data-pc-section='content'] {
+  min-height: 0;
+  padding: 20px;
+  overflow-y: auto;
+  background: var(--admin-color-surface);
+}
+
+body [data-pc-name='dialog'] [data-pc-section='footer'] {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--admin-color-border);
+  background: var(--admin-color-paper);
+}
+
 .p-select,
 .p-inputnumber,
 .p-inputnumber-input,
