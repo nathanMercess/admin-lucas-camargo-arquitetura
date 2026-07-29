@@ -58,79 +58,36 @@
           i18n-text></p-message>
       }
 
-      <aside class="content-editor-guide" aria-label="Fluxo recomendado" i18n-aria-label>
-        <strong i18n>Por onde começar</strong>
-        <ol>
-          <li i18n>Escolha a página ou área que deseja administrar.</li>
-          <li i18n>Atualize o visual, os textos e as mídias.</li>
-          <li i18n>Salve o rascunho para revisar antes de publicar.</li>
-        </ol>
-      </aside>
-
-      <nav class="content-editor-pages" aria-labelledby="content-editor-pages-title">
-        <header class="content-editor-pages-heading">
-          <div>
-            <span i18n>Páginas e rotas</span>
-            <h2 id="content-editor-pages-title" i18n>Onde você quer trabalhar?</h2>
-          </div>
-          <p i18n>Cada rota real do site aparece aqui com seu status e a área responsável pela configuração.</p>
+      <section class="content-editor-workspace" aria-labelledby="content-editor-workspace-title">
+        <header>
+          <span i18n>Atalhos</span>
+          <h2 id="content-editor-workspace-title" i18n>O que você quer editar?</h2>
         </header>
-
-        <div class="content-editor-page-groups">
-          @for (group of pageGroups(); track group.id) {
-            <section class="content-editor-page-group" [attr.aria-labelledby]="'page-group-' + group.id">
-              <header>
-                <h3 [id]="'page-group-' + group.id">{{ group.label }}</h3>
-                <span>{{ group.pages.length }}</span>
-              </header>
-              <div class="content-editor-page-grid">
-                @for (page of group.pages; track page.technicalId) {
-                  <article class="content-editor-page-card" [attr.data-page-id]="page.technicalId">
-                    <div class="content-editor-page-card-heading">
-                      <span class="pi" [class.pi-home]="page.route === '/'"
-                        [class.pi-sitemap]="page.kind === 'shared-template'"
-                        [class.pi-database]="page.kind === 'dynamic-data'"
-                        [class.pi-exclamation-triangle]="page.kind === 'system-page'"
-                        [class.pi-folder-open]="page.route === '/portfolio'" aria-hidden="true"></span>
-                      <div>
-                        <h4>{{ page.name }}</h4>
-                        <code>{{ page.route }}</code>
-                      </div>
-                    </div>
-                    <p>{{ page.description }}</p>
-                    <div class="content-editor-page-metadata">
-                      <span class="content-editor-page-status"
-                        [class.content-editor-page-status--available]="page.status === 'available'"
-                        [class.content-editor-page-status--empty]="page.status === 'empty'"
-                        [class.content-editor-page-status--hidden]="page.status === 'hidden'">
-                        {{ getPageStatusLabel(page.status) }}
-                      </span>
-                      <small>{{ getPageKindLabel(page) }}</small>
-                      <small>{{ getPageRouteLabel(page) }}</small>
-                      <small>{{ getPageDataSourceLabel(page.dataSource) }}</small>
-                      <small>{{ getPageEditorAreaLabel(page.editorArea) }}</small>
-                    </div>
-                    @if (page.configurable) {
-                      <p-button type="button" [label]="getPageActionLabel(page)" severity="secondary"
-                        [outlined]="true" (onClick)="openPageEditor(page)"></p-button>
-                    }
-                    @if (getPagePreviewUrl(page); as previewUrl) {
-                      <a [href]="previewUrl" target="_blank" rel="noopener noreferrer" i18n>
-                        Visualizar rota <span class="pi pi-external-link" aria-hidden="true"></span>
-                      </a>
-                    }
-                  </article>
-                }
-              </div>
-            </section>
-          }
+        <div class="content-editor-workspace-actions">
+          <article>
+            <span class="pi pi-pencil" aria-hidden="true"></span>
+            <div>
+              <strong i18n>Página inicial</strong>
+              <p i18n>Edite textos, seções, imagens e a composição da página.</p>
+            </div>
+            <div>
+              <p-button type="button" label="Editor visual" (onClick)="changeActiveTab('sections')"
+                i18n-label></p-button>
+              <p-button type="button" label="Editar textos" severity="secondary" [outlined]="true"
+                (onClick)="changeActiveTab('section-content')" i18n-label></p-button>
+            </div>
+          </article>
+          <article>
+            <span class="pi pi-building" aria-hidden="true"></span>
+            <div>
+              <strong i18n>Projetos e portfólio</strong>
+              <p i18n>Cadastre projetos, categorias, galerias e informações técnicas.</p>
+            </div>
+            <p-button type="button" label="Gerenciar projetos" severity="secondary" [outlined]="true"
+              (onClick)="openProjects()" i18n-label></p-button>
+          </article>
         </div>
-        <aside class="content-editor-page-inventory-note" aria-label="Rotas não publicadas" i18n-aria-label>
-          @for (note of routeAbsenceNotes; track note) {
-            <p>{{ note }}</p>
-          }
-        </aside>
-      </nav>
+      </section>
 
       <p-tabs [value]="activeTab()" class="content-editor-tabs" (valueChange)="changeActiveTab($event)">
         <p-tablist>

@@ -152,6 +152,88 @@
   background: var(--admin-color-surface);
 }
 
+.content-editor-workspace {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+  border-bottom: 1px solid var(--admin-color-border);
+  background: var(--admin-color-paper);
+}
+
+.content-editor-workspace header {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.content-editor-workspace header > span {
+  color: var(--admin-color-muted);
+  font-family: var(--admin-font-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.content-editor-workspace h2,
+.content-editor-workspace p {
+  margin: 0;
+}
+
+.content-editor-workspace h2 {
+  font-size: 22px;
+  font-weight: 400;
+}
+
+.content-editor-workspace-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.content-editor-workspace-actions article {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--admin-color-border);
+  background: var(--admin-color-surface);
+}
+
+.content-editor-workspace-actions article > .pi {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  color: var(--admin-color-coral);
+  border: 1px solid rgb(227 101 113 / 32%);
+  background: rgb(227 101 113 / 8%);
+}
+
+.content-editor-workspace-actions article > div {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.content-editor-workspace-actions strong {
+  font-size: 15px;
+}
+
+.content-editor-workspace-actions p {
+  color: var(--admin-color-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.content-editor-workspace-actions article > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .content-editor-guide {
   display: flex;
   align-items: center;
@@ -356,6 +438,7 @@
 .content-editor--visual-mode .content-editor-toolbar,
 .content-editor--visual-mode .content-editor-guide,
 .content-editor--visual-mode .content-editor-pages,
+.content-editor--visual-mode .content-editor-workspace,
 .content-editor--visual-mode .content-editor-message,
 .content-editor--visual-mode .content-editor-tabs > p-tablist {
   display: none;
@@ -576,6 +659,15 @@
 
   .content-editor-actions {
     flex-wrap: wrap;
+  }
+
+  .content-editor-workspace-actions,
+  .content-editor-workspace-actions article {
+    grid-template-columns: 1fr;
+  }
+
+  .content-editor-workspace-actions article > div:last-child {
+    justify-content: flex-start;
   }
 
   .content-editor-guide {

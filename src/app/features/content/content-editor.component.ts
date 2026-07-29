@@ -23,7 +23,6 @@ import { PublicationService } from '../publications/services/publication.service
 import { ContentSectionEditorItem } from './models/content-section-editor-item.model';
 import { SitePageDefinition } from './models/site-page-definition.model';
 import { ContentDraftService } from './services/content-draft.service';
-import { SitePageRegistryService } from './services/site-page-registry.service';
 import { SiteSectionRegistryService } from './services/site-section-registry.service';
 import { approvedThemeColorValidator } from './validators/approved-theme-color.validator';
 
@@ -37,7 +36,6 @@ import { approvedThemeColorValidator } from './validators/approved-theme-color.v
 export class ContentEditorComponent implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly confirmationService = inject(ConfirmationService);
-  private readonly pageRegistry = inject(SitePageRegistryService);
   private readonly activatedRoute = inject(ActivatedRoute, { optional: true });
   private readonly router = inject(Router);
   private readonly sectionRegistry = inject(SiteSectionRegistryService);
@@ -53,19 +51,6 @@ export class ContentEditorComponent implements OnInit {
   protected readonly sectionItems = signal<ContentSectionEditorItem[]>([]);
   protected readonly sectionDefinitions = [...this.sectionRegistry.definitions];
   protected readonly newSectionType = signal<SiteSection['type']>('manifesto');
-  protected readonly routeAbsenceNotes = this.pageRegistry.absentRouteFamilies;
-  protected readonly pageGroups = computed(() => {
-    const draft = this.draftService.draft();
-
-    if (!draft)
-      return [];
-
-    return [...this.pageRegistry.getGroupedPages(draft).entries()].map(([id, pages]) => ({
-      id,
-      label: pages[0]?.groupLabel ?? '',
-      pages,
-    }));
-  });
   protected readonly contentForm = this.formBuilder.nonNullable.group({
     identity: this.formBuilder.nonNullable.group({
       brandName: ['', [Validators.required, Validators.maxLength(80)]],
@@ -387,6 +372,10 @@ export class ContentEditorComponent implements OnInit {
     if (page.editorArea === 'system')
       return;
 
+    void this.router.navigate(['/projects']);
+  }
+
+  protected openProjects(): void {
     void this.router.navigate(['/projects']);
   }
 
