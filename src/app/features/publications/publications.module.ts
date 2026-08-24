@@ -9,6 +9,7 @@ import { TableModule } from 'primeng/table';
 
 import { SharedModule } from '@shared/shared.module';
 
+import { SiteV2PreviewComponent } from '../content/components/site-v2-preview/site-v2-preview.component';
 import { PublicationsRoutingModule } from './publications-routing.module';
 import { PublicationsComponent } from './publications.component';
 
@@ -20,6 +21,7 @@ import { PublicationsComponent } from './publications.component';
     ButtonModule,
     ConfirmDialogModule,
     MessageModule,
+    SiteV2PreviewComponent,
     SharedModule,
     TableModule,
     PublicationsRoutingModule,

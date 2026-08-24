@@ -76,9 +76,11 @@
                   i18n-aria-label></span></td>
                 <td><strong>{{ category.title }}</strong><small>{{ category.description }}</small></td>
                 <td class="row-actions">
-                  <p-button [label]="categoryVisible(category.id) ? 'Ocultar' : 'Exibir'" severity="secondary"
-                    [text]="true" [disabled]="draftService.saving()"
-                    (onClick)="toggleCategoryVisibility(category.id)"></p-button>
+                  @if (legacyMode()) {
+                    <p-button [label]="categoryVisible(category.id) ? 'Ocultar' : 'Exibir'" severity="secondary"
+                      [text]="true" [disabled]="draftService.saving()"
+                      (onClick)="toggleCategoryVisibility(category.id)"></p-button>
+                  }
                   <p-button label="Editar" severity="secondary" [outlined]="true"
                     [disabled]="draftService.saving()" (onClick)="editCategory(category)" i18n-label></p-button>
                   <p-button label="Excluir" severity="danger" [text]="true"

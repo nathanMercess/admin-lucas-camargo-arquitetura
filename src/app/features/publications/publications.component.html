@@ -34,18 +34,20 @@
       </div>
     </header>
 
-    @if (draftService.draft(); as draft) {
+    @if (v2Draft(); as document) {
+      @if (v2PreviewPage(); as page) {
+        <div class="preview-stage">
+          <div [style.max-width]="previewWidth()">
+            <app-site-v2-preview [document]="document" [page]="page"
+              [device]="v2PreviewDevice()"></app-site-v2-preview>
+          </div>
+        </div>
+      } @else {
+        <p-message severity="warn" text="O rascunho V2 não possui uma página visível para a prévia."
+          i18n-text></p-message>
+      }
+    } @else if (v1Draft(); as draft) {
       <div class="preview-stage">
-        @if (draft.visualBuilder; as visualBuilder) {
-          @if (visualBuilder.enabled && visualBuilder.html) {
-            <app-visual-builder-preview [document]="visualBuilder" [width]="previewWidth()"
-              title="Prévia da página criada no editor visual" i18n-title></app-visual-builder-preview>
-          } @else {
-            <ng-container *ngTemplateOutlet="legacyPreview"></ng-container>
-          }
-        } @else {
-          <ng-container *ngTemplateOutlet="legacyPreview"></ng-container>
-        }
         <ng-template #legacyPreview>
           <article class="site-preview" [style.max-width]="previewWidth()">
             <header>
@@ -71,6 +73,7 @@
             <footer>{{ draft.footer.statement }} · {{ draft.footer.location }}</footer>
           </article>
         </ng-template>
+        <ng-container *ngTemplateOutlet="legacyPreview"></ng-container>
       </div>
     }
   </section>

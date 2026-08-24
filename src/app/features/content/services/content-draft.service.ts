@@ -7,7 +7,7 @@ import {
 import { Injectable, InjectionToken, Signal, inject, isDevMode, signal } from '@angular/core';
 import { DEFAULT_SITE_CONFIG } from '@shared/config/default-site-config';
 import { MediaAsset } from '@shared/models/media-asset.model';
-import { SiteConfigV1 } from '@shared/models/site-config-v1.model';
+import { SiteDocument } from '@shared/models/site-document.model';
 import { finalize, take } from 'rxjs';
 
 const CONTENT_DRAFT_ENDPOINT = '/api/v1/content/draft';
@@ -26,7 +26,7 @@ export const CONTENT_DRAFT_DEVELOPMENT_FALLBACK = new InjectionToken<boolean>(
 export class ContentDraftService {
   private readonly httpClient = inject(HttpClient);
   private readonly developmentFallbackEnabled = inject(CONTENT_DRAFT_DEVELOPMENT_FALLBACK);
-  private readonly draftState = signal<SiteConfigV1 | null>(null);
+  private readonly draftState = signal<SiteDocument | null>(null);
   private readonly loadingState = signal(false);
   private readonly savingState = signal(false);
   private readonly errorState = signal<string | null>(null);
@@ -35,7 +35,7 @@ export class ContentDraftService {
   private readonly developmentFallbackState = signal(false);
   private saveQueued = false;
 
-  public readonly draft: Signal<SiteConfigV1 | null> = this.draftState.asReadonly();
+  public readonly draft: Signal<SiteDocument | null> = this.draftState.asReadonly();
   public readonly loading: Signal<boolean> = this.loadingState.asReadonly();
   public readonly saving: Signal<boolean> = this.savingState.asReadonly();
   public readonly error: Signal<string | null> = this.errorState.asReadonly();
@@ -52,7 +52,7 @@ export class ContentDraftService {
     this.errorState.set(null);
 
     this.httpClient
-      .get<SiteConfigV1>(CONTENT_DRAFT_ENDPOINT, { observe: 'response' })
+      .get<SiteDocument>(CONTENT_DRAFT_ENDPOINT, { observe: 'response' })
       .pipe(
         take(1),
         finalize(() => this.loadingState.set(false)),
@@ -63,7 +63,7 @@ export class ContentDraftService {
       });
   }
 
-  public updateDraft(draft: SiteConfigV1): void {
+  public updateDraft(draft: SiteDocument): void {
     this.draftState.set(draft);
     this.dirtyState.set(true);
   }
@@ -115,7 +115,7 @@ export class ContentDraftService {
       headers = headers.set('If-None-Match', '*');
 
     this.httpClient
-      .put<SiteConfigV1>(CONTENT_DRAFT_ENDPOINT, draft, { headers, observe: 'response' })
+      .put<SiteDocument>(CONTENT_DRAFT_ENDPOINT, draft, { headers, observe: 'response' })
       .pipe(
         take(1),
         finalize(() => this.finishSave()),
@@ -126,7 +126,7 @@ export class ContentDraftService {
       });
   }
 
-  private handleLoadSuccess(response: HttpResponse<SiteConfigV1>): void {
+  private handleLoadSuccess(response: HttpResponse<SiteDocument>): void {
     if (!response.body) {
       this.handleLoadError();
       return;
@@ -170,8 +170,8 @@ export class ContentDraftService {
   }
 
   private handleSaveSuccess(
-    response: HttpResponse<SiteConfigV1>,
-    submittedDraft: SiteConfigV1,
+    response: HttpResponse<SiteDocument>,
+    submittedDraft: SiteDocument,
   ): void {
     const hasNewerDraft = this.draftState() !== submittedDraft;
 

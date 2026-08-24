@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConfirmationService } from 'primeng/api';
@@ -28,12 +29,9 @@ import { SectionContentEditorComponent } from './components/section-content-edit
 import { SiteLinkEditorComponent } from './components/site-link-editor/site-link-editor.component';
 import { SiteStructureEditorComponent } from './components/site-structure-editor/site-structure-editor.component';
 import { SiteTemplateLibraryComponent } from './components/site-template-library/site-template-library.component';
+import { SiteV2BuilderComponent } from './components/site-v2-builder/site-v2-builder.component';
+import { SiteV2PreviewComponent } from './components/site-v2-preview/site-v2-preview.component';
 import { StringListEditorComponent } from './components/string-list-editor/string-list-editor.component';
-import { VisualBuilderLibraryComponent } from './components/visual-builder-library/visual-builder-library.component';
-import { VisualBuilderPropertiesComponent } from './components/visual-builder-properties/visual-builder-properties.component';
-import { VisualBuilderTemplateLibraryComponent } from './components/visual-builder-template-library/visual-builder-template-library.component';
-import { VisualBuilderToolbarComponent } from './components/visual-builder-toolbar/visual-builder-toolbar.component';
-import { VisualPageBuilderComponent } from './components/visual-page-builder/visual-page-builder.component';
 import { ContentEditorComponent } from './content-editor.component';
 
 @NgModule({
@@ -45,15 +43,13 @@ import { ContentEditorComponent } from './content-editor.component';
     SiteLinkEditorComponent,
     SiteStructureEditorComponent,
     SiteTemplateLibraryComponent,
+    SiteV2BuilderComponent,
     StringListEditorComponent,
-    VisualBuilderLibraryComponent,
-    VisualBuilderPropertiesComponent,
-    VisualBuilderTemplateLibraryComponent,
-    VisualBuilderToolbarComponent,
-    VisualPageBuilderComponent,
   ],
   imports: [
     CommonModule,
+    DragDropModule,
+    SiteV2PreviewComponent,
     FormsModule,
     ReactiveFormsModule,
     ButtonModule,

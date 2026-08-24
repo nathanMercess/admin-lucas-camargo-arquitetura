@@ -1,0 +1,103 @@
+<section class="contact-inbox" aria-labelledby="contact-inbox-title">
+  <header class="contact-inbox__heading">
+    <div>
+      <span i18n>Atendimento</span>
+      <h1 id="contact-inbox-title" i18n>Mensagens de contato</h1>
+      <p i18n>Acompanhe os pedidos enviados pelo formulário do site.</p>
+    </div>
+    <p-button label="Atualizar" icon="pi pi-refresh" severity="secondary" [outlined]="true"
+      [loading]="inbox.loading()" (onClick)="refresh()" i18n-label></p-button>
+  </header>
+
+  @if (inbox.error(); as error) {
+    <p-message severity="error" [text]="error"></p-message>
+  }
+
+  <div class="contact-inbox__toolbar">
+    <label for="contact-status-filter" i18n>Mostrar</label>
+    <p-select inputId="contact-status-filter" [options]="filterOptions" optionLabel="label"
+      optionValue="value" [ngModel]="filter()" (ngModelChange)="changeFilter($event)"></p-select>
+    <span>{{ filteredMessages().length }} <ng-container i18n>mensagem(ns)</ng-container></span>
+  </div>
+
+  @if (inbox.loading() && !inbox.messages().length) {
+    <div class="contact-inbox__state" role="status">
+      <p-progressspinner strokeWidth="3" aria-label="Carregando mensagens"
+        i18n-aria-label></p-progressspinner>
+      <p i18n>Carregando mensagens...</p>
+    </div>
+  } @else {
+    <div class="contact-inbox__workspace">
+      <section class="contact-inbox__list" aria-label="Lista de mensagens" i18n-aria-label>
+        <p-table [value]="filteredMessages()" dataKey="id" [scrollable]="true" scrollHeight="34rem">
+          <ng-template #header>
+            <tr><th i18n>Contato</th><th i18n>Assunto</th><th i18n>Recebida</th><th i18n>Status</th></tr>
+          </ng-template>
+          <ng-template #body let-message>
+            <tr [class.contact-inbox__row--selected]="inbox.selected()?.id === message.id">
+              <td><button type="button" class="contact-inbox__open" (click)="open(message)">
+                <strong>{{ message.name }}</strong><span>{{ message.email }}</span>
+              </button></td>
+              <td>{{ message.subject }}</td>
+              <td>{{ message.receivedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+              <td><p-tag [value]="statusLabel(message.status)"
+                [severity]="statusSeverity(message.status)"></p-tag></td>
+            </tr>
+          </ng-template>
+          <ng-template #emptymessage>
+            <tr><td colspan="4">
+              <div class="contact-inbox__state">
+                <i class="pi pi-inbox" aria-hidden="true"></i>
+                <strong i18n>Nenhuma mensagem neste filtro.</strong>
+                <span i18n>Novos contatos aparecerão aqui.</span>
+              </div>
+            </td></tr>
+          </ng-template>
+        </p-table>
+        @if (inbox.nextCursor()) {
+          <p-button label="Carregar mais" severity="secondary" [outlined]="true"
+            [loading]="inbox.loading()" (onClick)="inbox.loadMore()" i18n-label></p-button>
+        }
+      </section>
+
+      <aside class="contact-inbox__detail" aria-label="Detalhes da mensagem" i18n-aria-label>
+        @if (inbox.detailLoading()) {
+          <div class="contact-inbox__state" role="status">
+            <p-progressspinner strokeWidth="3" aria-label="Abrindo mensagem"
+              i18n-aria-label></p-progressspinner>
+          </div>
+        } @else if (inbox.selected(); as message) {
+          <header>
+            <div><span>{{ message.receivedAt | date: 'dd/MM/yyyy HH:mm' }}</span><h2>{{ message.subject }}</h2></div>
+            <p-tag [value]="statusLabel(message.status)" [severity]="statusSeverity(message.status)"></p-tag>
+          </header>
+          <dl>
+            <div><dt i18n>Nome</dt><dd>{{ message.name }}</dd></div>
+            <div><dt i18n>E-mail</dt><dd><a [href]="'mailto:' + message.email">{{ message.email }}</a></dd></div>
+            @if (message.phone) {
+              <div><dt i18n>Telefone</dt><dd>{{ message.phone }}</dd></div>
+            }
+          </dl>
+          <p class="contact-inbox__message">{{ message.message }}</p>
+          <div class="contact-inbox__actions" aria-label="Alterar status" i18n-aria-label>
+            <p-button label="Marcar como nova" severity="secondary" [outlined]="true"
+              [disabled]="message.status === 'new' || inbox.updating()" (onClick)="setStatus('new')"
+              i18n-label></p-button>
+            <p-button label="Marcar como lida" severity="secondary" [outlined]="true"
+              [disabled]="message.status === 'read' || inbox.updating()" (onClick)="setStatus('read')"
+              i18n-label></p-button>
+            <p-button label="Resolver" icon="pi pi-check" [loading]="inbox.updating()"
+              [disabled]="message.status === 'resolved'" (onClick)="setStatus('resolved')"
+              i18n-label></p-button>
+          </div>
+        } @else {
+          <div class="contact-inbox__state">
+            <i class="pi pi-envelope" aria-hidden="true"></i>
+            <strong i18n>Selecione uma mensagem.</strong>
+            <span i18n>Os dados completos e as ações aparecerão aqui.</span>
+          </div>
+        }
+      </aside>
+    </div>
+  }
+</section>

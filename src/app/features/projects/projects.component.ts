@@ -10,6 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { isSiteConfigV1, isSiteConfigV2 } from '@shared/guards/site-document.guard';
 import { MediaAsset } from '@shared/models/media-asset.model';
 import { MediaReference } from '@shared/models/media-reference.model';
 import { PortfolioCategory } from '@shared/models/portfolio-category.model';
@@ -43,6 +44,10 @@ export class ProjectsComponent implements OnInit {
   private categoryTitleInput?: ElementRef<HTMLInputElement>;
 
   protected readonly draftService = inject(ContentDraftService);
+  private readonly v1Draft = computed(() => {
+    return this.draftService.draft();
+  });
+  protected readonly legacyMode = computed(() => isSiteConfigV1(this.v1Draft()));
   protected readonly projectRows = signal<PortfolioProject[]>([]);
   protected readonly categoryRows = signal<PortfolioCategory[]>([]);
   protected readonly projectDrawerVisible = signal(false);
@@ -67,7 +72,7 @@ export class ProjectsComponent implements OnInit {
   protected readonly categorySubmitLabel = computed(() => this.editingCategoryId()
     ? $localize`:@@admin.projects.updateCategory:Salvar alterações da categoria`
     : $localize`:@@admin.projects.createCategory:Criar categoria`);
-  protected readonly mediaOptions = computed(() => [...(this.draftService.draft()?.media ?? [])]);
+  protected readonly mediaOptions = computed(() => [...(this.v1Draft()?.media ?? [])]);
   protected readonly approvedVisualClasses = [
     {
       label: $localize`:@@admin.projects.visual.projects:Claro`,
@@ -125,7 +130,7 @@ export class ProjectsComponent implements OnInit {
 
   public constructor() {
     effect(() => {
-      const draft = this.draftService.draft();
+      const draft = this.v1Draft();
 
       if (!draft)
         return;
@@ -217,7 +222,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   protected saveProject(): void {
-    const draft = this.draftService.draft();
+    const draft = this.v1Draft();
 
     if (!draft || this.draftService.saving() || this.pendingSave())
       return;
@@ -323,22 +328,34 @@ export class ProjectsComponent implements OnInit {
       acceptLabel: $localize`:@@admin.projects.deleteProjectAccept:Excluir projeto`,
       rejectLabel: $localize`:@@admin.projects.cancel:Cancelar`,
       accept: () => {
-        const draft = this.draftService.draft();
+        const draft = this.v1Draft();
 
         if (!draft || this.draftService.saving())
           return;
 
-        this.draftService.updateDraft({
-          ...draft,
-          projects: draft.projects.filter((current) => current.id !== project.id),
-        });
+        const projects = draft.projects.filter((current) => current.id !== project.id);
+
+        if (isSiteConfigV2(draft)) {
+          this.draftService.updateDraft({
+            ...draft,
+            projects,
+            pages: draft.pages.map((page) => ({
+              ...page,
+              sections: page.sections.map((section) => section.type === 'project-grid'
+                ? { ...section, projectIds: section.projectIds.filter((id) => id !== project.id) }
+                : section),
+            })),
+          });
+        } else {
+          this.draftService.updateDraft({ ...draft, projects });
+        }
         this.draftService.save();
       },
     });
   }
 
   protected toggleProjectVisibility(project: PortfolioProject): void {
-    const draft = this.draftService.draft();
+    const draft = this.v1Draft();
 
     if (!draft || this.draftService.saving())
       return;
@@ -351,7 +368,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   protected handleProjectReorder(): void {
-    const draft = this.draftService.draft();
+    const draft = this.v1Draft();
 
     if (!draft || this.draftService.saving())
       return;
@@ -402,7 +419,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   protected saveCategory(): void {
-    const draft = this.draftService.draft();
+    const draft = this.v1Draft();
 
     if (!draft || this.draftService.saving() || this.pendingSave())
       return;
@@ -464,7 +481,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   protected handleCategoryReorder(): void {
-    const draft = this.draftService.draft();
+    const draft = this.v1Draft();
 
     if (!draft || this.draftService.saving())
       return;
@@ -484,10 +501,10 @@ export class ProjectsComponent implements OnInit {
   }
 
   protected toggleCategoryVisibility(categoryId: string): void {
-    const draft = this.draftService.draft();
+    const draft = this.v1Draft();
     const portfolio = this.portfolioSection();
 
-    if (!draft || !portfolio || this.draftService.saving())
+    if (!isSiteConfigV1(draft) || !portfolio || this.draftService.saving())
       return;
 
     const categoryIds = portfolio.categoryIds.includes(categoryId)
@@ -513,7 +530,7 @@ export class ProjectsComponent implements OnInit {
   }
 
   private deleteCategory(categoryId: string): void {
-    const draft = this.draftService.draft();
+    const draft = this.v1Draft();
 
     if (!draft || this.draftService.saving())
       return;
@@ -522,20 +539,34 @@ export class ProjectsComponent implements OnInit {
       ...project,
       categoryIds: project.categoryIds.filter((id) => id !== categoryId),
     }));
-    const sections = draft.sections.map((section): SiteSection => section.type === 'portfolio'
-      ? { ...section, categoryIds: section.categoryIds.filter((id) => id !== categoryId) }
-      : section);
-    this.draftService.updateDraft({
+    const base = {
       ...draft,
       portfolioCategories: draft.portfolioCategories.filter((category) => category.id !== categoryId),
       projects,
-      sections,
-    });
+    };
+
+    if (isSiteConfigV1(draft)) {
+      const sections = draft.sections.map((section): SiteSection => section.type === 'portfolio'
+        ? { ...section, categoryIds: section.categoryIds.filter((id) => id !== categoryId) }
+        : section);
+      this.draftService.updateDraft({
+        ...draft,
+        portfolioCategories: base.portfolioCategories,
+        projects,
+        sections,
+      });
+    } else {
+      this.draftService.updateDraft(base);
+    }
     this.draftService.save();
   }
 
   private portfolioSection() {
-    return this.draftService.draft()?.sections.find((section) => section.type === 'portfolio');
+    const draft = this.v1Draft();
+
+    return isSiteConfigV1(draft)
+      ? draft.sections.find((section) => section.type === 'portfolio')
+      : undefined;
   }
 
   private nextProjectOrder(): number {

@@ -31,6 +31,13 @@ const routes: Routes = [
           import('../../features/projects/projects.module').then((module) => module.ProjectsModule),
       },
       {
+        path: 'contacts',
+        loadChildren: () =>
+          import('../../features/contact-inbox/contact-inbox.module').then(
+            (module) => module.ContactInboxModule,
+          ),
+      },
+      {
         path: 'media',
         loadChildren: () =>
           import('../../features/media/media.module').then((module) => module.MediaModule),

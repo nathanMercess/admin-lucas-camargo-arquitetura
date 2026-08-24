@@ -3,7 +3,9 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { DEFAULT_SITE_CONFIG } from '@shared/config/default-site-config';
+import { isSiteConfigV1, isSiteConfigV2 } from '@shared/guards/site-document.guard';
 import { ThemeConfig } from '@shared/models/theme-config.model';
+import { ConfirmationService } from 'primeng/api';
 
 import { ContentEditorComponent } from './content-editor.component';
 import { ContentModule } from './content.module';
@@ -110,15 +112,25 @@ describe('ContentEditorComponent', () => {
     toggle!.click();
     fixture.detectChanges();
 
-    const heroSection = draftService.draft()?.sections.find((section) => section.id === 'hero');
+    const draft = draftService.draft();
+
+    if (!isSiteConfigV1(draft))
+      throw new Error('O teste exige um rascunho V1.');
+
+    const heroSection = draft.sections.find((section) => section.id === 'hero');
 
     expect(heroSection?.visible).toBe(false);
-    expect(draftService.draft()?.sections).toHaveLength(DEFAULT_SITE_CONFIG.sections.length);
+    expect(draft.sections).toHaveLength(DEFAULT_SITE_CONFIG.sections.length);
     expect(draftService.dirty()).toBe(true);
   });
 
   it('applies a template theme while preserving content, projects and media', () => {
-    const originalDraft = structuredClone(draftService.draft()!);
+    const loadedDraft = draftService.draft();
+
+    if (!isSiteConfigV1(loadedDraft))
+      throw new Error('O teste exige um rascunho V1.');
+
+    const originalDraft = structuredClone(loadedDraft);
     const galleryTheme: ThemeConfig = {
       ...originalDraft.theme,
       presetId: 'gallery-v1',
@@ -134,7 +146,10 @@ describe('ContentEditorComponent', () => {
     component.handleTemplateChange(galleryTheme);
     fixture.detectChanges();
 
-    const updatedDraft = draftService.draft()!;
+    const updatedDraft = draftService.draft();
+
+    if (!isSiteConfigV1(updatedDraft))
+      throw new Error('A edição deveria preservar o schema V1.');
 
     expect(updatedDraft.theme.presetId).toBe('gallery-v1');
     expect(updatedDraft.theme.layout.contentMaxWidthPx).toBe(1760);
@@ -154,13 +169,12 @@ describe('ContentEditorComponent', () => {
     expect(rootElement.textContent).toContain('Projetos e portfólio');
   });
 
-  it('prioritizes the visual editor and texts while distinguishing ready styles', () => {
+  it('keeps the safe legacy editor without exposing the retired free-form visual flow', () => {
     const rootElement = fixture.nativeElement as HTMLElement;
     const tabs = [...rootElement.querySelectorAll<HTMLElement>('[role="tab"]')]
       .map((tab) => tab.textContent?.trim());
 
     expect(tabs).toEqual([
-      'Editor visual',
       'Textos e seções',
       'Marca e logos',
       'Menu e rodapé',
@@ -168,19 +182,29 @@ describe('ContentEditorComponent', () => {
       'Aparência avançada',
       'Google e compartilhamento',
     ]);
-    expect(tabs).not.toContain('Modelos visuais');
+    expect(rootElement.querySelector('app-visual-page-builder')).toBeNull();
+    expect(rootElement.textContent).toContain('A migração automática está bloqueada');
   });
 
-  it('opens the visual editor from the page shortcut', () => {
+  it('creates a new V2 bootstrap only after an explicit confirmation', () => {
+    const confirmationService = TestBed.inject(ConfirmationService);
+    const confirmSpy = vi.spyOn(confirmationService, 'confirm');
     const rootElement = fixture.nativeElement as HTMLElement;
-    const visualEditorButton = [...rootElement.querySelectorAll<HTMLButtonElement>('button')]
-      .find((button) => button.textContent?.includes('Editor visual'));
+    const createButton = [...rootElement.querySelectorAll<HTMLButtonElement>('button')]
+      .find((button) => button.textContent?.includes('Criar novo conteúdo V2'));
 
-    visualEditorButton?.click();
+    createButton?.click();
+
+    expect(confirmSpy).toHaveBeenCalledOnce();
+    expect(isSiteConfigV1(draftService.draft())).toBe(true);
+    confirmSpy.mock.calls[0][0].accept?.();
     fixture.detectChanges();
 
-    expect(rootElement.querySelector('.content-editor--visual-mode')).not.toBeNull();
-    expect(rootElement.querySelector('app-visual-page-builder')).not.toBeNull();
+    const document = draftService.draft();
+    expect(isSiteConfigV2(document)).toBe(true);
+    expect(isSiteConfigV2(document) ? document.pages[0].sections.map((section) => section.type) : [])
+      .toEqual(['hero', 'project-grid', 'whatsapp-cta', 'contact-form']);
+    expect(rootElement.querySelector('app-site-v2-builder')).not.toBeNull();
   });
 
   it('takes the portfolio shortcut to project administration', () => {

@@ -96,6 +96,12 @@ export class AdminShellComponent implements OnInit {
       routerLinkActiveOptions: { exact: true },
     },
     {
+      label: $localize`:@@admin.navigation.contacts:Contatos`,
+      icon: 'pi pi-inbox',
+      routerLink: ['/contacts'],
+      routerLinkActiveOptions: { exact: true },
+    },
+    {
       label: $localize`:@@admin.navigation.media:Mídia`,
       icon: 'pi pi-images',
       routerLink: ['/media'],

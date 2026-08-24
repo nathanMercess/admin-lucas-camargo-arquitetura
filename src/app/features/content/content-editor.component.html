@@ -1,5 +1,4 @@
-<section class="content-editor" aria-labelledby="content-editor-title"
-  [class.content-editor--visual-mode]="activeTab() === 'sections'">
+<section class="content-editor" aria-labelledby="content-editor-title">
   <header class="content-editor-heading">
     <div>
       <span class="content-editor-kicker" i18n>Conteúdo dinâmico</span>
@@ -37,7 +36,12 @@
       <p-progressspinner strokeWidth="3" aria-label="Carregando rascunho" i18n-aria-label></p-progressspinner>
       <span i18n>Carregando configuração...</span>
     </div>
-  } @else if (draftService.draft()) {
+  } @else if (v2Draft(); as document) {
+    <app-site-v2-builder [document]="document" [dirty]="draftService.dirty()"
+      [saving]="draftService.saving()" [saveError]="draftService.error()"
+      (documentChange)="handleV2DocumentChange($event)" (save)="saveDraft()"
+      (back)="requestReload()"></app-site-v2-builder>
+  } @else if (v1Draft(); as draft) {
     <form class="content-editor-form" [formGroup]="contentForm" (ngSubmit)="saveDraft()">
       <div class="content-editor-toolbar">
         <div>
@@ -58,6 +62,37 @@
           i18n-text></p-message>
       }
 
+      <section class="content-editor-panel" aria-labelledby="v2-transition-title">
+        <header class="content-editor-panel-heading">
+          <span i18n>Novo construtor</span>
+          <h2 id="v2-transition-title" i18n>Leve o conteúdo para páginas e seções modulares.</h2>
+          <p i18n>A versão atual continua disponível com segurança até você confirmar uma transição.</p>
+        </header>
+        @if (migrationAnalysis(); as analysis) {
+          @if (analysis.canMigrate) {
+            <p-message severity="info"
+              text="Este conteúdo pode ser migrado sem descartar seções compatíveis."
+              i18n-text></p-message>
+          } @else {
+            <p-message severity="warn"
+              text="A migração automática está bloqueada para evitar perda de conteúdo."
+              i18n-text></p-message>
+            <ul>
+              @for (blocker of analysis.blockers; track blocker) {
+                <li>{{ blocker }}</li>
+              }
+            </ul>
+          }
+          <div class="content-editor-actions">
+            <p-button type="button" label="Migrar conteúdo compatível" icon="pi pi-arrow-right"
+              [disabled]="!analysis.canMigrate" (onClick)="requestMigration()" i18n-label></p-button>
+            <p-button type="button" label="Criar novo conteúdo V2" icon="pi pi-plus"
+              severity="secondary" [outlined]="true" (onClick)="requestNewV2Content()"
+              i18n-label></p-button>
+          </div>
+        }
+      </section>
+
       <section class="content-editor-workspace" aria-labelledby="content-editor-workspace-title">
         <header>
           <span i18n>Atalhos</span>
@@ -70,12 +105,8 @@
               <strong i18n>Página inicial</strong>
               <p i18n>Edite textos, seções, imagens e a composição da página.</p>
             </div>
-            <div>
-              <p-button type="button" label="Editor visual" (onClick)="changeActiveTab('sections')"
-                i18n-label></p-button>
-              <p-button type="button" label="Editar textos" severity="secondary" [outlined]="true"
-                (onClick)="changeActiveTab('section-content')" i18n-label></p-button>
-            </div>
+            <p-button type="button" label="Editar textos e seções" severity="secondary" [outlined]="true"
+              (onClick)="changeActiveTab('section-content')" i18n-label></p-button>
           </article>
           <article>
             <span class="pi pi-building" aria-hidden="true"></span>
@@ -91,7 +122,6 @@
 
       <p-tabs [value]="activeTab()" class="content-editor-tabs" (valueChange)="changeActiveTab($event)">
         <p-tablist>
-          <p-tab value="sections" i18n>Editor visual</p-tab>
           <p-tab value="section-content" i18n>Textos e seções</p-tab>
           <p-tab value="identity" i18n>Marca e logos</p-tab>
           <p-tab value="structure" i18n>Menu e rodapé</p-tab>
@@ -139,19 +169,19 @@
                 </div>
 
                 <app-media-asset-picker class="content-editor-field content-editor-field--full"
-                  label="Logo para fundos escuros" [assets]="draftService.draft()?.media ?? []"
+                  label="Logo para fundos escuros" [assets]="draft.media"
                   [value]="contentForm.controls.identity.controls.logoLightMediaId.value" provenance="brand"
                   (valueChange)="contentForm.controls.identity.controls.logoLightMediaId.setValue($event)"
                   (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
 
                 <app-media-asset-picker class="content-editor-field content-editor-field--full"
-                  label="Logo para fundos claros" [assets]="draftService.draft()?.media ?? []"
+                  label="Logo para fundos claros" [assets]="draft.media"
                   [value]="contentForm.controls.identity.controls.logoDarkMediaId.value" provenance="brand"
                   (valueChange)="contentForm.controls.identity.controls.logoDarkMediaId.setValue($event)"
                   (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
 
                 <app-media-asset-picker class="content-editor-field content-editor-field--full"
-                  label="Ícone do navegador" [assets]="draftService.draft()?.media ?? []"
+                  label="Ícone do navegador" [assets]="draft.media"
                   [value]="contentForm.controls.identity.controls.faviconMediaId.value" provenance="brand"
                   (valueChange)="contentForm.controls.identity.controls.faviconMediaId.setValue($event)"
                   (assetUploaded)="registerUploadedAsset($event)" i18n-label></app-media-asset-picker>
@@ -213,7 +243,7 @@
                 </header>
                 <div class="content-editor-fields content-editor-fields--two-columns">
                   <app-media-asset-picker class="content-editor-field content-editor-field--full"
-                    label="Imagem de compartilhamento" [assets]="draftService.draft()?.media ?? []"
+                    label="Imagem de compartilhamento" [assets]="draft.media"
                     [value]="contentForm.controls.seo.controls.openGraph.controls.imageMediaId.value"
                     provenance="brand"
                     (valueChange)="contentForm.controls.seo.controls.openGraph.controls.imageMediaId.setValue($event)"
@@ -242,7 +272,7 @@
                 </header>
                 <div class="content-editor-fields content-editor-fields--two-columns">
                   <app-media-asset-picker class="content-editor-field content-editor-field--full"
-                    label="Imagem de compartilhamento" [assets]="draftService.draft()?.media ?? []"
+                    label="Imagem de compartilhamento" [assets]="draft.media"
                     [value]="contentForm.controls.seo.controls.twitter.controls.imageMediaId.value"
                     provenance="brand"
                     (valueChange)="contentForm.controls.seo.controls.twitter.controls.imageMediaId.setValue($event)"
@@ -303,7 +333,7 @@
           </p-tabpanel>
 
           <p-tabpanel value="templates">
-            @if (draftService.draft(); as draft) {
+            @if (v1Draft(); as draft) {
               <div class="content-editor-panel">
                 <app-site-template-library [currentTheme]="draft.theme"
                   (themeChange)="handleTemplateChange($event)"
@@ -422,7 +452,7 @@
           </p-tabpanel>
 
           <p-tabpanel value="structure">
-            @if (draftService.draft(); as draft) {
+            @if (v1Draft(); as draft) {
               <app-site-structure-editor [config]="draft"
                 (configChange)="handleConfigChange($event)"
                 (assetUploaded)="registerUploadedAsset($event)"></app-site-structure-editor>
@@ -430,7 +460,7 @@
           </p-tabpanel>
 
           <p-tabpanel value="section-content">
-            @if (draftService.draft(); as draft) {
+            @if (v1Draft(); as draft) {
               <section class="content-editor-panel" aria-labelledby="section-content-title">
                 <header class="content-editor-panel-heading">
                   <span i18n>Textos do site</span>
@@ -481,22 +511,6 @@
                     </div>
                   }
                 </div>
-              </section>
-            }
-          </p-tabpanel>
-
-          <p-tabpanel value="sections">
-            @if (activeTab() === 'sections') {
-              <section class="content-editor-panel content-editor-panel--visual" aria-label="Construtor por blocos"
-                i18n-aria-label>
-                <app-visual-page-builder [document]="draftService.draft()?.visualBuilder"
-                  [config]="draftService.draft()!" [dirty]="draftService.dirty()"
-                  [saving]="draftService.saving()"
-                  [canPublish]="!!draftService.etag() && !draftService.developmentFallback()"
-                  [saveError]="draftService.developmentFallback() ? null : draftService.error()"
-                  (documentChange)="handleVisualBuilderChange($event)" (save)="saveDraft()"
-                  (publish)="publishDraft()" (assetUploaded)="registerUploadedAsset($event)"
-                  (back)="changeActiveTab('section-content')"></app-visual-page-builder>
               </section>
             }
           </p-tabpanel>

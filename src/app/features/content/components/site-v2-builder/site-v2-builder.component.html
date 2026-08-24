@@ -1,0 +1,268 @@
+<section class="v2-builder" aria-labelledby="v2-builder-title">
+  <header class="v2-builder__toolbar">
+    <div>
+      <span i18n>Construtor modular</span>
+      <h2 id="v2-builder-title" i18n>Páginas e seções do site</h2>
+      <p i18n>O conteúdo é salvo de forma estruturada, sem código livre.</p>
+    </div>
+    <div class="v2-builder__toolbar-actions">
+      <div class="v2-builder__device" role="group" aria-label="Tamanho da prévia" i18n-aria-label>
+        <p-button icon="pi pi-desktop" severity="secondary" [outlined]="device() !== 'desktop'"
+          ariaLabel="Prévia para computador" (onClick)="device.set('desktop')"
+          i18n-ariaLabel></p-button>
+        <p-button icon="pi pi-mobile" severity="secondary" [outlined]="device() !== 'mobile'"
+          ariaLabel="Prévia para celular" (onClick)="device.set('mobile')"
+          i18n-ariaLabel></p-button>
+      </div>
+      <p-button label="Voltar" severity="secondary" [outlined]="true" (onClick)="back.emit()"
+        i18n-label></p-button>
+      <p-button [label]="dirty() ? 'Salvar alterações' : 'Salvo'" icon="pi pi-save"
+        [disabled]="!dirty()" [loading]="saving()" (onClick)="save.emit()"></p-button>
+    </div>
+  </header>
+
+  @if (operationMessage(); as message) {
+    <p-message severity="warn" [text]="message"></p-message>
+  }
+  @if (saveError(); as error) {
+    <p-message severity="error" [text]="error"></p-message>
+  }
+
+  <div class="v2-builder__workspace">
+    <aside class="v2-builder__sidebar" aria-label="Páginas, seções e mídia" i18n-aria-label>
+      <section class="v2-builder__panel">
+        <header>
+          <div><span i18n>Camadas</span><h3 i18n>Páginas</h3></div>
+          <p-button icon="pi pi-plus" [rounded]="true" [text]="true" ariaLabel="Criar página"
+            (onClick)="addPage()" i18n-ariaLabel></p-button>
+        </header>
+        <div class="v2-builder__layer-list" cdkDropList [cdkDropListData]="pages()"
+          (cdkDropListDropped)="dropPage($event)">
+          @for (page of pages(); track page.id) {
+            <button type="button" class="v2-builder__layer"
+              [class.v2-builder__layer--active]="activePage().id === page.id"
+              cdkDrag [cdkDragData]="page" (click)="selectPage(page.id)">
+              <i class="pi pi-bars" cdkDragHandle aria-hidden="true"></i>
+              <span><strong>{{ page.seo.title }}</strong><small>{{ page.path }}</small></span>
+              <i class="pi" [class.pi-eye]="page.visible" [class.pi-eye-slash]="!page.visible"
+                aria-hidden="true"></i>
+            </button>
+          }
+        </div>
+      </section>
+
+      <section class="v2-builder__panel">
+        <header><div><span i18n>Paleta</span><h3 i18n>Adicionar seção</h3></div></header>
+        <div class="v2-builder__palette" id="v2-section-palette" cdkDropList
+          [cdkDropListConnectedTo]="['v2-page-sections']" [cdkDropListSortingDisabled]="true">
+          @for (definition of sectionDefinitions; track definition.type) {
+            <article class="v2-builder__palette-card" cdkDrag [cdkDragData]="definition">
+              <i class="pi {{ definition.icon }}" aria-hidden="true"></i>
+              <div><strong>{{ definition.label }}</strong><small>{{ definition.description }}</small></div>
+              <p-button icon="pi pi-plus" [rounded]="true" [text]="true"
+                [ariaLabel]="'Adicionar ' + definition.label" (onClick)="addSection(definition)"></p-button>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="v2-builder__panel">
+        <header><div><span i18n>Biblioteca</span><h3 i18n>Fotos</h3></div></header>
+        <p class="v2-builder__hint" i18n>Arraste uma foto para uma seção de abertura.</p>
+        <div class="v2-builder__media" id="v2-media-library" cdkDropList
+          [cdkDropListConnectedTo]="heroDropIds()" [cdkDropListSortingDisabled]="true">
+          @for (asset of mediaAssets(); track asset.id) {
+            <article class="v2-builder__media-card" cdkDrag [cdkDragData]="asset">
+              <img [src]="asset.path" alt="" />
+              <span>{{ asset.id }}</span>
+            </article>
+          } @empty {
+            <p i18n>Nenhuma foto disponível.</p>
+          }
+        </div>
+      </section>
+    </aside>
+
+    <main class="v2-builder__canvas">
+      @if (activePage(); as page) {
+        <header class="v2-builder__canvas-heading">
+          <div><span i18n>Página ativa</span><h3>{{ page.seo.title }}</h3><small>{{ page.path }}</small></div>
+          <p-tag [value]="page.visible ? 'Visível' : 'Oculta'"
+            [severity]="page.visible ? 'success' : 'secondary'"></p-tag>
+        </header>
+
+        <div class="v2-builder__section-list" id="v2-page-sections" cdkDropList
+          [cdkDropListData]="page.sections" [cdkDropListConnectedTo]="['v2-section-palette']"
+          (cdkDropListDropped)="dropSection($event)">
+          @for (section of page.sections; track section.id) {
+            <article class="v2-builder__section-card"
+              [class.v2-builder__section-card--active]="selectedSection()?.id === section.id"
+              cdkDrag [cdkDragData]="section" tabindex="0" (click)="selectSection(section.id)"
+              (keydown.enter)="selectSection(section.id)"
+              (keydown.space)="$event.preventDefault(); selectSection(section.id)">
+              <header>
+                <i class="pi pi-bars" cdkDragHandle aria-hidden="true"></i>
+                <span><small>{{ $index + 1 | number: '2.0' }}</small><strong>{{ sectionLabel(section) }}</strong></span>
+                <p-tag [value]="section.visible ? 'Visível' : 'Oculta'"
+                  [severity]="section.visible ? 'success' : 'secondary'"></p-tag>
+                <div class="v2-builder__section-actions">
+                  <p-button icon="pi pi-arrow-up" [text]="true" severity="secondary" [disabled]="$first"
+                    ariaLabel="Mover para cima" (onClick)="$event.stopPropagation(); moveSection(section, -1)"
+                    i18n-ariaLabel></p-button>
+                  <p-button icon="pi pi-arrow-down" [text]="true" severity="secondary" [disabled]="$last"
+                    ariaLabel="Mover para baixo" (onClick)="$event.stopPropagation(); moveSection(section, 1)"
+                    i18n-ariaLabel></p-button>
+                  <p-button icon="pi pi-trash" [text]="true" severity="danger" ariaLabel="Excluir seção"
+                    (onClick)="$event.stopPropagation(); requestRemoveSection(section)"
+                    i18n-ariaLabel></p-button>
+                </div>
+              </header>
+              <div class="v2-builder__section-summary">
+                <span>#{{ section.anchor }}</span>
+                <strong>{{ section.overline }}</strong>
+                <p>{{ richTextValue(section.title) }}</p>
+              </div>
+              @if (section.type === 'hero') {
+                <div class="v2-builder__hero-drop" cdkDropList [id]="heroMediaDropId(section.id)"
+                  [cdkDropListConnectedTo]="['v2-media-library']" [cdkDropListSortingDisabled]="true"
+                  [cdkDropListEnterPredicate]="mediaDropPredicate"
+                  (cdkDropListDropped)="dropHeroMedia($event, section.id)">
+                  <img [src]="mediaPath(section.background.assetId)" [alt]="section.background.alt" />
+                  <span i18n>Solte outra foto aqui</span>
+                </div>
+              }
+            </article>
+          } @empty {
+            <div class="v2-builder__empty">
+              <i class="pi pi-th-large" aria-hidden="true"></i>
+              <h4 i18n>Esta página ainda não tem seções.</h4>
+              <p i18n>Arraste um item da paleta ou use o botão de adicionar.</p>
+            </div>
+          }
+        </div>
+
+        <section class="v2-builder__preview" aria-labelledby="v2-preview-title">
+          <header><div><span i18n>Prévia estruturada</span><h3 id="v2-preview-title" i18n>Como a página ficará</h3></div></header>
+          <app-site-v2-preview [document]="document()" [page]="page"
+            [device]="device()"></app-site-v2-preview>
+        </section>
+      }
+    </main>
+
+    <aside class="v2-builder__inspector" aria-label="Propriedades" i18n-aria-label>
+      <section class="v2-builder__panel">
+        <header><div><span i18n>Inspector</span><h3 i18n>Propriedades</h3></div></header>
+        @if (selectedPage(); as page) {
+          <div class="v2-builder__fields">
+            <label><span i18n>Endereço</span><input pInputText [ngModel]="page.path"
+              (ngModelChange)="updatePageIdentity(page, 'path', $event)" /></label>
+            <label><span i18n>Identificador</span><input pInputText [ngModel]="page.slug"
+              (ngModelChange)="updatePageIdentity(page, 'slug', $event)" /></label>
+            <label class="v2-builder__switch" for="v2-page-visible"><span i18n>Página visível</span><p-toggleswitch
+              inputId="v2-page-visible" [ngModel]="page.visible"
+              (ngModelChange)="updatePageVisibility(page, $event)"></p-toggleswitch></label>
+            <label><span i18n>Título para busca</span><input pInputText [ngModel]="page.seo.title"
+              (ngModelChange)="updatePageSeo(page, 'title', $event)" /></label>
+            <label><span i18n>Descrição para busca</span><textarea pTextarea rows="4"
+              [ngModel]="page.seo.description"
+              (ngModelChange)="updatePageSeo(page, 'description', $event)"></textarea></label>
+            <p-button label="Excluir página" icon="pi pi-trash" severity="danger" [outlined]="true"
+              (onClick)="requestRemovePage(page)" i18n-label></p-button>
+          </div>
+        } @else if (selectedSection(); as section) {
+          <div class="v2-builder__fields">
+            <label class="v2-builder__switch" for="v2-section-visible"><span i18n>Seção visível</span><p-toggleswitch
+              inputId="v2-section-visible" [ngModel]="section.visible"
+              (ngModelChange)="updateSectionVisibility(section, $event)"></p-toggleswitch></label>
+            <label><span i18n>Âncora</span><input pInputText [ngModel]="section.anchor"
+              (ngModelChange)="updateSectionCommon(section, 'anchor', $event)" /></label>
+            <label><span i18n>Texto superior</span><input pInputText [ngModel]="section.overline"
+              (ngModelChange)="updateSectionCommon(section, 'overline', $event)" /></label>
+            <label><span i18n>Título</span><textarea pTextarea rows="3" [ngModel]="richTextValue(section.title)"
+              (ngModelChange)="updateSectionTitle(section, $event)"></textarea></label>
+
+            @switch (section.type) {
+              @case ('hero') {
+                <label><span i18n>Texto de apoio</span><textarea pTextarea rows="3"
+                  [ngModel]="richTextValue(section.supportingText)"
+                  (ngModelChange)="updateHeroSupportingText(section, $event)"></textarea></label>
+                <label><span i18n>Legenda</span><input pInputText [ngModel]="section.caption"
+                  (ngModelChange)="updateHeroField(section, 'caption', $event)" /></label>
+                <label><span i18n>Índice</span><input pInputText [ngModel]="section.indexLabel"
+                  (ngModelChange)="updateHeroField(section, 'indexLabel', $event)" /></label>
+                <label><span i18n>Texto do link</span><input pInputText [ngModel]="section.portfolioLink.label"
+                  (ngModelChange)="updateHeroLink(section, 'label', $event)" /></label>
+                <label><span i18n>Destino do link</span><input pInputText [ngModel]="section.portfolioLink.href"
+                  (ngModelChange)="updateHeroLink(section, 'href', $event)" /></label>
+              }
+              @case ('project-grid') {
+                <label><span i18n>Descrição</span><textarea pTextarea rows="4"
+                  [ngModel]="stringListValue(section.description)"
+                  (ngModelChange)="updateProjectDescription(section, $event)"></textarea></label>
+                <label for="v2-projects"><span i18n>Projetos</span><p-multiselect inputId="v2-projects"
+                  [options]="projects()" optionLabel="title"
+                  optionValue="id" display="chip" [filter]="true" [ngModel]="section.projectIds"
+                  (ngModelChange)="updateProjectIds(section, $event)"></p-multiselect></label>
+                <label for="v2-project-columns"><span i18n>Colunas</span><p-inputnumber
+                  inputId="v2-project-columns" [min]="1" [max]="4" [showButtons]="true"
+                  [ngModel]="section.maxColumns"
+                  (ngModelChange)="updateMaxColumns(section, $event)"></p-inputnumber></label>
+              }
+              @case ('whatsapp-cta') {
+                <label><span i18n>Texto</span><textarea pTextarea rows="4" [ngModel]="stringListValue(section.body)"
+                  (ngModelChange)="updateWhatsappBody(section, $event)"></textarea></label>
+                <label><span i18n>Texto do botão</span><input pInputText [ngModel]="section.label"
+                  (ngModelChange)="updateWhatsappField(section, 'label', $event)" /></label>
+                <label><span i18n>Mensagem</span><textarea pTextarea rows="3" [ngModel]="section.message"
+                  (ngModelChange)="updateWhatsappField(section, 'message', $event)"></textarea></label>
+              }
+              @case ('contact-form') {
+                <label><span i18n>Descrição</span><textarea pTextarea rows="4"
+                  [ngModel]="stringListValue(section.description)"
+                  (ngModelChange)="updateContactFormDescription(section, $event)"></textarea></label>
+                <label><span i18n>Campo nome</span><input pInputText [ngModel]="section.nameLabel"
+                  (ngModelChange)="updateContactFormField(section, 'nameLabel', $event)" /></label>
+                <label><span i18n>Campo e-mail</span><input pInputText [ngModel]="section.emailLabel"
+                  (ngModelChange)="updateContactFormField(section, 'emailLabel', $event)" /></label>
+                <label><span i18n>Campo telefone</span><input pInputText [ngModel]="section.phoneLabel"
+                  (ngModelChange)="updateContactFormField(section, 'phoneLabel', $event)" /></label>
+                <label><span i18n>Campo assunto</span><input pInputText [ngModel]="section.subjectLabel"
+                  (ngModelChange)="updateContactFormField(section, 'subjectLabel', $event)" /></label>
+                <label><span i18n>Campo mensagem</span><input pInputText [ngModel]="section.messageLabel"
+                  (ngModelChange)="updateContactFormField(section, 'messageLabel', $event)" /></label>
+                <label><span i18n>Botão</span><input pInputText [ngModel]="section.submitLabel"
+                  (ngModelChange)="updateContactFormField(section, 'submitLabel', $event)" /></label>
+                <label><span i18n>Confirmação</span><textarea pTextarea rows="3" [ngModel]="section.successMessage"
+                  (ngModelChange)="updateContactFormField(section, 'successMessage', $event)"></textarea></label>
+                <label><span i18n>Mensagem de erro</span><textarea pTextarea rows="3" [ngModel]="section.errorMessage"
+                  (ngModelChange)="updateContactFormField(section, 'errorMessage', $event)"></textarea></label>
+                <label><span i18n>Aviso de privacidade</span><textarea pTextarea rows="3"
+                  [ngModel]="section.privacyNotice"
+                  (ngModelChange)="updateContactFormField(section, 'privacyNotice', $event)"></textarea></label>
+              }
+            }
+          </div>
+        }
+      </section>
+
+      <section class="v2-builder__panel">
+        <header><div><span i18n>Global</span><h3 i18n>Contatos do escritório</h3></div></header>
+        <div class="v2-builder__fields">
+          <label><span i18n>E-mail</span><input pInputText type="email" [value]="document().contact.email"
+            (input)="updateContactFromEvent('email', $event)" /></label>
+          <label><span i18n>Telefone exibido</span><input pInputText [value]="document().contact.phoneLabel"
+            (input)="updateContactFromEvent('phoneLabel', $event)" /></label>
+          <label><span i18n>Telefone internacional</span><input pInputText [value]="document().contact.phoneE164"
+            (input)="updateContactFromEvent('phoneE164', $event)" /></label>
+          <label><span i18n>WhatsApp</span><input pInputText [value]="document().contact.whatsappNumber"
+            (input)="updateContactFromEvent('whatsappNumber', $event)" /></label>
+          <label><span i18n>Mensagem padrão</span><textarea pTextarea rows="3"
+            [value]="document().contact.whatsappDefaultMessage"
+            (input)="updateContactFromEvent('whatsappDefaultMessage', $event)"></textarea></label>
+          <label><span i18n>Instagram</span><input pInputText type="url" [value]="document().contact.instagramUrl"
+            (input)="updateContactFromEvent('instagramUrl', $event)" /></label>
+        </div>
+      </section>
+    </aside>
+  </div>
+</section>

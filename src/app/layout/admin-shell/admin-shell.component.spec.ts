@@ -63,13 +63,14 @@ describe('AdminShellComponent', () => {
     );
 
     expect(navigationMenu?.closest('nav')?.getAttribute('aria-label')).toBe('Navegação do painel');
-    expect(navigationLinks).toHaveLength(6);
+    expect(navigationLinks).toHaveLength(7);
     expect([...navigationLinks].every((link) => link.tabIndex === 0)).toBe(true);
     expect([...navigationLinks].every((link) => Boolean(link.getAttribute('aria-label')))).toBe(true);
     expect([...navigationLinks].map((link) => link.getAttribute('href'))).toEqual([
       '/dashboard',
       '/content',
       '/projects',
+      '/contacts',
       '/media',
       '/publications',
       '/audit',

@@ -1,0 +1,39 @@
+:host { display: block; }
+.contact-inbox { display: grid; gap: 1.25rem; }
+.contact-inbox__heading { align-items: end; display: flex; justify-content: space-between; gap: 1rem; }
+.contact-inbox__heading span { color: var(--admin-color-coral); font: 700 .75rem var(--admin-font-mono); letter-spacing: .12em; text-transform: uppercase; }
+.contact-inbox__heading h1,
+.contact-inbox__heading p { margin: 0; }
+.contact-inbox__toolbar { align-items: center; display: flex; gap: .75rem; }
+.contact-inbox__toolbar > span { color: var(--admin-color-muted); margin-left: auto; }
+.contact-inbox__workspace { align-items: start; display: grid; gap: 1rem; grid-template-columns: minmax(30rem, 1.3fr) minmax(20rem, .7fr); }
+.contact-inbox__list,
+.contact-inbox__detail { background: var(--admin-color-surface); border: 1px solid var(--admin-color-border); border-radius: 0; overflow: hidden; }
+.contact-inbox__detail { display: grid; gap: 1.2rem; min-height: 24rem; padding: 1.25rem; }
+.contact-inbox__detail > header { align-items: start; display: flex; justify-content: space-between; gap: 1rem; }
+.contact-inbox__detail h2 { margin: .25rem 0 0; }
+.contact-inbox__detail header span { color: var(--admin-color-muted); font-size: .78rem; }
+.contact-inbox__open { background: none; border: 0; color: inherit; cursor: pointer; display: grid; gap: .2rem; padding: .5rem 0; text-align: left; width: 100%; }
+.contact-inbox__open span { color: var(--admin-color-muted); font-size: .8rem; }
+.contact-inbox__row--selected { background: var(--admin-color-coral-soft); }
+.contact-inbox__detail dl { display: grid; gap: .75rem; margin: 0; }
+.contact-inbox__detail dl div { display: grid; gap: .2rem; }
+.contact-inbox__detail dt { color: var(--admin-color-muted); font-size: .72rem; text-transform: uppercase; }
+.contact-inbox__detail dd { margin: 0; }
+.contact-inbox__message { border-block: 1px solid var(--admin-color-border); margin: 0; padding: 1.25rem 0; white-space: pre-wrap; }
+.contact-inbox__actions { align-items: center; display: flex; flex-wrap: wrap; gap: .5rem; }
+.contact-inbox__state { align-items: center; color: var(--admin-color-muted); display: grid; gap: .5rem; justify-items: center; padding: 3rem 1rem; text-align: center; }
+.contact-inbox__state .pi { font-size: 1.8rem; }
+
+@media (max-width: 1000px) {
+  .contact-inbox__workspace { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .contact-inbox__heading { align-items: flex-start; flex-direction: column; }
+  .contact-inbox__toolbar { align-items: stretch; flex-direction: column; }
+  .contact-inbox__toolbar > span { margin-left: 0; }
+  .contact-inbox__list { overflow-x: auto; }
+  .contact-inbox__detail { min-width: 0; padding: 1rem; }
+  .contact-inbox__detail > header { flex-direction: column; }
+}

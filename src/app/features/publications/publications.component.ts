@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { isSiteConfigV1, isSiteConfigV2 } from '@shared/guards/site-document.guard';
 import { RichTextBlock } from '@shared/models/rich-text-block.model';
 import { SiteSection } from '@shared/models/site-section.model';
 import { ConfirmationService } from 'primeng/api';
@@ -20,6 +21,22 @@ export class PublicationsComponent implements OnInit {
   private readonly confirmationService = inject(ConfirmationService);
   protected readonly draftService = inject(ContentDraftService);
   protected readonly publicationService = inject(PublicationService);
+  protected readonly v1Draft = computed(() => {
+    const draft = this.draftService.draft();
+
+    return isSiteConfigV1(draft) ? draft : null;
+  });
+  protected readonly v2Draft = computed(() => {
+    const draft = this.draftService.draft();
+
+    return isSiteConfigV2(draft) ? draft : null;
+  });
+  protected readonly v2PreviewPage = computed(() => [...(this.v2Draft()?.pages ?? [])]
+    .filter((page) => page.visible)
+    .sort((first, second) => first.order - second.order)[0] ?? null);
+  protected readonly v2PreviewDevice = computed<'desktop' | 'mobile'>(() =>
+    this.viewportControl.value === 'mobile' ? 'mobile' : 'desktop',
+  );
   protected readonly viewportControl = new FormControl<'mobile' | 'tablet' | 'desktop'>(
     'desktop',
     { nonNullable: true },
@@ -33,7 +50,7 @@ export class PublicationsComponent implements OnInit {
     this.viewports.find((viewport) => viewport.value === this.viewportControl.value)?.width ?? '100%',
   );
   protected readonly visibleSections = computed(() =>
-    [...(this.draftService.draft()?.sections ?? [])]
+    [...(this.v1Draft()?.sections ?? [])]
       .filter((section) => section.visible)
       .sort((first, second) => first.order - second.order),
   );

@@ -1,0 +1,84 @@
+<article class="site-v2-preview" [class.site-v2-preview--mobile]="device() === 'mobile'">
+  <header class="site-v2-preview-header">
+    <strong>{{ document().identity.brandName }}</strong>
+    <nav [attr.aria-label]="document().uiLabels.mainNavigation">
+      @for (item of document().navigationItems; track item.id) {
+        <span>{{ item.label }}</span>
+      }
+    </nav>
+  </header>
+
+  <main>
+    @for (section of sections(); track section.id) {
+      @switch (section.type) {
+        @case ('hero') {
+          <section class="site-v2-preview-hero" [style.background-image]="'url(' + mediaPath(section.background) + ')'">
+            <div>
+              <small>{{ section.overline }}</small>
+              <h2>{{ richText(section.title) }}</h2>
+              <p>{{ richText(section.supportingText) }}</p>
+              <span>{{ section.portfolioLink.label }}</span>
+            </div>
+          </section>
+        }
+        @case ('project-grid') {
+          <section class="site-v2-preview-section">
+            <small>{{ section.overline }}</small>
+            <h2>{{ richText(section.title) }}</h2>
+            @for (paragraph of section.description; track $index) {
+              <p>{{ paragraph }}</p>
+            }
+            <div class="site-v2-preview-projects"
+              [style.grid-template-columns]="'repeat(' + section.maxColumns + ', minmax(0, 1fr))'">
+              @for (project of selectedProjects(section.projectIds); track project.id) {
+                <article>
+                  @if (projectCoverPath(project.id); as coverPath) {
+                    <img [src]="coverPath" [alt]="project.cover.alt" />
+                  }
+                  <strong>{{ project.title }}</strong>
+                  <span>{{ project.location }} · {{ project.year }}</span>
+                </article>
+              } @empty {
+                <p class="site-v2-preview-empty" i18n>Selecione projetos publicados no inspetor.</p>
+              }
+            </div>
+          </section>
+        }
+        @case ('whatsapp-cta') {
+          <section class="site-v2-preview-section site-v2-preview-contact">
+            <small>{{ section.overline }}</small>
+            <h2>{{ richText(section.title) }}</h2>
+            @for (paragraph of section.body; track $index) {
+              <p>{{ paragraph }}</p>
+            }
+            <span class="site-v2-preview-action">{{ section.label }}</span>
+          </section>
+        }
+        @case ('contact-form') {
+          <section class="site-v2-preview-section site-v2-preview-form">
+            <small>{{ section.overline }}</small>
+            <h2>{{ richText(section.title) }}</h2>
+            @for (paragraph of section.description; track $index) {
+              <p>{{ paragraph }}</p>
+            }
+            <div class="site-v2-preview-form-fields" aria-hidden="true">
+              <span>{{ section.nameLabel }}</span>
+              <span>{{ section.emailLabel }}</span>
+              <span>{{ section.phoneLabel }}</span>
+              <span>{{ section.subjectLabel }}</span>
+              <span class="site-v2-preview-form-message">{{ section.messageLabel }}</span>
+            </div>
+            <span class="site-v2-preview-action">{{ section.submitLabel }}</span>
+            <small>{{ section.privacyNotice }}</small>
+          </section>
+        }
+      }
+    } @empty {
+      <section class="site-v2-preview-section site-v2-preview-empty" i18n>
+        Arraste uma seção da paleta para começar esta página.
+      </section>
+    }
+  </main>
+
+  <footer>{{ document().footer.statement }} · {{ document().footer.location }}</footer>
+</article>

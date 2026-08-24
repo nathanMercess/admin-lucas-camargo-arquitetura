@@ -11,18 +11,21 @@ import {
 } from '@angular/core';
 import { AbstractControl, FormBuilder, FormControl, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { isSiteConfigV1, isSiteConfigV2 } from '@shared/guards/site-document.guard';
 import { MediaAsset } from '@shared/models/media-asset.model';
 import { SiteConfigV1 } from '@shared/models/site-config-v1.model';
+import { SiteConfigV2 } from '@shared/models/site-config-v2.model';
 import { SiteSection } from '@shared/models/site-section.model';
 import { SiteTemplateId } from '@shared/models/site-template-id.type';
 import { ThemeConfig } from '@shared/models/theme-config.model';
-import { VisualBuilderDocument } from '@shared/models/visual-builder-document.model';
 import { ConfirmationService } from 'primeng/api';
 
 import { PublicationService } from '../publications/services/publication.service';
 import { ContentSectionEditorItem } from './models/content-section-editor-item.model';
 import { SitePageDefinition } from './models/site-page-definition.model';
 import { ContentDraftService } from './services/content-draft.service';
+import { DefaultSiteConfigV2Factory } from './services/default-site-config-v2.factory';
+import { SiteConfigV1MigrationService } from './services/site-config-v1-migration.service';
 import { SiteSectionRegistryService } from './services/site-section-registry.service';
 import { approvedThemeColorValidator } from './validators/approved-theme-color.validator';
 
@@ -39,11 +42,28 @@ export class ContentEditorComponent implements OnInit {
   private readonly activatedRoute = inject(ActivatedRoute, { optional: true });
   private readonly router = inject(Router);
   private readonly sectionRegistry = inject(SiteSectionRegistryService);
+  private readonly migrationService = inject(SiteConfigV1MigrationService);
+  private readonly v2Factory = inject(DefaultSiteConfigV2Factory);
   protected readonly publicationService = inject(PublicationService);
   private isHydrating = false;
   private hydratedDraft: SiteConfigV1 | null = null;
 
   protected readonly draftService = inject(ContentDraftService);
+  protected readonly v1Draft = computed(() => {
+    const draft = this.draftService.draft();
+
+    return isSiteConfigV1(draft) ? draft : null;
+  });
+  protected readonly v2Draft = computed(() => {
+    const draft = this.draftService.draft();
+
+    return isSiteConfigV2(draft) ? draft : null;
+  });
+  protected readonly migrationAnalysis = computed(() => {
+    const draft = this.v1Draft();
+
+    return draft ? this.migrationService.analyze(draft) : null;
+  });
   protected readonly activeTab = signal<string>('section-content');
   protected readonly layoutChoice = signal<'gallery' | 'balanced' | 'spacious'>('balanced');
   protected readonly motionChoice = signal<'off' | 'soft' | 'expressive'>('soft');
@@ -128,7 +148,7 @@ export class ContentEditorComponent implements OnInit {
   );
 
   protected readonly themePreviewTitle = computed(() => {
-    const hero = this.draftService.draft()?.sections.find((section) => section.type === 'hero');
+    const hero = this.v1Draft()?.sections.find((section) => section.type === 'hero');
 
     if (!hero || hero.type !== 'hero')
       return $localize`:@@admin.content.previewFallback:Espaços que permanecem.`;
@@ -139,7 +159,7 @@ export class ContentEditorComponent implements OnInit {
   });
 
   protected readonly themePreviewSupportingText = computed(() => {
-    const hero = this.draftService.draft()?.sections.find((section) => section.type === 'hero');
+    const hero = this.v1Draft()?.sections.find((section) => section.type === 'hero');
 
     if (!hero || hero.type !== 'hero')
       return '';
@@ -209,8 +229,8 @@ export class ContentEditorComponent implements OnInit {
   public constructor() {
     (this.activatedRoute?.queryParamMap ?? this.router.routerState.root.queryParamMap)
       .pipe(takeUntilDestroyed())
-      .subscribe((parameters) => {
-        this.activeTab.set(parameters.get('editor') === 'visual' ? 'sections' : 'section-content');
+      .subscribe(() => {
+        this.activeTab.set('section-content');
       });
 
     this.contentForm.valueChanges
@@ -218,7 +238,7 @@ export class ContentEditorComponent implements OnInit {
       .subscribe(() => this.syncDraftFromForm());
 
     effect(() => {
-      const draft = this.draftService.draft();
+      const draft = this.v1Draft();
 
       if (!draft || this.draftService.dirty() || draft === this.hydratedDraft)
         return;
@@ -245,6 +265,11 @@ export class ContentEditorComponent implements OnInit {
   }
 
   protected saveDraft(): void {
+    if (this.v2Draft()) {
+      this.draftService.save();
+      return;
+    }
+
     if (this.contentForm.invalid) {
       this.contentForm.markAllAsTouched();
       return;
@@ -287,7 +312,7 @@ export class ContentEditorComponent implements OnInit {
   protected getPageEditorAreaLabel(editorArea: SitePageDefinition['editorArea']): string {
     switch (editorArea) {
       case 'content':
-        return $localize`:@@admin.pages.area.content:Conteúdo e editor visual`;
+        return $localize`:@@admin.pages.area.content:Conteúdo e seções`;
       case 'projects':
         return $localize`:@@admin.pages.area.projects:Projetos e categorias`;
       case 'system':
@@ -351,7 +376,7 @@ export class ContentEditorComponent implements OnInit {
   }
 
   protected getPagePreviewUrl(page: SitePageDefinition): string | null {
-    const canonicalUrl = this.draftService.draft()?.identity.canonicalUrl;
+    const canonicalUrl = this.v1Draft()?.identity.canonicalUrl;
 
     if (!canonicalUrl || page.routeKind === 'parameterized' || page.routeKind === 'fallback')
       return null;
@@ -365,7 +390,7 @@ export class ContentEditorComponent implements OnInit {
 
   protected openPageEditor(page: SitePageDefinition): void {
     if (page.editorArea === 'content') {
-      this.changeActiveTab('sections');
+      this.changeActiveTab('section-content');
       return;
     }
 
@@ -383,15 +408,13 @@ export class ContentEditorComponent implements OnInit {
     if (typeof tab !== 'string')
       return;
 
-    const editor = tab === 'sections' ? 'visual' : null;
-
     this.activeTab.set(tab);
     if (!this.activatedRoute)
       return;
 
     void this.router.navigate([], {
       relativeTo: this.activatedRoute,
-      queryParams: { editor },
+      queryParams: { editor: null },
       queryParamsHandling: 'merge',
     });
   }
@@ -483,18 +506,39 @@ export class ContentEditorComponent implements OnInit {
     });
   }
 
-  protected handleVisualBuilderChange(document: VisualBuilderDocument): void {
-    const draft = this.draftService.draft();
+  protected handleV2DocumentChange(document: SiteConfigV2): void {
+    this.draftService.updateDraft(document);
+  }
+
+  protected requestMigration(): void {
+    const draft = this.v1Draft();
+    const analysis = this.migrationAnalysis();
+
+    if (!draft || !analysis?.canMigrate)
+      return;
+
+    this.confirmationService.confirm({
+      header: $localize`:@@admin.v2.migrate.title:Migrar este rascunho para V2?`,
+      message: $localize`:@@admin.v2.migrate.message:As seções compatíveis serão convertidas para o construtor modular. Confirme para substituir apenas o rascunho atual.`,
+      acceptLabel: $localize`:@@admin.v2.migrate.accept:Migrar rascunho`,
+      rejectLabel: $localize`:@@admin.v2.cancel:Cancelar`,
+      accept: () => this.draftService.updateDraft(this.migrationService.migrate(draft)),
+    });
+  }
+
+  protected requestNewV2Content(): void {
+    const draft = this.v1Draft();
 
     if (!draft)
       return;
 
-    this.draftService.updateDraft({
-      ...draft,
-      visualBuilder: {
-        ...document,
-        enabled: draft.visualBuilder?.enabled ?? false,
-      },
+    this.confirmationService.confirm({
+      header: $localize`:@@admin.v2.new.title:Criar novo conteúdo V2?`,
+      message: $localize`:@@admin.v2.new.message:Esta ação substitui o conteúdo do rascunho por uma página inicial V2. Os projetos, mídias, marca e configurações globais serão preservados, mas as seções V1 não serão copiadas.`,
+      acceptLabel: $localize`:@@admin.v2.new.accept:Criar conteúdo V2`,
+      rejectLabel: $localize`:@@admin.v2.cancel:Cancelar`,
+      acceptButtonStyleClass: 'p-button-warning',
+      accept: () => this.draftService.updateDraft(this.v2Factory.create(draft)),
     });
   }
 
@@ -616,7 +660,7 @@ export class ContentEditorComponent implements OnInit {
     if (this.isHydrating)
       return;
 
-    const draft = this.draftService.draft();
+    const draft = this.v1Draft();
 
     if (!draft)
       return;
@@ -662,7 +706,7 @@ export class ContentEditorComponent implements OnInit {
   }
 
   private syncSectionsToDraft(items: readonly ContentSectionEditorItem[]): void {
-    const draft = this.draftService.draft();
+    const draft = this.v1Draft();
 
     if (!draft)
       return;

@@ -11,8 +11,10 @@
   --admin-color-paper: #f5f4f4;
   --admin-color-surface: #ffffff;
   --admin-color-coral: #e36571;
+  --admin-color-coral-soft: #f8e4e6;
   --admin-color-border: rgb(51 51 50 / 16%);
   --admin-color-muted: #767571;
+  --admin-font-brand: "Century Gothic", "Aptos", "Segoe UI", sans-serif;
   --admin-font-mono: "Cascadia Mono", "Aptos Mono", "Consolas", monospace;
 }
 
@@ -472,99 +474,6 @@ body [data-pc-section='overlay'] [data-pc-section='emptymessage'] {
   color: var(--admin-color-muted);
 }
 
-.visual-builder-canvas-host {
-  --gjs-main-color: #333332;
-  --gjs-primary-color: #333332;
-  --gjs-secondary-color: #f7f6f6;
-  --gjs-tertiary-color: #e36571;
-  --gjs-quaternary-color: #e36571;
-  --gjs-color-blue: #e36571;
-  --gjs-color-highlight: #e36571;
-  --gjs-placeholder-background-color: #e36571;
-}
-
-.visual-builder-canvas-host .gjs-editor,
-.visual-builder-canvas-host .gjs-editor-cont,
-.visual-builder-canvas-host .gjs-cv-canvas {
-  width: 100%;
-  height: 100%;
-}
-
-.visual-builder-canvas-host .gjs-cv-canvas {
-  top: 0;
-  background: #cfcecb;
-}
-
-.visual-builder-canvas-host .gjs-frame-wrapper {
-  box-shadow: 0 4px 20px rgb(30 30 29 / 15%);
-}
-
-.visual-builder-canvas-host .gjs-frame {
-  background: #fff;
-}
-
-.visual-builder-canvas-host .gjs-toolbar,
-.visual-builder-canvas-host .gjs-com-badge,
-.visual-builder-canvas-host .gjs-badge {
-  background: #e36571;
-}
-
-.visual-builder-canvas-host .gjs-cv-canvas .gjs-highlighter-sel {
-  outline-width: 1px;
-  outline-offset: -1px;
-}
-
-.visual-builder-canvas-host .gjs-com-badge,
-.visual-builder-canvas-host .gjs-badge {
-  padding: 3px 6px;
-  background: rgb(227 101 113 / 92%);
-  font-size: 10px;
-}
-
-.visual-builder-canvas-host .gjs-placeholder,
-.visual-builder-canvas-host .gjs-com-placeholder {
-  border-color: #e36571 transparent;
-}
-
-.visual-builder-layers .gjs-layers {
-  min-height: 100%;
-  color: var(--admin-color-ink);
-  background: var(--admin-color-surface);
-  font-family: var(--admin-font-body);
-  font-size: 11px;
-}
-
-.visual-builder-layers .gjs-layer {
-  border-bottom: 1px solid var(--admin-color-border);
-  background: transparent;
-}
-
-.visual-builder-layers .gjs-layer-title {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  background: transparent;
-}
-
-.visual-builder-layers .gjs-layer-title-c {
-  border-left: 2px solid transparent;
-}
-
-.visual-builder-layers .gjs-layer.gjs-selected > .gjs-layer-title-c {
-  border-left-color: var(--admin-color-coral);
-  background: rgb(227 101 113 / 8%);
-}
-
-.visual-builder-layers .gjs-layer-vis,
-.visual-builder-layers .gjs-layer-caret {
-  color: var(--admin-color-muted);
-}
-
-.visual-builder-template-dialog .p-dialog-content,
-.visual-builder-preview-dialog .p-dialog-content {
-  min-height: 0;
-  overflow: hidden;
-}
-
 .p-dialog {
   display: flex;
   max-width: calc(100vw - 24px);
@@ -916,21 +825,6 @@ p-colorpicker[data-pc-name='colorpicker'] [data-pc-section='huehandle'] {
     padding: 14px 16px;
   }
 
-  .visual-builder-template-dialog .p-dialog-content {
-    padding: 12px;
-  }
-}
-
-.visual-builder-template-dialog .p-dialog-content {
-  height: 100%;
-  padding: 20px;
-}
-
-.visual-builder-preview-dialog .p-dialog-content {
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-  height: 100%;
-  padding: 0;
 }
 
 button,
