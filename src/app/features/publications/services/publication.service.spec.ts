@@ -25,6 +25,7 @@ describe('PublicationService', () => {
 
     const publishRequest = httpTestingController.expectOne('/api/v1/releases');
     expect(publishRequest.request.method).toBe('POST');
+    expect(publishRequest.request.body).toBeNull();
     expect(publishRequest.request.headers.get('If-Match')).toBe('"draft-v3"');
     expect(publishRequest.request.headers.get('X-Admin-CSRF')).toBe('1');
     const manifest: PublishedManifestV1 = {
@@ -74,6 +75,17 @@ describe('PublicationService', () => {
 
     expect(service.mutating()).toBe(false);
     expect(service.error()).toContain('Nenhuma versão foi alterada');
+  });
+
+  it('explains how to recover from an invalid draft version', () => {
+    service.publish('"draft-v5"', () => undefined);
+
+    httpTestingController.expectOne('/api/v1/releases').flush(
+      { message: 'invalid precondition' },
+      { status: 400, statusText: 'Bad Request' },
+    );
+
+    expect(service.error()).toContain('Recarregue o painel');
   });
 
   it('shows actionable API errors and clears a stale successful manifest', () => {

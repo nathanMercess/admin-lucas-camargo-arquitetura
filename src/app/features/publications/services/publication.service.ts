@@ -72,7 +72,7 @@ export class PublicationService {
     });
 
     this.httpClient
-      .post<PublishedManifestV1>(endpoint, null, { headers })
+      .request<PublishedManifestV1>('POST', endpoint, { headers })
       .pipe(
         take(1),
         finalize(() => this.mutatingState.set(false)),
@@ -110,6 +110,13 @@ export class PublicationService {
     if (error.status === 412) {
       this.errorState.set(
         $localize`:@@admin.publications.conflict:O rascunho mudou. Recarregue antes de publicar ou restaurar.`,
+      );
+      return;
+    }
+
+    if (error.status === 400) {
+      this.errorState.set(
+        $localize`:@@admin.publications.invalidVersion:Não foi possível validar a versão do rascunho. Recarregue o painel e tente publicar novamente.`,
       );
       return;
     }
