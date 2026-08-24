@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+
+import { PreviewAccessService } from '../core/preview/services/preview-access.service';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +9,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class AppComponent {}
+export class AppComponent {
+  protected readonly isPreviewEnabled = inject(PreviewAccessService).isEnabled();
+}

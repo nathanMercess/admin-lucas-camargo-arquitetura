@@ -1,1 +1,5 @@
-<app-maintenance-page></app-maintenance-page>
+@if (isPreviewEnabled) {
+  <router-outlet></router-outlet>
+} @else {
+  <app-maintenance-page></app-maintenance-page>
+}
