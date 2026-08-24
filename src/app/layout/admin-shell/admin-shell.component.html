@@ -13,19 +13,24 @@
     </div>
 
     <nav class="admin-shell-navigation admin-navigation" aria-label="Navegação do painel" i18n-aria-label>
-      <ul class="p-menu-list">
-        @for (item of navigationItems; track $index) {
-          <li>
-            <a class="p-menu-item-link" [routerLink]="item.routerLink"
-              routerLinkActive="p-menu-item-link-active" [routerLinkActiveOptions]="item.routerLinkActiveOptions!"
-              [attr.aria-label]="item.label" [pTooltip]="navigationCollapsed() ? item.label : ''"
-              tooltipPosition="right">
-              <span class="p-menu-item-icon" [ngClass]="item.icon" aria-hidden="true"></span>
-              <span class="p-menu-item-label">{{ item.label }}</span>
-            </a>
-          </li>
-        }
-      </ul>
+      @for (group of navigationGroups; track group.label) {
+        <section class="admin-navigation-group" [attr.aria-label]="group.label">
+          <span class="admin-navigation-group-label">{{ group.label }}</span>
+          <ul class="p-menu-list">
+            @for (item of group.items; track item.label) {
+              <li>
+                <a class="p-menu-item-link" [routerLink]="item.routerLink"
+                  routerLinkActive="p-menu-item-link-active" [routerLinkActiveOptions]="item.routerLinkActiveOptions!"
+                  [attr.aria-label]="item.label" [pTooltip]="navigationCollapsed() ? item.label : ''"
+                  tooltipPosition="right">
+                  <span class="p-menu-item-icon" [ngClass]="item.icon" aria-hidden="true"></span>
+                  <span class="p-menu-item-label">{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        </section>
+      }
     </nav>
 
     <div class="admin-shell-access" aria-live="polite">
@@ -57,17 +62,17 @@
     <header class="admin-shell-header">
       <div>
         @if (focusedEditor()) {
-          <span class="admin-shell-kicker" i18n>Modo de edição focado</span>
-          <p i18n>O menu foi recolhido para ampliar a área útil do editor.</p>
+          <span class="admin-shell-kicker" i18n>Editando o site</span>
+          <p i18n>Organize o conteúdo, confira a prévia e salve quando terminar.</p>
         } @else {
-          <span class="admin-shell-kicker" i18n>Estúdio de conteúdo</span>
-          <p i18n>Edite, visualize, publique e reverta sem gerar uma nova versão do site.</p>
+          <span class="admin-shell-kicker" i18n>Painel do site</span>
+          <p i18n>Escolha uma área no menu. Suas alterações só aparecem no site depois de publicar.</p>
         }
       </div>
       <div class="admin-shell-header-actions">
         <div class="admin-shell-environment">
           <span class="admin-shell-environment-dot" aria-hidden="true"></span>
-          <span i18n>Ambiente administrativo</span>
+          <span i18n>Acesso protegido</span>
         </div>
         @if (focusedEditor()) {
           <p-button label="Voltar ao painel" icon="pi pi-arrow-left" severity="secondary"

@@ -1,10 +1,10 @@
 <section class="content-editor" aria-labelledby="content-editor-title">
   <header class="content-editor-heading">
     <div>
-      <span class="content-editor-kicker" i18n>Conteúdo dinâmico</span>
-      <h1 id="content-editor-title" i18n>Conteúdo e aparência do site.</h1>
+      <span class="content-editor-kicker" i18n>Editar site</span>
+      <h1 id="content-editor-title" i18n>Altere o site sem complicação.</h1>
       <p i18n>
-        Atualize textos, imagens, links e o visual do site. As alterações ficam em rascunho até você decidir publicar.
+        Organize páginas, textos e imagens. Salvar guarda o trabalho; publicar coloca a versão no ar.
       </p>
     </div>
 
@@ -43,57 +43,66 @@
       (back)="requestReload()"></app-site-v2-builder>
   } @else if (v1Draft(); as draft) {
     <form class="content-editor-form" [formGroup]="contentForm" (ngSubmit)="saveDraft()">
-      <div class="content-editor-toolbar">
-        <div>
-          <strong i18n>Rascunho de trabalho</strong>
-          <span i18n>Salvar não publica as alterações no site.</span>
-        </div>
-        <div class="content-editor-actions">
-          <p-button type="button" label="Recarregar" severity="secondary" [outlined]="true"
-            [disabled]="draftService.loading() || draftService.saving()" (onClick)="requestReload()"
-            i18n-label></p-button>
-          <p-button type="submit" [label]="saveLabel()" [loading]="draftService.saving()"
-            [disabled]="!draftService.dirty() || draftService.loading()"></p-button>
-        </div>
-      </div>
-
       @if (contentForm.invalid && contentForm.touched) {
         <p-message severity="error" text="Revise os campos destacados antes de salvar."
           i18n-text></p-message>
       }
 
-      <section class="content-editor-panel" aria-labelledby="v2-transition-title">
+      <section class="content-editor-panel content-editor-onboarding" aria-labelledby="v2-transition-title">
+        <span class="content-editor-onboarding-icon pi pi-sparkles" aria-hidden="true"></span>
         <header class="content-editor-panel-heading">
-          <span i18n>Novo construtor</span>
-          <h2 id="v2-transition-title" i18n>Leve o conteúdo para páginas e seções modulares.</h2>
-          <p i18n>A versão atual continua disponível com segurança até você confirmar uma transição.</p>
+          <span i18n>Configuração recomendada</span>
+          <h2 id="v2-transition-title" i18n>Prepare o editor visual do site.</h2>
+          <p i18n>Vamos preservar marca, contatos, imagens e projetos em uma estrutura mais simples de editar.</p>
         </header>
         @if (migrationAnalysis(); as analysis) {
           @if (analysis.canMigrate) {
             <p-message severity="info"
-              text="Este conteúdo pode ser migrado sem descartar seções compatíveis."
+              text="O conteúdo atual pode ser reaproveitado automaticamente."
               i18n-text></p-message>
           } @else {
-            <p-message severity="warn"
-              text="A migração automática está bloqueada para evitar perda de conteúdo."
+            <p-message severity="info"
+              text="A estrutura recomendada remove exemplos antigos e mantém os dados importantes do escritório."
               i18n-text></p-message>
-            <ul>
-              @for (blocker of analysis.blockers; track blocker) {
-                <li>{{ blocker }}</li>
-              }
-            </ul>
           }
-          <div class="content-editor-actions">
-            <p-button type="button" label="Migrar conteúdo compatível" icon="pi pi-arrow-right"
-              [disabled]="!analysis.canMigrate" (onClick)="requestMigration()" i18n-label></p-button>
-            <p-button type="button" label="Criar novo conteúdo V2" icon="pi pi-plus"
-              severity="secondary" [outlined]="true" (onClick)="requestNewV2Content()"
-              i18n-label></p-button>
+          <div class="content-editor-onboarding-actions">
+            <p-button type="button" label="Usar estrutura recomendada" icon="pi pi-arrow-right"
+              (onClick)="requestNewV2Content()" i18n-label></p-button>
+            @if (analysis.canMigrate) {
+              <p-button type="button" label="Reaproveitar conteúdo atual" icon="pi pi-copy"
+                severity="secondary" [outlined]="true" (onClick)="requestMigration()"
+                i18n-label></p-button>
+            }
+          </div>
+          <div class="content-editor-onboarding-preserves" aria-label="Itens preservados" i18n-aria-label>
+            <span><i class="pi pi-check" aria-hidden="true"></i><span i18n>Marca e contatos</span></span>
+            <span><i class="pi pi-check" aria-hidden="true"></i><span i18n>Imagens existentes</span></span>
+            <span><i class="pi pi-check" aria-hidden="true"></i><span i18n>Projetos cadastrados</span></span>
           </div>
         }
       </section>
 
-      <section class="content-editor-workspace" aria-labelledby="content-editor-workspace-title">
+      <details class="content-editor-legacy">
+        <summary>
+          <span class="pi pi-history" aria-hidden="true"></span>
+          <span><strong i18n>Precisa acessar o editor anterior?</strong>
+            <small i18n>Use apenas para uma correção urgente antes de preparar o novo editor.</small></span>
+        </summary>
+        <div class="content-editor-toolbar">
+          <div>
+            <strong i18n>Versão anterior</strong>
+            <span i18n>Salvar não publica as alterações no site.</span>
+          </div>
+          <div class="content-editor-actions">
+            <p-button type="button" label="Recarregar" severity="secondary" [outlined]="true"
+              [disabled]="draftService.loading() || draftService.saving()" (onClick)="requestReload()"
+              i18n-label></p-button>
+            <p-button type="submit" [label]="saveLabel()" [loading]="draftService.saving()"
+              [disabled]="!draftService.dirty() || draftService.loading()"></p-button>
+          </div>
+        </div>
+
+        <section class="content-editor-workspace" aria-labelledby="content-editor-workspace-title">
         <header>
           <span i18n>Atalhos</span>
           <h2 id="content-editor-workspace-title" i18n>O que você quer editar?</h2>
@@ -118,7 +127,7 @@
               (onClick)="openProjects()" i18n-label></p-button>
           </article>
         </div>
-      </section>
+        </section>
 
       <p-tabs [value]="activeTab()" class="content-editor-tabs" (valueChange)="changeActiveTab($event)">
         <p-tablist>
@@ -515,7 +524,8 @@
             }
           </p-tabpanel>
         </p-tabpanels>
-      </p-tabs>
+        </p-tabs>
+      </details>
     </form>
   } @else {
     <div class="content-editor-empty">

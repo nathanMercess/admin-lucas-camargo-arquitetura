@@ -76,48 +76,61 @@ export class AdminShellComponent implements OnInit {
 
     return 'info';
   });
-  protected readonly navigationItems: MenuItem[] = [
+  protected readonly navigationGroups: readonly {
+    readonly label: string;
+    readonly items: MenuItem[];
+  }[] = [
     {
-      label: $localize`:@@admin.navigation.dashboard:Visão geral`,
-      icon: 'pi pi-home',
-      routerLink: ['/dashboard'],
-      routerLinkActiveOptions: { exact: true },
+      label: $localize`:@@admin.navigation.groupEveryday:Dia a dia`,
+      items: [
+        {
+          label: $localize`:@@admin.navigation.dashboard:Início`,
+          icon: 'pi pi-home',
+          routerLink: ['/dashboard'],
+          routerLinkActiveOptions: { exact: true },
+        },
+        {
+          label: $localize`:@@admin.navigation.content:Editar site`,
+          icon: 'pi pi-pencil',
+          routerLink: ['/content'],
+          routerLinkActiveOptions: { exact: true },
+        },
+        {
+          label: $localize`:@@admin.navigation.projects:Portfólio`,
+          icon: 'pi pi-building',
+          routerLink: ['/projects'],
+          routerLinkActiveOptions: { exact: true },
+        },
+        {
+          label: $localize`:@@admin.navigation.contacts:Mensagens`,
+          icon: 'pi pi-inbox',
+          routerLink: ['/contacts'],
+          routerLinkActiveOptions: { exact: true },
+        },
+        {
+          label: $localize`:@@admin.navigation.media:Imagens`,
+          icon: 'pi pi-images',
+          routerLink: ['/media'],
+          routerLinkActiveOptions: { exact: true },
+        },
+      ],
     },
     {
-      label: $localize`:@@admin.navigation.content:Conteúdo do site`,
-      icon: 'pi pi-pencil',
-      routerLink: ['/content'],
-      routerLinkActiveOptions: { exact: true },
-    },
-    {
-      label: $localize`:@@admin.navigation.projects:Projetos`,
-      icon: 'pi pi-building',
-      routerLink: ['/projects'],
-      routerLinkActiveOptions: { exact: true },
-    },
-    {
-      label: $localize`:@@admin.navigation.contacts:Contatos`,
-      icon: 'pi pi-inbox',
-      routerLink: ['/contacts'],
-      routerLinkActiveOptions: { exact: true },
-    },
-    {
-      label: $localize`:@@admin.navigation.media:Mídia`,
-      icon: 'pi pi-images',
-      routerLink: ['/media'],
-      routerLinkActiveOptions: { exact: true },
-    },
-    {
-      label: $localize`:@@admin.navigation.publications:Publicações`,
-      icon: 'pi pi-send',
-      routerLink: ['/publications'],
-      routerLinkActiveOptions: { exact: true },
-    },
-    {
-      label: $localize`:@@admin.navigation.audit:Auditoria`,
-      icon: 'pi pi-history',
-      routerLink: ['/audit'],
-      routerLinkActiveOptions: { exact: true },
+      label: $localize`:@@admin.navigation.groupControl:Publicação e controle`,
+      items: [
+        {
+          label: $localize`:@@admin.navigation.publications:Revisar e publicar`,
+          icon: 'pi pi-send',
+          routerLink: ['/publications'],
+          routerLinkActiveOptions: { exact: true },
+        },
+        {
+          label: $localize`:@@admin.navigation.audit:Histórico de atividade`,
+          icon: 'pi pi-history',
+          routerLink: ['/audit'],
+          routerLinkActiveOptions: { exact: true },
+        },
+      ],
     },
   ];
 

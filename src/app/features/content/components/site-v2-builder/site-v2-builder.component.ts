@@ -37,6 +37,8 @@ type ContactFormTextField =
   | 'errorMessage'
   | 'privacyNotice';
 
+type BuilderView = 'content' | 'preview' | 'settings';
+
 @Component({
   selector: 'app-site-v2-builder',
   templateUrl: './site-v2-builder.component.html',
@@ -61,6 +63,7 @@ export class SiteV2BuilderComponent {
   protected readonly activePageId = signal('');
   protected readonly selection = signal<SiteV2BuilderSelection | null>(null);
   protected readonly device = signal<'desktop' | 'mobile'>('desktop');
+  protected readonly view = signal<BuilderView>('content');
   protected readonly operationMessage = signal<string | null>(null);
   protected readonly pages = computed(() => [...this.document().pages]
     .sort((first, second) => first.order - second.order));
@@ -105,14 +108,27 @@ export class SiteV2BuilderComponent {
 
       const selection = this.selection();
 
-      if (!selection || selection.pageId !== activePage.id)
-        this.selection.set({ kind: 'page', pageId: activePage.id });
+      if (!selection || selection.pageId !== activePage.id) {
+        const firstSection = [...activePage.sections].sort((first, second) => first.order - second.order)[0];
+
+        this.selection.set(firstSection
+          ? { kind: 'section', pageId: activePage.id, sectionId: firstSection.id }
+          : { kind: 'page', pageId: activePage.id });
+      }
     });
   }
 
   protected selectPage(pageId: string): void {
+    const page = this.pages().find((candidate) => candidate.id === pageId);
+    const firstSection = page === undefined
+      ? undefined
+      : [...page.sections].sort((first, second) => first.order - second.order)[0];
+
     this.activePageId.set(pageId);
-    this.selection.set({ kind: 'page', pageId });
+    this.selection.set(firstSection
+      ? { kind: 'section', pageId, sectionId: firstSection.id }
+      : { kind: 'page', pageId });
+    this.view.set('content');
   }
 
   protected selectSection(sectionId: string): void {
@@ -122,6 +138,7 @@ export class SiteV2BuilderComponent {
       return;
 
     this.selection.set({ kind: 'section', pageId: page.id, sectionId });
+    this.view.set('content');
   }
 
   protected addPage(): void {

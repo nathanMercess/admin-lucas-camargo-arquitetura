@@ -518,9 +518,9 @@ export class ContentEditorComponent implements OnInit {
       return;
 
     this.confirmationService.confirm({
-      header: $localize`:@@admin.v2.migrate.title:Migrar este rascunho para V2?`,
-      message: $localize`:@@admin.v2.migrate.message:As seções compatíveis serão convertidas para o construtor modular. Confirme para substituir apenas o rascunho atual.`,
-      acceptLabel: $localize`:@@admin.v2.migrate.accept:Migrar rascunho`,
+      header: $localize`:@@admin.v2.migrate.title:Reaproveitar o conteúdo atual?`,
+      message: $localize`:@@admin.v2.migrate.message:As partes compatíveis serão organizadas no novo editor. O site público não muda até você publicar.`,
+      acceptLabel: $localize`:@@admin.v2.migrate.accept:Reaproveitar conteúdo`,
       rejectLabel: $localize`:@@admin.v2.cancel:Cancelar`,
       accept: () => this.draftService.updateDraft(this.migrationService.migrate(draft)),
     });
@@ -533,9 +533,9 @@ export class ContentEditorComponent implements OnInit {
       return;
 
     this.confirmationService.confirm({
-      header: $localize`:@@admin.v2.new.title:Criar novo conteúdo V2?`,
-      message: $localize`:@@admin.v2.new.message:Esta ação substitui o conteúdo do rascunho por uma página inicial V2. Os projetos, mídias, marca e configurações globais serão preservados, mas as seções V1 não serão copiadas.`,
-      acceptLabel: $localize`:@@admin.v2.new.accept:Criar conteúdo V2`,
+      header: $localize`:@@admin.v2.new.title:Preparar o novo editor?`,
+      message: $localize`:@@admin.v2.new.message:A marca, os contatos, as imagens e os projetos serão preservados. Exemplos e seções antigas não serão copiados. O site público não muda até você publicar.`,
+      acceptLabel: $localize`:@@admin.v2.new.accept:Preparar editor`,
       rejectLabel: $localize`:@@admin.v2.cancel:Cancelar`,
       acceptButtonStyleClass: 'p-button-warning',
       accept: () => this.draftService.updateDraft(this.v2Factory.create(draft)),

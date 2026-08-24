@@ -1,12 +1,14 @@
 <section class="dashboard" aria-labelledby="dashboard-title">
   <header class="dashboard-heading">
     <div>
-      <span i18n>Visão geral</span>
-      <h1 id="dashboard-title" i18n>O que precisa da sua atenção.</h1>
+      <span i18n>Início</span>
+      <h1 id="dashboard-title" i18n>Seu site, em um só lugar.</h1>
+      <p i18n>Edite páginas, organize o portfólio e acompanhe as mensagens recebidas.</p>
     </div>
-    <p i18n>
-      Acompanhe o estado editorial do site e vá direto às tarefas mais frequentes do painel.
-    </p>
+    <a class="dashboard-primary-action" routerLink="/content" i18n>
+      <span class="pi pi-pencil" aria-hidden="true"></span>
+      Editar o site
+    </a>
   </header>
 
   @if (draftService.error(); as errorMessage) {
@@ -14,53 +16,99 @@
       [text]="errorMessage"></p-message>
   }
 
-  <div class="dashboard-status-grid" aria-label="Resumo do conteúdo" i18n-aria-label>
-    <article class="dashboard-status-card">
-      <span i18n>Rascunho</span>
-      <strong>{{ draftStatus() }}</strong>
-      <small i18n>Estado atual das alterações editoriais</small>
-    </article>
-    <article class="dashboard-status-card">
-      <span i18n>Projetos</span>
-      <strong>{{ projectCount() }}</strong>
-      <a routerLink="/projects" i18n>Gerenciar portfólio <span aria-hidden="true">→</span></a>
-    </article>
-    <article class="dashboard-status-card">
-      <span i18n>Mídias</span>
-      <strong>{{ mediaCount() }}</strong>
-      <a routerLink="/media" i18n>Abrir biblioteca <span aria-hidden="true">→</span></a>
-    </article>
-    <article class="dashboard-status-card dashboard-status-card--accent">
-      <span i18n>Seções visíveis</span>
-      <strong>{{ visibleSectionCount() }} / {{ totalSectionCount() }}</strong>
-      <a routerLink="/content" i18n>Revisar estrutura <span aria-hidden="true">→</span></a>
-    </article>
-  </div>
+  <section class="dashboard-start" aria-labelledby="dashboard-start-title">
+    <header>
+      <div>
+        <span i18n>Comece por aqui</span>
+        <h2 id="dashboard-start-title" i18n>O que você quer fazer?</h2>
+      </div>
+      <p i18n>Escolha uma tarefa. O painel leva você direto ao lugar certo.</p>
+    </header>
+
+    <div class="dashboard-task-grid">
+      <a routerLink="/content">
+        <span class="dashboard-task-number">01</span>
+        <span class="pi pi-pencil" aria-hidden="true"></span>
+        <strong i18n>Alterar textos e páginas</strong>
+        <small i18n>Organize as seções e veja a prévia enquanto edita.</small>
+        <span class="dashboard-task-link" i18n>Abrir editor →</span>
+      </a>
+      <a routerLink="/projects">
+        <span class="dashboard-task-number">02</span>
+        <span class="pi pi-building" aria-hidden="true"></span>
+        <strong i18n>Organizar o portfólio</strong>
+        <small i18n>Cadastre projetos e escolha as imagens de cada trabalho.</small>
+        <span class="dashboard-task-link" i18n>Abrir portfólio →</span>
+      </a>
+      <a routerLink="/contacts">
+        <span class="dashboard-task-number">03</span>
+        <span class="pi pi-inbox" aria-hidden="true"></span>
+        <strong i18n>Ler novas mensagens</strong>
+        <small i18n>Acompanhe pedidos enviados pelo formulário do site.</small>
+        <span class="dashboard-task-link" i18n>Abrir mensagens →</span>
+      </a>
+    </div>
+  </section>
+
+  <section class="dashboard-summary" aria-labelledby="dashboard-summary-title">
+    <header>
+      <span i18n>Resumo</span>
+      <h2 id="dashboard-summary-title" i18n>Como está o conteúdo agora</h2>
+    </header>
+    <div class="dashboard-status-grid" aria-label="Resumo do conteúdo" i18n-aria-label>
+      <article class="dashboard-status-card">
+        <span i18n>Alterações</span>
+        <strong>{{ draftStatus() }}</strong>
+        <small>{{ draftService.dirty() ? 'Ainda precisam ser salvas' : 'Nenhuma pendência no editor' }}</small>
+      </article>
+      <article class="dashboard-status-card">
+        <span i18n>Projetos</span>
+        <strong>{{ projectCount() }}</strong>
+        <a routerLink="/projects" i18n>Gerenciar portfólio →</a>
+      </article>
+      <article class="dashboard-status-card">
+        <span i18n>Imagens</span>
+        <strong>{{ mediaCount() }}</strong>
+        <a routerLink="/media" i18n>Abrir biblioteca →</a>
+      </article>
+      <article class="dashboard-status-card dashboard-status-card--accent">
+        <span i18n>Seções ativas</span>
+        <strong>{{ visibleSectionCount() }} / {{ totalSectionCount() }}</strong>
+        <a routerLink="/content" i18n>Revisar páginas →</a>
+      </article>
+    </div>
+  </section>
 
   <div class="dashboard-work-grid">
-    <article class="dashboard-panel">
-      <span i18n>Próxima ação</span>
+    <article class="dashboard-panel dashboard-next-step">
+      <span i18n>Próximo passo</span>
       @if (draftService.error() && !draftService.draft()) {
-        <h2 i18n>Restabeleça a conexão com o conteúdo.</h2>
-        <p i18n>O painel não conseguiu carregar o rascunho. Tente novamente antes de editar ou publicar.</p>
+        <h2 i18n>Reconecte o painel ao conteúdo.</h2>
+        <p i18n>Não foi possível carregar os dados do site. Tente novamente antes de editar.</p>
         <button type="button" (click)="draftService.load()" i18n>Tentar novamente</button>
+      } @else if (!editorReady()) {
+        <h2 i18n>Prepare o editor visual recomendado.</h2>
+        <p i18n>A configuração inicial preserva marca, contatos e imagens e remove exemplos antigos.</p>
+        <a class="dashboard-primary-action" routerLink="/content" i18n>Preparar editor</a>
       } @else if (draftService.dirty()) {
-        <h2 i18n>Há alterações que ainda não foram salvas.</h2>
-        <p i18n>Revise o conteúdo pendente e salve o rascunho antes de criar uma publicação.</p>
-        <a class="dashboard-primary-action" routerLink="/content" i18n>Revisar rascunho</a>
+        <h2 i18n>Salve as últimas alterações.</h2>
+        <p i18n>O conteúdo continua seguro no editor e ainda não foi publicado.</p>
+        <a class="dashboard-primary-action" routerLink="/content" i18n>Continuar editando</a>
       } @else {
-        <h2 i18n>O conteúdo está pronto para evoluir.</h2>
-        <p i18n>Edite textos e estrutura, organize projetos ou prepare uma nova publicação.</p>
-        <a class="dashboard-primary-action" routerLink="/content" i18n>Editar conteúdo</a>
+        <h2 i18n>O conteúdo está pronto para revisão.</h2>
+        <p i18n>Confira a prévia final antes de colocar a versão no ar.</p>
+        <a class="dashboard-primary-action" routerLink="/publications" i18n>Revisar e publicar</a>
       }
     </article>
 
-    <nav class="dashboard-panel dashboard-shortcuts" aria-label="Atalhos do painel" i18n-aria-label>
-      <span i18n>Atalhos</span>
-      <a routerLink="/projects"><strong i18n>Projetos</strong><small i18n>Ordem, categorias e visibilidade</small></a>
-      <a routerLink="/media"><strong i18n>Mídia</strong><small i18n>Arquivos e créditos</small></a>
-      <a routerLink="/publications"><strong i18n>Publicações</strong><small i18n>Histórico e restauração</small></a>
-      <a routerLink="/audit"><strong i18n>Auditoria</strong><small i18n>Últimas alterações</small></a>
-    </nav>
+    <aside class="dashboard-panel dashboard-how-it-works" aria-labelledby="dashboard-how-title">
+      <span i18n>Fluxo simples</span>
+      <h2 id="dashboard-how-title" i18n>Como funciona</h2>
+      <ol>
+        <li><strong i18n>Edite</strong><span i18n>Altere o que precisar e acompanhe a prévia.</span></li>
+        <li><strong i18n>Salve</strong><span i18n>Guarde o trabalho sem mudar o site público.</span></li>
+        <li><strong i18n>Publique</strong><span i18n>Coloque no ar somente depois da revisão.</span></li>
+      </ol>
+    </aside>
   </div>
 </section>

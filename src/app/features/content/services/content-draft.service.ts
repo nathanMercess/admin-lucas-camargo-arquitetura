@@ -189,6 +189,13 @@ export class ContentDraftService {
   private handleSaveError(error: unknown): void {
     this.saveQueued = false;
 
+    if (error instanceof HttpErrorResponse && error.status === 403) {
+      this.errorState.set(
+        $localize`:@@admin.content.forbiddenSaveError:Para salvar, abra o painel pelo endereço oficial admin.lucascamargo.com. Suas alterações continuam nesta tela.`,
+      );
+      return;
+    }
+
     if (error instanceof HttpErrorResponse && error.status === 412) {
       this.errorState.set(
         $localize`:@@admin.content.conflictError:Este rascunho foi alterado em outra sessão. Recarregue antes de salvar novamente.`,

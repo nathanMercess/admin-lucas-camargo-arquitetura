@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject } from '@angular/core';
-import { isSiteConfigV1 } from '@shared/guards/site-document.guard';
+import { isSiteConfigV1, isSiteConfigV2 } from '@shared/guards/site-document.guard';
 
 import { ContentDraftService } from '../content/services/content-draft.service';
 
@@ -12,16 +12,31 @@ import { ContentDraftService } from '../content/services/content-draft.service';
 })
 export class DashboardComponent implements OnInit {
   protected readonly draftService = inject(ContentDraftService);
-  private readonly v1Draft = computed(() => {
+  protected readonly projectCount = computed(() => this.draftService.draft()?.projects.length ?? 0);
+  protected readonly mediaCount = computed(() => this.draftService.draft()?.media.length ?? 0);
+  protected readonly visibleSectionCount = computed(() => {
     const draft = this.draftService.draft();
 
-    return isSiteConfigV1(draft) ? draft : null;
+    if (isSiteConfigV1(draft))
+      return draft.sections.filter((section) => section.visible).length;
+
+    if (isSiteConfigV2(draft))
+      return draft.pages.flatMap((page) => page.sections).filter((section) => section.visible).length;
+
+    return 0;
   });
-  protected readonly projectCount = computed(() => this.v1Draft()?.projects.length ?? 0);
-  protected readonly mediaCount = computed(() => this.v1Draft()?.media.length ?? 0);
-  protected readonly visibleSectionCount = computed(() =>
-    this.v1Draft()?.sections.filter((section) => section.visible).length ?? 0);
-  protected readonly totalSectionCount = computed(() => this.v1Draft()?.sections.length ?? 0);
+  protected readonly totalSectionCount = computed(() => {
+    const draft = this.draftService.draft();
+
+    if (isSiteConfigV1(draft))
+      return draft.sections.length;
+
+    if (isSiteConfigV2(draft))
+      return draft.pages.flatMap((page) => page.sections).length;
+
+    return 0;
+  });
+  protected readonly editorReady = computed(() => isSiteConfigV2(this.draftService.draft()));
   protected readonly draftStatus = computed(() => {
     if (this.draftService.loading())
       return $localize`:@@admin.dashboard.loading:Carregando`;

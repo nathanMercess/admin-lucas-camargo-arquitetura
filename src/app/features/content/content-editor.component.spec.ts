@@ -1,7 +1,7 @@
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { DEFAULT_SITE_CONFIG } from '@shared/config/default-site-config';
 import { isSiteConfigV1, isSiteConfigV2 } from '@shared/guards/site-document.guard';
 import { ThemeConfig } from '@shared/models/theme-config.model';
@@ -45,6 +45,7 @@ describe('ContentEditorComponent', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
+        provideRouter([]),
         {
           provide: CONTENT_DRAFT_DEVELOPMENT_FALLBACK,
           useValue: true,
@@ -183,7 +184,7 @@ describe('ContentEditorComponent', () => {
       'Google e compartilhamento',
     ]);
     expect(rootElement.querySelector('app-visual-page-builder')).toBeNull();
-    expect(rootElement.textContent).toContain('A migração automática está bloqueada');
+    expect(rootElement.textContent).toContain('Use apenas para uma correção urgente');
   });
 
   it('creates a new V2 bootstrap only after an explicit confirmation', () => {
@@ -191,7 +192,7 @@ describe('ContentEditorComponent', () => {
     const confirmSpy = vi.spyOn(confirmationService, 'confirm');
     const rootElement = fixture.nativeElement as HTMLElement;
     const createButton = [...rootElement.querySelectorAll<HTMLButtonElement>('button')]
-      .find((button) => button.textContent?.includes('Criar novo conteúdo V2'));
+      .find((button) => button.textContent?.includes('Usar estrutura recomendada'));
 
     createButton?.click();
 

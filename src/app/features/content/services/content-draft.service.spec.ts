@@ -281,6 +281,25 @@ describe('ContentDraftService', () => {
     expect(service.error()).toContain('alterado em outra sessão');
   });
 
+  it('explains how to recover when saving outside the official admin address', () => {
+    service.load();
+
+    httpTestingController.expectOne('/api/v1/content/draft').flush(DEFAULT_SITE_CONFIG, {
+      headers: { ETag: '"draft-v1"' },
+    });
+
+    service.updateDraft(structuredClone(DEFAULT_SITE_CONFIG));
+    service.save();
+
+    httpTestingController.expectOne('/api/v1/content/draft').flush('Forbidden', {
+      status: 403,
+      statusText: 'Forbidden',
+    });
+
+    expect(service.dirty()).toBe(true);
+    expect(service.error()).toContain('admin.lucascamargo.com');
+  });
+
   it('serializes a newer save behind the request already in flight', () => {
     service.load();
 
