@@ -103,6 +103,6 @@ if (this.isAutoRotationPaused() || this.isPointerInteractionPaused())
 - Exigir ETag em alterações de rascunho, publicação e rollback para impedir sobrescrita concorrente silenciosa.
 - Registrar toda mutação administrativa com ator, ação, recurso, request ID, resultado e hashes ou ETags relevantes, sem registrar tokens ou o conteúdo integral.
 - Manter buckets privados; credenciais R2 pertencem exclusivamente à API e nunca podem chegar ao Angular, ao Git ou aos logs.
-- Proteger o painel e a API com IAP, autorização no backend, origem exata e defesa CSRF. Ocultar um controle na interface não substitui a autorização da API.
+- Proteger o painel e a API com autenticação obrigatória, autorização no backend, origem exata e defesa CSRF. Enquanto o acesso por credenciais internas estiver ativo, manter usuários e hashes de senha exclusivamente em segredo da API, usar sessão em cookie seguro e preservar um caminho configurável para migração futura ao IAP. Ocultar um controle na interface não substitui a autorização da API.
 - Publicar releases e mídias em chaves imutáveis e trocar somente o manifest por escrita condicional, mantendo rollback verificável.
 - Uma nova variação de conteúdo deve reutilizar o catálogo tipado existente quando possível. Um comportamento visual realmente novo exige implementação, teste e revisão de código.

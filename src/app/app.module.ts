@@ -7,12 +7,13 @@ import { providePrimeNG } from 'primeng/config';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app/app.component';
+import { AuthenticationModule } from './features/authentication/authentication.module';
 
 registerLocaleData(localePt);
 
 @NgModule({
   declarations: [AppComponent],
-  imports: [BrowserModule, AppRoutingModule],
+  imports: [BrowserModule, AuthenticationModule, AppRoutingModule],
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(withInterceptorsFromDi()),

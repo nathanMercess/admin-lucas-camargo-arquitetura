@@ -1,10 +1,13 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, InjectionToken, Signal, inject, isDevMode, signal } from '@angular/core';
-import { finalize, take } from 'rxjs';
+import { finalize, switchMap, take } from 'rxjs';
 
 import { AdminSession } from '../models/admin-session.model';
 
 const SESSION_ENDPOINT = '/api/v1/session';
+const LOGIN_ENDPOINT = '/api/v1/auth/login';
+const LOGOUT_ENDPOINT = '/api/v1/auth/logout';
+const mutationHeaders = { 'X-Admin-CSRF': '1' };
 
 export const SESSION_DEVELOPMENT_FALLBACK = new InjectionToken<boolean>(
   'SESSION_DEVELOPMENT_FALLBACK',
@@ -22,11 +25,15 @@ export class SessionService {
   private readonly developmentFallbackEnabled = inject(SESSION_DEVELOPMENT_FALLBACK);
   private readonly sessionState = signal<AdminSession | null>(null);
   private readonly loadingState = signal(false);
+  private readonly readyState = signal(false);
+  private readonly authenticatingState = signal(false);
   private readonly errorState = signal<string | null>(null);
   private readonly developmentFallbackState = signal(false);
 
   public readonly session: Signal<AdminSession | null> = this.sessionState.asReadonly();
   public readonly loading: Signal<boolean> = this.loadingState.asReadonly();
+  public readonly ready: Signal<boolean> = this.readyState.asReadonly();
+  public readonly authenticating: Signal<boolean> = this.authenticatingState.asReadonly();
   public readonly error: Signal<string | null> = this.errorState.asReadonly();
   public readonly developmentFallback: Signal<boolean> =
     this.developmentFallbackState.asReadonly();
@@ -36,6 +43,7 @@ export class SessionService {
       return;
 
     this.loadingState.set(true);
+    this.readyState.set(false);
     this.errorState.set(null);
     this.developmentFallbackState.set(false);
 
@@ -46,8 +54,62 @@ export class SessionService {
         finalize(() => this.loadingState.set(false)),
       )
       .subscribe({
-        next: (session) => this.sessionState.set(session),
-        error: () => this.handleLoadError(),
+        next: (session) => {
+          this.sessionState.set(session);
+          this.readyState.set(true);
+        },
+        error: (error: HttpErrorResponse) => this.handleLoadError(error),
+      });
+  }
+
+  public login(username: string, password: string): void {
+    if (this.authenticatingState())
+      return;
+
+    this.authenticatingState.set(true);
+    this.errorState.set(null);
+    this.developmentFallbackState.set(false);
+
+    this.httpClient
+      .post<void>(LOGIN_ENDPOINT, { username, password }, { headers: mutationHeaders })
+      .pipe(
+        switchMap(() => this.httpClient.get<AdminSession>(SESSION_ENDPOINT)),
+        take(1),
+        finalize(() => this.authenticatingState.set(false)),
+      )
+      .subscribe({
+        next: (session) => {
+          this.sessionState.set(session);
+          this.readyState.set(true);
+        },
+        error: (error: HttpErrorResponse) => this.handleLoginError(error),
+      });
+  }
+
+  public logout(): void {
+    if (this.authenticatingState())
+      return;
+
+    this.authenticatingState.set(true);
+    this.errorState.set(null);
+
+    this.httpClient
+      .post<void>(LOGOUT_ENDPOINT, null, { headers: mutationHeaders })
+      .pipe(
+        take(1),
+        finalize(() => this.authenticatingState.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.sessionState.set(null);
+          this.developmentFallbackState.set(false);
+          this.readyState.set(true);
+        },
+        error: () => {
+          this.errorState.set(
+            $localize`:@@admin.session.logoutError:Não foi possível encerrar a sessão. Tente novamente.`,
+          );
+        },
       });
   }
 
@@ -87,8 +149,14 @@ export class SessionService {
     }
   }
 
-  private handleLoadError(): void {
-    if (this.developmentFallbackEnabled) {
+  private handleLoadError(error: HttpErrorResponse): void {
+    this.sessionState.set(null);
+    this.readyState.set(true);
+
+    if ([401, 403].includes(error.status))
+      return;
+
+    if (this.developmentFallbackEnabled && error.status === 0) {
       this.sessionState.set(null);
       this.developmentFallbackState.set(true);
       return;
@@ -96,6 +164,29 @@ export class SessionService {
 
     this.errorState.set(
       $localize`:@@admin.session.loadError:Não foi possível identificar a sessão atual. Tente novamente.`,
+    );
+  }
+
+  private handleLoginError(error: HttpErrorResponse): void {
+    this.sessionState.set(null);
+    this.readyState.set(true);
+
+    if (error.status === 429) {
+      this.errorState.set(
+        $localize`:@@admin.session.loginThrottled:Muitas tentativas. Aguarde alguns minutos antes de tentar novamente.`,
+      );
+      return;
+    }
+
+    if ([401, 403].includes(error.status)) {
+      this.errorState.set(
+        $localize`:@@admin.session.loginInvalid:Usuário ou senha inválidos.`,
+      );
+      return;
+    }
+
+    this.errorState.set(
+      $localize`:@@admin.session.loginError:Não foi possível entrar agora. Tente novamente.`,
     );
   }
 }

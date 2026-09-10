@@ -18,12 +18,18 @@ describe('SiteTemplateLibraryComponent', () => {
     fixture.detectChanges();
   });
 
-  it('renders four previews and identifies the active template', () => {
+  it('renders seven previews, identifies the active template and honors a linked preset', () => {
     const rootElement = fixture.nativeElement as HTMLElement;
 
-    expect(rootElement.querySelectorAll('.site-template-card')).toHaveLength(4);
+    expect(rootElement.querySelectorAll('.site-template-card')).toHaveLength(7);
     expect(rootElement.querySelector('.site-template-card[data-template-id="lucas-camargo-v1"]')?.textContent)
       .toContain('Em uso');
+
+    fixture.componentRef.setInput('initialPresetId', 'essential-narrative-v1');
+    fixture.detectChanges();
+
+    expect(rootElement.querySelector('.site-template-stage-preview')?.getAttribute('data-template-id'))
+      .toBe('essential-narrative-v1');
   });
 
   it('emits a cloned theme without changing the current value', () => {

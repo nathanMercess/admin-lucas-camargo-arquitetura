@@ -39,7 +39,9 @@
   } @else if (v2Draft(); as document) {
     <app-site-v2-builder [document]="document" [dirty]="draftService.dirty()"
       [saving]="draftService.saving()" [saveError]="draftService.error()"
+      [initialTemplateId]="initialTemplateId()"
       (documentChange)="handleV2DocumentChange($event)" (save)="saveDraft()"
+      (templateEntryConsumed)="handleTemplateEntryConsumed()"
       (back)="requestReload()"></app-site-v2-builder>
   } @else if (v1Draft(); as draft) {
     <form class="content-editor-form" [formGroup]="contentForm" (ngSubmit)="saveDraft()">
@@ -345,7 +347,8 @@
             @if (v1Draft(); as draft) {
               <div class="content-editor-panel">
                 <app-site-template-library [currentTheme]="draft.theme"
-                  (themeChange)="handleTemplateChange($event)"
+                  [initialPresetId]="initialTemplateId()"
+                  (themeChange)="handleTemplateSelection($event)"
                   (customize)="customizeTemplate($event)"></app-site-template-library>
               </div>
             }

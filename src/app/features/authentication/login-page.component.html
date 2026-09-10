@@ -1,0 +1,50 @@
+<main class="login-page">
+  <section class="login-introduction" aria-labelledby="login-title">
+    <span class="login-monogram" aria-hidden="true">LC</span>
+    <p class="login-kicker" i18n>Estúdio de conteúdo</p>
+    <h1 id="login-title" i18n>Um espaço reservado para construir a próxima versão.</h1>
+    <p class="login-summary" i18n>
+      Organize projetos, experimente novos formatos e publique o site de Lucas Camargo Arquitetura.
+    </p>
+  </section>
+
+  <section class="login-panel" aria-labelledby="login-form-title">
+    <div class="login-panel-heading">
+      <span i18n>Acesso administrativo</span>
+      <strong aria-hidden="true">01</strong>
+    </div>
+
+    <form [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
+      <div>
+        <h2 id="login-form-title" i18n>Entrar no painel</h2>
+        <p i18n>Use as credenciais administrativas configuradas para este projeto.</p>
+      </div>
+
+      <label for="login-username" i18n>Usuário</label>
+      <input id="login-username" pInputText type="text" formControlName="username"
+        autocomplete="username" autocapitalize="none" spellcheck="false" />
+      @if (loginForm.controls.username.touched && loginForm.controls.username.invalid) {
+        <small class="login-field-error" i18n>Informe o usuário.</small>
+      }
+
+      <label for="login-password" i18n>Senha</label>
+      <input id="login-password" pInputText type="password" formControlName="password"
+        autocomplete="current-password" />
+      @if (loginForm.controls.password.touched && loginForm.controls.password.invalid) {
+        <small class="login-field-error" i18n>Informe a senha.</small>
+      }
+
+      @if (sessionService.error(); as error) {
+        <p-message severity="error">{{ error }}</p-message>
+      }
+
+      <p-button type="submit" label="Entrar" icon="pi pi-arrow-right"
+        [loading]="sessionService.authenticating()" [disabled]="sessionService.authenticating()"
+        i18n-label></p-button>
+    </form>
+
+    <p class="login-note" i18n>
+      A sessão permanece ativa por até 8 horas neste navegador.
+    </p>
+  </section>
+</main>

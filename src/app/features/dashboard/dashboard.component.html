@@ -111,4 +111,43 @@
       </ol>
     </aside>
   </div>
+
+  <section class="dashboard-formats" aria-labelledby="dashboard-formats-title">
+    <header>
+      <div>
+        <span i18n>Novas bases</span>
+        <h2 id="dashboard-formats-title" i18n>Escolha um caminho antes de editar.</h2>
+      </div>
+      <p i18n>
+        Os formatos preservam o conteúdo real, os projetos e as imagens enquanto mudam a direção visual.
+      </p>
+    </header>
+
+    <div class="dashboard-format-grid">
+      <a routerLink="/content" [queryParams]="{ template: 'lucas-camargo-v1' }">
+        <span>01</span>
+        <strong i18n>Base editorial</strong>
+        <small i18n>Uma composição equilibrada para começar e personalizar com segurança.</small>
+        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+      </a>
+      <a routerLink="/content" [queryParams]="{ template: 'essential-narrative-v1' }">
+        <span>02</span>
+        <strong i18n>Narrativa essencial</strong>
+        <small i18n>Posicionamento, projetos e contato em uma apresentação mais curta.</small>
+        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+      </a>
+      <a routerLink="/content" [queryParams]="{ template: 'services-journey-v1' }">
+        <span>03</span>
+        <strong i18n>Jornada de contratação</strong>
+        <small i18n>Serviços, processo e chamada para novos clientes em sequência.</small>
+        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+      </a>
+      <a routerLink="/content" [queryParams]="{ template: 'studio-profile-v1' }">
+        <span>04</span>
+        <strong i18n>Perfil e autoridade</strong>
+        <small i18n>Trajetória, indicadores e método de trabalho do escritório.</small>
+        <i class="pi pi-arrow-right" aria-hidden="true"></i>
+      </a>
+    </div>
+  </section>
 </section>

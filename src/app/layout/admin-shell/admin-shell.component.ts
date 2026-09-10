@@ -1,7 +1,6 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  OnInit,
   computed,
   inject,
   signal,
@@ -20,7 +19,7 @@ import { SessionService } from '../../core/session/services/session.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class AdminShellComponent implements OnInit {
+export class AdminShellComponent {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly router = inject(Router);
   protected readonly sessionService = inject(SessionService);
@@ -144,16 +143,16 @@ export class AdminShellComponent implements OnInit {
       .subscribe(() => this.synchronizeShellMode());
   }
 
-  public ngOnInit(): void {
-    this.sessionService.load();
-  }
-
   protected toggleNavigation(): void {
     this.navigationCollapsed.update((collapsed) => !collapsed);
   }
 
   protected retrySession(): void {
     this.sessionService.load();
+  }
+
+  protected logout(): void {
+    this.sessionService.logout();
   }
 
   private synchronizeShellMode(): void {

@@ -7,7 +7,7 @@ Painel administrativo Angular para edição, mídia, publicação e auditoria do
 - `../lucas-camargo-arquitetura`: site público e Worker de conteúdo.
 - `../api-lucas-camargo-arquitetura`: API administrativa Fastify.
 
-Este repositório não contém a API. Em desenvolvimento, `proxy.conf.json` encaminha `/api` para `http://127.0.0.1:8080`. Em produção, o painel e a API devem ser expostos na mesma origem, com roteamento de `/api/*` para o serviço da API, preservando IAP, CORS exato e proteção CSRF.
+Este repositório não contém a API. Em desenvolvimento, `proxy.conf.json` encaminha `/api` para `http://127.0.0.1:8080`. Em produção, o painel é público apenas até a tela de login e encaminha `/api/*` ao serviço da API na mesma origem. A autenticação ocorre na API por credenciais internas, com cookie de sessão seguro, CORS exato e proteção CSRF. O código mantém o modo IAP disponível para uma migração futura.
 
 ## Desenvolvimento
 

@@ -16,13 +16,17 @@ export class SiteTemplateLibraryComponent {
   private readonly catalog = inject(SiteTemplateCatalogService);
 
   public readonly currentTheme = input.required<ThemeConfig>();
+  public readonly initialPresetId = input<SiteTemplateId | null>(null);
+  public readonly allowCustomization = input(true);
   public readonly themeChange = output<ThemeConfig>();
   public readonly customize = output<ThemeConfig>();
 
   protected readonly presets = this.catalog.presets;
   protected readonly selectedPresetId = signal<SiteTemplateId | null>(null);
   protected readonly selectedPreset = computed(() => {
-    const selectedId = this.selectedPresetId() ?? this.currentTheme().presetId;
+    const selectedId = this.selectedPresetId()
+      ?? this.initialPresetId()
+      ?? this.currentTheme().presetId;
 
     return this.presets.find((preset) => preset.id === selectedId) ?? this.presets[0];
   });

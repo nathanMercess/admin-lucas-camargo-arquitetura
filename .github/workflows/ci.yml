@@ -81,8 +81,8 @@ jobs:
             --project="$GCP_PROJECT_ID" \
             --region="$GCP_REGION" \
             --image="$IMAGE" \
-            --iap \
-            --no-allow-unauthenticated \
+            --no-iap \
+            --allow-unauthenticated \
             --ingress=all \
             --cpu=1 \
             --memory=128Mi \
@@ -93,12 +93,11 @@ jobs:
             --port=8080 \
             --service-account="lucas-admin-runtime@$GCP_PROJECT_ID.iam.gserviceaccount.com" \
             --set-env-vars="API_ORIGIN=$API_ORIGIN" \
-            --labels="environment=production,managed-by=github-actions,visibility=private" \
+            --labels="environment=production,managed-by=github-actions,visibility=public-login" \
             --quiet
       - name: Verificar publicação
         run: |
           ADMIN_URL="https://$SERVICE-${{ vars.GCP_PROJECT_NUMBER }}.$GCP_REGION.run.app"
           test "$(gcloud run services describe "$SERVICE" --project="$GCP_PROJECT_ID" --region="$GCP_REGION" --format='value(status.conditions[0].status)')" = True
-          test "$(gcloud run services describe "$SERVICE" --project="$GCP_PROJECT_ID" --region="$GCP_REGION" --format="value(metadata.annotations.'run.googleapis.com/iap-enabled')")" = true
           STATUS="$(curl --silent --output /dev/null --write-out '%{http_code}' "$ADMIN_URL/health")"
-          test "$STATUS" = 200 -o "$STATUS" = 204 -o "$STATUS" = 302 -o "$STATUS" = 401 -o "$STATUS" = 403
+          test "$STATUS" = 200

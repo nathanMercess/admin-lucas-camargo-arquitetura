@@ -1,1 +1,10 @@
-<router-outlet></router-outlet>
+@if (!sessionService.ready()) {
+  <div class="app-loading" role="status" aria-live="polite">
+    <span class="app-loading-mark" aria-hidden="true">LC</span>
+    <span i18n>Preparando o painel...</span>
+  </div>
+} @else if (sessionService.session() || sessionService.developmentFallback()) {
+  <router-outlet></router-outlet>
+} @else {
+  <app-login-page></app-login-page>
+}

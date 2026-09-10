@@ -54,6 +54,10 @@
           <p-button label="Tentar novamente" icon="pi pi-refresh" size="small" [text]="true"
             (onClick)="retrySession()" i18n-label></p-button>
         }
+        @if (sessionService.session()) {
+          <p-button label="Sair" icon="pi pi-sign-out" size="small" [text]="true"
+            [loading]="sessionService.authenticating()" (onClick)="logout()" i18n-label></p-button>
+        }
       </div>
     </div>
   </aside>
