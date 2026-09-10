@@ -10,7 +10,6 @@ import { TagModule } from 'primeng/tag';
 
 import { ContactInboxRoutingModule } from './contact-inbox-routing.module';
 import { ContactInboxComponent } from './contact-inbox.component';
-import { ContactInboxService } from './services/contact-inbox.service';
 
 @NgModule({
   declarations: [ContactInboxComponent],
@@ -25,6 +24,5 @@ import { ContactInboxService } from './services/contact-inbox.service';
     TagModule,
     ContactInboxRoutingModule,
   ],
-  providers: [ContactInboxService],
 })
 export class ContactInboxModule {}
