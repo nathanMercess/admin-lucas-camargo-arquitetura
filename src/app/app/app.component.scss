@@ -2,3 +2,42 @@
   display: block;
   min-height: 100%;
 }
+
+.app-loading {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  justify-items: center;
+  gap: 16px;
+  color: var(--admin-color-muted);
+  font-family: var(--admin-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-loading-mark {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border: 1px solid var(--admin-color-coral);
+  color: var(--admin-color-coral);
+  animation: app-loading-pulse 700ms ease-in-out infinite alternate;
+}
+
+@keyframes app-loading-pulse {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0.45;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-loading-mark {
+    animation: none;
+  }
+}

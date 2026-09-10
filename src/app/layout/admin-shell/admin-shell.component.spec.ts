@@ -4,6 +4,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 
+import { SessionService } from '../../core/session/services/session.service';
 import { AdminShellComponent } from './admin-shell.component';
 import { AdminShellModule } from './admin-shell.module';
 
@@ -23,9 +24,7 @@ describe('AdminShellComponent', () => {
     }).compileComponents();
 
     httpTestingController = TestBed.inject(HttpTestingController);
-    fixture = TestBed.createComponent(AdminShellComponent);
-    fixture.detectChanges();
-
+    TestBed.inject(SessionService).load();
     const request = httpTestingController.expectOne('/api/v1/session');
     request.flush({
       subject: 'development:nathan66merces@gmail.com',
@@ -45,6 +44,8 @@ describe('AdminShellComponent', () => {
       publishedContentBaseUrl: 'https://content.example.com/content',
     });
 
+    fixture = TestBed.createComponent(AdminShellComponent);
+    fixture.detectChanges();
     await fixture.whenStable();
     fixture.detectChanges();
   });

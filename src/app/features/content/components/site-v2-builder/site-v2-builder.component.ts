@@ -19,6 +19,8 @@ import { SiteConfigV2 } from '@shared/models/site-config-v2.model';
 import { SiteContact } from '@shared/models/site-contact.model';
 import { SitePageV2 } from '@shared/models/site-page-v2.model';
 import { SiteSectionV2 } from '@shared/models/site-section-v2.model';
+import { SiteTemplateId } from '@shared/models/site-template-id.type';
+import { ThemeConfig } from '@shared/models/theme-config.model';
 import { WhatsappCtaSectionConfig } from '@shared/models/whatsapp-cta-section-config.model';
 import { ConfirmationService } from 'primeng/api';
 
@@ -37,7 +39,7 @@ type ContactFormTextField =
   | 'errorMessage'
   | 'privacyNotice';
 
-type BuilderView = 'content' | 'preview' | 'settings';
+type BuilderView = 'content' | 'templates' | 'preview' | 'settings';
 
 @Component({
   selector: 'app-site-v2-builder',
@@ -50,14 +52,17 @@ export class SiteV2BuilderComponent {
   private readonly builder = inject(SiteV2BuilderService);
   private readonly confirmationService = inject(ConfirmationService);
   private readonly browserDocument = inject(DOCUMENT);
+  private handledTemplateId: SiteTemplateId | null = null;
 
   public readonly document = input.required<SiteConfigV2>();
   public readonly dirty = input(false);
   public readonly saving = input(false);
   public readonly saveError = input<string | null>(null);
+  public readonly initialTemplateId = input<SiteTemplateId | null>(null);
   public readonly documentChange = output<SiteConfigV2>();
   public readonly save = output<void>();
   public readonly back = output<void>();
+  public readonly templateEntryConsumed = output<void>();
 
   protected readonly sectionDefinitions = this.builder.sectionDefinitions;
   protected readonly activePageId = signal('');
@@ -97,6 +102,15 @@ export class SiteV2BuilderComponent {
 
   public constructor() {
     effect(() => {
+      const initialTemplateId = this.initialTemplateId();
+
+      if (initialTemplateId && initialTemplateId !== this.handledTemplateId) {
+        this.handledTemplateId = initialTemplateId;
+        this.view.set('templates');
+      } else if (!initialTemplateId) {
+        this.handledTemplateId = null;
+      }
+
       const pages = this.pages();
       const activePage = pages.find((page) => page.id === this.activePageId()) ?? pages[0];
 
@@ -116,6 +130,11 @@ export class SiteV2BuilderComponent {
           : { kind: 'page', pageId: activePage.id });
       }
     });
+  }
+
+  protected applyTheme(theme: ThemeConfig): void {
+    this.emit({ ...this.document(), theme: structuredClone(theme) });
+    this.templateEntryConsumed.emit();
   }
 
   protected selectPage(pageId: string): void {

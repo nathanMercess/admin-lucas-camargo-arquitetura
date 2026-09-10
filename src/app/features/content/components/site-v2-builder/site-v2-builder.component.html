@@ -31,14 +31,19 @@
       <span>01</span><i class="pi pi-pencil" aria-hidden="true"></i>
       <strong i18n>Editar páginas</strong><small i18n>Textos, seções e imagens</small>
     </button>
+    <button type="button" [class.v2-builder__view--active]="view() === 'templates'"
+      [attr.aria-current]="view() === 'templates' ? 'step' : null" (click)="view.set('templates')">
+      <span>02</span><i class="pi pi-palette" aria-hidden="true"></i>
+      <strong i18n>Escolher estilo</strong><small i18n>Modelos e direções visuais</small>
+    </button>
     <button type="button" [class.v2-builder__view--active]="view() === 'preview'"
       [attr.aria-current]="view() === 'preview' ? 'step' : null" (click)="view.set('preview')">
-      <span>02</span><i class="pi pi-eye" aria-hidden="true"></i>
+      <span>03</span><i class="pi pi-eye" aria-hidden="true"></i>
       <strong i18n>Conferir prévia</strong><small i18n>Computador e celular</small>
     </button>
     <button type="button" [class.v2-builder__view--active]="view() === 'settings'"
       [attr.aria-current]="view() === 'settings' ? 'step' : null" (click)="view.set('settings')">
-      <span>03</span><i class="pi pi-cog" aria-hidden="true"></i>
+      <span>04</span><i class="pi pi-cog" aria-hidden="true"></i>
       <strong i18n>Dados do site</strong><small i18n>Busca, contato e WhatsApp</small>
     </button>
   </nav>
@@ -252,6 +257,12 @@
         </section>
       </aside>
     </div>
+  } @else if (view() === 'templates') {
+    <section class="v2-builder__templates" aria-label="Modelos visuais" i18n-aria-label>
+      <app-site-template-library [currentTheme]="document().theme"
+        [initialPresetId]="initialTemplateId()" [allowCustomization]="false"
+        (themeChange)="applyTheme($event)"></app-site-template-library>
+    </section>
   } @else if (view() === 'preview') {
     @if (activePage(); as page) {
       <section class="v2-builder__preview" aria-labelledby="v2-preview-title">

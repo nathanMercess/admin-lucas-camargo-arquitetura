@@ -1,0 +1,195 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.login-page {
+  display: grid;
+  min-height: 100vh;
+  grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.75fr);
+  background: var(--admin-color-paper);
+}
+
+.login-introduction,
+.login-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-introduction {
+  position: relative;
+  justify-content: flex-end;
+  min-height: 100vh;
+  padding: clamp(40px, 8vw, 120px);
+  overflow: hidden;
+  color: var(--admin-color-paper);
+  background: var(--admin-color-ink);
+}
+
+.login-introduction::before {
+  position: absolute;
+  top: 12%;
+  right: -12%;
+  width: min(46vw, 680px);
+  aspect-ratio: 1;
+  border: 1px solid rgb(227 101 113 / 46%);
+  content: '';
+  transform: rotate(12deg);
+}
+
+.login-monogram {
+  position: absolute;
+  top: clamp(32px, 5vw, 72px);
+  left: clamp(32px, 6vw, 96px);
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border: 1px solid var(--admin-color-coral);
+  color: var(--admin-color-coral);
+  font-family: var(--admin-font-mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+
+.login-kicker,
+.login-panel-heading,
+.login-note {
+  font-family: var(--admin-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.login-kicker {
+  position: relative;
+  margin: 0 0 20px;
+  color: var(--admin-color-coral);
+}
+
+h1 {
+  position: relative;
+  max-width: 760px;
+  margin: 0;
+  font-size: clamp(42px, 6vw, 88px);
+  font-weight: 400;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.login-summary {
+  position: relative;
+  max-width: 600px;
+  margin: 28px 0 0;
+  color: rgb(245 244 244 / 68%);
+  font-size: clamp(14px, 1.3vw, 18px);
+  line-height: 1.65;
+}
+
+.login-panel {
+  justify-content: space-between;
+  min-height: 100vh;
+  padding: clamp(32px, 5vw, 72px);
+  border-left: 1px solid var(--admin-color-border);
+  background: var(--admin-color-surface);
+}
+
+.login-panel-heading {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--admin-color-border);
+  color: var(--admin-color-muted);
+}
+
+.login-panel-heading strong {
+  color: var(--admin-color-coral);
+  font-weight: 400;
+}
+
+form {
+  display: grid;
+  gap: 12px;
+  margin-block: 48px;
+}
+
+h2 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 400;
+  letter-spacing: -0.04em;
+}
+
+form > div p {
+  margin: 10px 0 26px;
+  color: var(--admin-color-muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+label {
+  margin-top: 8px;
+  font-family: var(--admin-font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+input {
+  min-height: 50px;
+}
+
+.login-field-error {
+  color: #a32f3d;
+  font-size: 11px;
+}
+
+:host ::ng-deep .p-button {
+  width: 100%;
+  min-height: 50px;
+  justify-content: space-between;
+  margin-top: 18px;
+}
+
+.login-note {
+  margin: 0;
+  color: var(--admin-color-muted);
+  line-height: 1.6;
+}
+
+@media (width <= 860px) {
+  .login-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .login-introduction {
+    min-height: 46vh;
+    padding: 120px max(28px, 8vw) 52px;
+  }
+
+  .login-introduction::before {
+    width: 70vw;
+  }
+
+  .login-panel {
+    min-height: 54vh;
+    padding: 36px max(28px, 8vw);
+    border-top: 1px solid var(--admin-color-border);
+    border-left: 0;
+  }
+}
+
+@media (width <= 520px) {
+  .login-introduction {
+    min-height: 40vh;
+    padding-top: 104px;
+  }
+
+  h1 {
+    font-size: 38px;
+  }
+
+  .login-panel {
+    min-height: 60vh;
+  }
+}

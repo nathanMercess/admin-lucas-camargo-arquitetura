@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+
+import { SessionService } from '../core/session/services/session.service';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +9,10 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   standalone: false,
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  protected readonly sessionService = inject(SessionService);
+
+  public ngOnInit(): void {
+    this.sessionService.load();
+  }
+}

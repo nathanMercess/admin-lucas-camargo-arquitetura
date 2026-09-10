@@ -47,6 +47,7 @@ describe('SessionService', () => {
     expect(service.resolvePublishedContentPath('/content/media/../secret.webp')).toBe('');
     expect(service.resolvePublishedContentPath('/content/media//asset.webp')).toBe('');
     expect(service.loading()).toBe(false);
+    expect(service.ready()).toBe(true);
     expect(service.developmentFallback()).toBe(false);
   });
 
@@ -75,6 +76,65 @@ describe('SessionService', () => {
     expect(service.session()).toBeNull();
     expect(service.developmentFallback()).toBe(false);
     expect(service.error()).toContain('Tente novamente');
+    expect(service.ready()).toBe(true);
+  });
+
+  it('authenticates and resolves the new cookie-backed session', () => {
+    service.login('nathanMercess', 'valid-password');
+
+    const loginRequest = httpTestingController.expectOne('/api/v1/auth/login');
+
+    expect(loginRequest.request.method).toBe('POST');
+    expect(loginRequest.request.body).toEqual({
+      username: 'nathanMercess',
+      password: 'valid-password',
+    });
+    expect(loginRequest.request.headers.get('X-Admin-CSRF')).toBe('1');
+    loginRequest.flush(null, { status: 204, statusText: 'No Content' });
+
+    const sessionRequest = httpTestingController.expectOne('/api/v1/session');
+    sessionRequest.flush({
+      subject: 'credentials:owner',
+      email: 'nathan66merces@gmail.com',
+      role: 'owner',
+      permissions: ['session:read'],
+      publishedContentBaseUrl: '/content',
+    });
+
+    expect(service.authenticating()).toBe(false);
+    expect(service.session()?.subject).toBe('credentials:owner');
+    expect(service.error()).toBeNull();
+  });
+
+  it('keeps invalid credentials outside the admin', () => {
+    service.login('nathanMercess', 'invalid-password');
+
+    const request = httpTestingController.expectOne('/api/v1/auth/login');
+    request.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+
+    expect(service.authenticating()).toBe(false);
+    expect(service.session()).toBeNull();
+    expect(service.error()).toContain('inválidos');
+  });
+
+  it('clears the local session after the API confirms logout', () => {
+    service.load();
+    httpTestingController.expectOne('/api/v1/session').flush({
+      subject: 'credentials:owner',
+      email: 'nathan66merces@gmail.com',
+      role: 'owner',
+      permissions: ['session:read'],
+      publishedContentBaseUrl: '/content',
+    });
+
+    service.logout();
+    const request = httpTestingController.expectOne('/api/v1/auth/logout');
+
+    expect(request.request.headers.get('X-Admin-CSRF')).toBe('1');
+    request.flush(null, { status: 204, statusText: 'No Content' });
+
+    expect(service.session()).toBeNull();
+    expect(service.authenticating()).toBe(false);
   });
 });
 
@@ -101,11 +161,22 @@ describe('SessionService local development fallback', () => {
     service.load();
 
     const request = httpTestingController.expectOne('/api/v1/session');
-    request.flush('Unavailable', { status: 503, statusText: 'Service Unavailable' });
+    request.error(new ProgressEvent('network-error'));
 
     expect(service.loading()).toBe(false);
     expect(service.session()).toBeNull();
     expect(service.error()).toBeNull();
     expect(service.developmentFallback()).toBe(true);
+  });
+
+  it('does not bypass the login when the API returns unauthorized', () => {
+    service.load();
+
+    const request = httpTestingController.expectOne('/api/v1/session');
+    request.flush('Unauthorized', { status: 401, statusText: 'Unauthorized' });
+
+    expect(service.ready()).toBe(true);
+    expect(service.session()).toBeNull();
+    expect(service.developmentFallback()).toBe(false);
   });
 });

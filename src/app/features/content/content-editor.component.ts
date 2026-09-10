@@ -27,6 +27,7 @@ import { ContentDraftService } from './services/content-draft.service';
 import { DefaultSiteConfigV2Factory } from './services/default-site-config-v2.factory';
 import { SiteConfigV1MigrationService } from './services/site-config-v1-migration.service';
 import { SiteSectionRegistryService } from './services/site-section-registry.service';
+import { SiteTemplateCatalogService } from './services/site-template-catalog.service';
 import { approvedThemeColorValidator } from './validators/approved-theme-color.validator';
 
 @Component({
@@ -44,6 +45,7 @@ export class ContentEditorComponent implements OnInit {
   private readonly sectionRegistry = inject(SiteSectionRegistryService);
   private readonly migrationService = inject(SiteConfigV1MigrationService);
   private readonly v2Factory = inject(DefaultSiteConfigV2Factory);
+  private readonly templateCatalog = inject(SiteTemplateCatalogService);
   protected readonly publicationService = inject(PublicationService);
   private isHydrating = false;
   private hydratedDraft: SiteConfigV1 | null = null;
@@ -65,6 +67,7 @@ export class ContentEditorComponent implements OnInit {
     return draft ? this.migrationService.analyze(draft) : null;
   });
   protected readonly activeTab = signal<string>('section-content');
+  protected readonly initialTemplateId = signal<SiteTemplateId | null>(null);
   protected readonly layoutChoice = signal<'gallery' | 'balanced' | 'spacious'>('balanced');
   protected readonly motionChoice = signal<'off' | 'soft' | 'expressive'>('soft');
   protected readonly focusedSectionId = signal<string | null>(null);
@@ -229,8 +232,14 @@ export class ContentEditorComponent implements OnInit {
   public constructor() {
     (this.activatedRoute?.queryParamMap ?? this.router.routerState.root.queryParamMap)
       .pipe(takeUntilDestroyed())
-      .subscribe(() => {
-        this.activeTab.set('section-content');
+      .subscribe((parameters) => {
+        const requestedTemplateId = parameters.get('template');
+        const templateId = this.templateCatalog.presets
+          .find((preset) => preset.id === requestedTemplateId)?.id ?? null;
+
+        this.initialTemplateId.set(templateId);
+        if (templateId)
+          this.activeTab.set('templates');
       });
 
     this.contentForm.valueChanges
@@ -404,6 +413,20 @@ export class ContentEditorComponent implements OnInit {
     void this.router.navigate(['/projects']);
   }
 
+  protected handleTemplateEntryConsumed(): void {
+    this.initialTemplateId.set(null);
+
+    if (!this.activatedRoute)
+      return;
+
+    void this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: { template: null },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
   protected changeActiveTab(tab: string | number | undefined): void {
     if (typeof tab !== 'string')
       return;
@@ -504,6 +527,11 @@ export class ContentEditorComponent implements OnInit {
       layout: { ...theme.layout },
       motion: { ...theme.motion },
     });
+  }
+
+  protected handleTemplateSelection(theme: ThemeConfig): void {
+    this.handleTemplateChange(theme);
+    this.handleTemplateEntryConsumed();
   }
 
   protected handleV2DocumentChange(document: SiteConfigV2): void {

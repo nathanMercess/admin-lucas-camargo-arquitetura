@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { DEFAULT_SITE_CONFIG } from '@shared/config/default-site-config';
 import { SiteConfigV2 } from '@shared/models/site-config-v2.model';
 import { SitePageV2 } from '@shared/models/site-page-v2.model';
+import { ThemeConfig } from '@shared/models/theme-config.model';
 import { ConfirmationService } from 'primeng/api';
 
 import { DefaultSiteConfigV2Factory } from '../../services/default-site-config-v2.factory';
@@ -10,6 +11,7 @@ import { SiteV2BuilderService } from '../../services/site-v2-builder.service';
 import { SiteV2BuilderComponent } from './site-v2-builder.component';
 
 interface BuilderTestAccess {
+  applyTheme(theme: ThemeConfig): void;
   dropPage(event: CdkDragDrop<SitePageV2[]>): void;
   mediaPath(assetId: string): string;
   updateContact(
@@ -48,6 +50,22 @@ describe('SiteV2BuilderComponent interactions', () => {
     expect(emitted?.pages[0].id).toBe(document.pages[1].id);
     expect(emitted?.pages.map((page) => page.order)).toEqual([10, 20]);
     expect(document.pages[0].id).toBe('home');
+  });
+
+  it('applies a visual format without changing pages, projects or media', () => {
+    let emitted: SiteConfigV2 | undefined;
+    const theme: ThemeConfig = {
+      ...document.theme,
+      presetId: 'studio-profile-v1',
+    };
+
+    fixture.componentInstance.documentChange.subscribe((value) => emitted = value);
+    access.applyTheme(theme);
+
+    expect(emitted?.theme.presetId).toBe('studio-profile-v1');
+    expect(emitted?.pages).toBe(document.pages);
+    expect(emitted?.projects).toBe(document.projects);
+    expect(emitted?.media).toBe(document.media);
   });
 
   it('resolves bundled preview images through the local public site', () => {

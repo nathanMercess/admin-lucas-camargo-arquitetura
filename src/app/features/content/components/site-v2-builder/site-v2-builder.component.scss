@@ -83,7 +83,13 @@
 
 .v2-builder__views {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--builder-border);
+  background: #fff;
+}
+
+.v2-builder__templates {
+  padding: clamp(1rem, 3vw, 2.5rem);
   border: 1px solid var(--builder-border);
   background: #fff;
 }

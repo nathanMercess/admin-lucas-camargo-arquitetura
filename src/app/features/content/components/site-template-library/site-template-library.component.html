@@ -38,8 +38,10 @@
           <p>{{ selected.description }}</p>
         </div>
         <div class="site-template-stage-actions">
-          <p-button type="button" label="Personalizar este modelo" severity="secondary" [outlined]="true"
-            (onClick)="customizeSelected()" i18n-label></p-button>
+          @if (allowCustomization()) {
+            <p-button type="button" label="Personalizar este modelo" severity="secondary" [outlined]="true"
+              (onClick)="customizeSelected()" i18n-label></p-button>
+          }
           @if (isActive(selected)) {
             <p-button type="button" label="Modelo em uso" severity="secondary" [disabled]="true"
               i18n-label></p-button>
@@ -86,16 +88,18 @@
     }
   </div>
 
-  <aside class="site-template-custom-note">
-    <div>
-      <span i18n>Modelo personalizado</span>
-      <h3 i18n>Você pode criar uma direção visual própria.</h3>
-      <p i18n>
-        Comece pelo modelo mais próximo e ajuste cores, tipografia, margens e movimento no modo avançado. A estrutura,
-        a ordem e o conteúdo das seções também continuam editáveis sem código.
-      </p>
-    </div>
-    <p-button type="button" label="Criar a partir da prévia" (onClick)="customizeSelected()"
-      i18n-label></p-button>
-  </aside>
+  @if (allowCustomization()) {
+    <aside class="site-template-custom-note">
+      <div>
+        <span i18n>Modelo personalizado</span>
+        <h3 i18n>Você pode criar uma direção visual própria.</h3>
+        <p i18n>
+          Comece pelo modelo mais próximo e ajuste cores, tipografia, margens e movimento no modo avançado. A
+          estrutura, a ordem e o conteúdo das seções também continuam editáveis sem código.
+        </p>
+      </div>
+      <p-button type="button" label="Criar a partir da prévia" (onClick)="customizeSelected()"
+        i18n-label></p-button>
+    </aside>
+  }
 </section>
