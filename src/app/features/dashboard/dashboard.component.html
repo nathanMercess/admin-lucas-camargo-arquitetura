@@ -15,6 +15,14 @@
     <p-message [severity]="draftService.developmentFallback() ? 'warn' : 'error'"
       [text]="errorMessage"></p-message>
   }
+  @if (inboxService.error()) {
+    <p-message severity="warn" text="O resumo de mensagens não pôde ser atualizado agora."
+      i18n-text></p-message>
+  }
+  @if (publicationService.error()) {
+    <p-message severity="warn" text="O histórico de publicações não pôde ser atualizado agora."
+      i18n-text></p-message>
+  }
 
   <section class="dashboard-start" aria-labelledby="dashboard-start-title">
     <header>
@@ -71,10 +79,28 @@
         <strong>{{ mediaCount() }}</strong>
         <a routerLink="/media" i18n>Abrir biblioteca →</a>
       </article>
-      <article class="dashboard-status-card dashboard-status-card--accent">
+      <article class="dashboard-status-card">
         <span i18n>Seções ativas</span>
         <strong>{{ visibleSectionCount() }} / {{ totalSectionCount() }}</strong>
         <a routerLink="/content" i18n>Revisar páginas →</a>
+      </article>
+      <article class="dashboard-status-card">
+        <span i18n>Última publicação</span>
+        @if (latestRelease(); as release) {
+          <strong>{{ release.publishedAt | date: 'dd/MM' }}</strong>
+          <a routerLink="/publications">
+            <ng-container i18n>Ver versão de</ng-container>
+            {{ release.publishedAt | date: 'HH:mm' }} →
+          </a>
+        } @else {
+          <strong>—</strong>
+          <a routerLink="/publications" i18n>Revisar publicação →</a>
+        }
+      </article>
+      <article class="dashboard-status-card dashboard-status-card--accent">
+        <span i18n>Novas mensagens</span>
+        <strong>{{ newMessageCountLabel() }}</strong>
+        <a routerLink="/contacts" [queryParams]="{ status: 'new' }" i18n>Abrir caixa de entrada →</a>
       </article>
     </div>
   </section>
@@ -94,6 +120,11 @@
         <h2 i18n>Salve as últimas alterações.</h2>
         <p i18n>O conteúdo continua seguro no editor e ainda não foi publicado.</p>
         <a class="dashboard-primary-action" routerLink="/content" i18n>Continuar editando</a>
+      } @else if (newMessageCount() > 0) {
+        <h2>{{ newMessageHeading() }}</h2>
+        <p i18n>Abra a caixa de entrada para conhecer o pedido e organizar o atendimento.</p>
+        <a class="dashboard-primary-action" routerLink="/contacts"
+          [queryParams]="{ status: 'new' }" i18n>Ver novas mensagens</a>
       } @else {
         <h2 i18n>O conteúdo está pronto para revisão.</h2>
         <p i18n>Confira a prévia final antes de colocar a versão no ar.</p>
@@ -111,6 +142,12 @@
       </ol>
     </aside>
   </div>
+
+  <button type="button" class="dashboard-refresh" [disabled]="draftService.loading()
+    || inboxService.loading() || publicationService.loading()" (click)="refresh()">
+    <i class="pi pi-refresh" aria-hidden="true"></i>
+    <span i18n>Atualizar resumo</span>
+  </button>
 
   <section class="dashboard-formats" aria-labelledby="dashboard-formats-title">
     <header>

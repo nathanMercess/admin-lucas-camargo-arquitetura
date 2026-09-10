@@ -16,7 +16,9 @@ import { ContactMessageSummary } from '../models/contact-message-summary.model';
 
 const CONTACT_MESSAGES_ENDPOINT = '/api/v1/contact-messages';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class ContactInboxService {
   private readonly httpClient = inject(HttpClient);
   private readonly messagesState = signal<ContactMessageSummary[]>([]);

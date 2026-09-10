@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { ContactMessageFilter } from './models/contact-message-filter.type';
 import { ContactMessageStatus } from './models/contact-message-status.type';
@@ -13,6 +14,7 @@ import { ContactInboxService } from './services/contact-inbox.service';
   standalone: false,
 })
 export class ContactInboxComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute, { optional: true });
   protected readonly inbox = inject(ContactInboxService);
   protected readonly filter = signal<ContactMessageFilter>('all');
   protected readonly filterOptions: { readonly label: string; readonly value: ContactMessageFilter }[] = [
@@ -30,7 +32,11 @@ export class ContactInboxComponent implements OnInit {
   });
 
   public ngOnInit(): void {
-    this.inbox.load();
+    const requestedFilter = this.route?.snapshot.queryParamMap.get('status') ?? null;
+    const initialFilter = this.isContactMessageFilter(requestedFilter) ? requestedFilter : 'all';
+
+    this.filter.set(initialFilter);
+    this.inbox.load(initialFilter === 'all' ? undefined : initialFilter);
   }
 
   protected open(message: ContactMessageSummary): void {
@@ -65,5 +71,9 @@ export class ContactInboxComponent implements OnInit {
 
   protected statusSeverity(status: ContactMessageStatus): 'info' | 'secondary' | 'success' {
     return status === 'new' ? 'info' : status === 'resolved' ? 'success' : 'secondary';
+  }
+
+  private isContactMessageFilter(value: string | null): value is ContactMessageFilter {
+    return value === 'all' || value === 'new' || value === 'read' || value === 'resolved';
   }
 }

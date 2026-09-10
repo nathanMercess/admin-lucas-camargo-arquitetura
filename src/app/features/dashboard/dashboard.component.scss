@@ -152,7 +152,7 @@
 
 .dashboard-status-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   border-top: 1px solid var(--admin-color-border);
   border-left: 1px solid var(--admin-color-border);
 }
@@ -197,6 +197,31 @@
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(300px, .75fr);
   gap: 12px;
+}
+
+.dashboard-refresh {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 42px;
+  padding: 9px 0;
+  align-items: center;
+  gap: 9px;
+  border: 0;
+  color: var(--admin-color-muted);
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.dashboard-refresh:hover,
+.dashboard-refresh:focus-visible {
+  color: var(--admin-color-ink);
+}
+
+.dashboard-refresh:disabled {
+  cursor: wait;
+  opacity: .55;
 }
 
 .dashboard-panel {
